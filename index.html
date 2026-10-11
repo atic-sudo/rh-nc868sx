@@ -76,9 +76,10 @@
     .baslik { display: block; font-size: 18px; font-weight: 600; }
     .alt { display: block; font-size: 15px; color: var(--soluk); margin-top: 2px; }
     .sag-ok { color: var(--ok); }
-    .cip-ic { display: inline-flex; align-items: center; gap: 2px; margin-top: 8px; font-size: 14px; font-weight: 600; color: var(--ana);
-              background: var(--ana-zemin); border: 1px solid var(--ana-cizgi); border-radius: 10px; padding: 5px 8px 5px 12px; }
-    .cip-ic svg { width: 16px; height: 16px; }
+    .sag-sutun { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    .cip-ic { display: inline-flex; align-items: center; gap: 2px; font-size: 15px; font-weight: 650; color: var(--ana);
+              background: var(--ana-zemin); border: 1px solid var(--ana-cizgi); border-radius: 11px; padding: 6px 8px 6px 13px; }
+    .cip-ic svg { width: 17px; height: 17px; }
     .durum { font-size: 13px; font-weight: 600; color: var(--yesil); background: var(--yesil-zemin); padding: 5px 11px; border-radius: 999px; white-space: nowrap; }
     .durum.bekliyor { color: var(--rapor-baslik); background: var(--rapor-zemin); }
     a.satir.rapor { background: var(--rapor-zemin); border-color: var(--rapor-cizgi); }
@@ -138,6 +139,9 @@
     .slot { display: flex; align-items: center; gap: 12px; background: var(--kart); border: 1px solid var(--cizgi); border-radius: 16px;
             padding: 12px 14px; margin-bottom: 8px; }
     .slot.benim { background: var(--ana-zemin); border-color: var(--ana-cizgi); }
+    .slot.dikey { flex-direction: column; align-items: stretch; gap: 10px; }
+    .slot-ust { display: flex; align-items: center; gap: 12px; width: 100%; }
+    .slot-dugmeler { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
     .slot .orta .baslik { font-size: 16px; }
     .slot .orta .alt { font-size: 13px; }
     button.kucuk { font: inherit; font-size: 14px; font-weight: 650; border-radius: 10px; padding: 8px 12px; cursor: pointer; white-space: nowrap;
@@ -203,6 +207,11 @@
     .adim { position: relative; padding: 9px 12px; margin-bottom: 6px; border-radius: 14px; }
     .adim::before { content: ""; position: absolute; left: -29px; top: 15px; width: 12px; height: 12px; border-radius: 50%;
                     background: var(--bg); border: 2px solid var(--ana-cizgi); }
+    .adim { display: flex; align-items: center; gap: 10px; }
+    .adim .sol { flex: 1; min-width: 0; }
+    .adim .misafir-ad { text-align: right; font-size: 15px; font-weight: 650; color: var(--ana); max-width: 45%; }
+    button.misafir-ad { background: none; border: 0; font: inherit; font-size: 15px; font-weight: 650; color: var(--ana); padding: 4px 0; cursor: pointer;
+                        text-decoration: underline; text-decoration-color: var(--ana-cizgi); text-underline-offset: 4px; }
     .adim .saat { font-size: 13px; font-weight: 650; color: var(--soluk); font-variant-numeric: tabular-nums; }
     .adim .ad { font-size: 16px; font-weight: 600; margin-top: 1px; }
     .adim .ek { font-size: 13px; color: var(--soluk); margin-top: 1px; }
@@ -227,6 +236,8 @@
     .rolsatir .eksik { color: var(--rapor-baslik); font-weight: 600; }
     .rolsatir .dugmeler { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
     button.genis { width: 100%; margin-bottom: 14px; }
+    .dil.sekme { display: flex; margin: -4px 0 16px; }
+    .dil.sekme button { flex: 1; font-size: 15px; padding: 8px 10px; }
     .adim.senin { background: var(--rapor-zemin); border: 1px solid var(--rapor-cizgi); }
     a.docs { display: block; text-align: center; margin-top: 26px; font-size: 14px; color: var(--soluk); }
   </style>
@@ -277,7 +288,12 @@
   <section id="yatili" hidden>
     <div class="gezinti"><button class="geri" id="yatiliGeri" type="button"></button></div>
     <h1 class="okuma-baslik">Yatılı</h1>
+    <div class="dil sekme" id="yatiliSekme" hidden>
+      <button type="button" data-sekme="rez" class="secili">Rezervasyonlar</button>
+      <button type="button" data-sekme="misafir">Misafirler</button>
+    </div>
     <div id="yatiliIcerik"></div>
+    <div id="misafirIcerik" hidden></div>
     <a class="docs" id="yatiliDis" target="_blank" rel="noopener">Tabloyu Google Sheets'te aç</a>
   </section>
 
@@ -305,14 +321,6 @@
     <div class="alt-baslik2" id="programAlt"></div>
     <div id="programIcerik"></div>
     <p class="not" style="text-align:center">Saatler o günün namaz vakitlerine (ISNA) göre hesaplanır.</p>
-  </section>
-
-  <!-- Misafirler (org sorumlusu / rehber) -->
-  <section id="misafirler" hidden>
-    <div class="gezinti"><button class="geri" id="misafirGeri" type="button"></button></div>
-    <h1 class="okuma-baslik">Yatılı misafirleri</h1>
-    <div class="alt-baslik2">Sohbetçi ve Kur'an hocası · önümüzdeki 8 hafta</div>
-    <div id="misafirIcerik"></div>
   </section>
 
   <!-- Medya: slayt / video uygulama içinde -->
@@ -377,10 +385,11 @@
     return a;
   }
   function satirKur(o) {
-    const sag = o.durum ? el('span', { sinif: 'durum' + (o.durumSinif ? ' ' + o.durumSinif : ''), metin: o.durum }) : el('span', { sinif: 'sag-ok' }, [ikon('sag')]);
+    let sag = o.durum ? el('span', { sinif: 'durum' + (o.durumSinif ? ' ' + o.durumSinif : ''), metin: o.durum }) : el('span', { sinif: 'sag-ok' }, [ikon('sag')]);
+    if (o.ekDugme) sag = el('span', { sinif: 'sag-sutun' }, [sag, o.ekDugme]);
     return el('a', { sinif: 'satir' + (o.sinif ? ' ' + o.sinif : '') + (o.url ? '' : ' pasif'), href: o.url || '#', target: '_blank', rel: 'noopener' }, [
       el('span', { sinif: 'ikon-kutu' }, [ikon(o.ikon)]),
-      el('span', { sinif: 'orta' }, [el('span', { sinif: 'baslik', metin: o.baslik }), el('span', { sinif: 'alt', metin: o.alt }), o.ekDugme || null]),
+      el('span', { sinif: 'orta' }, [el('span', { sinif: 'baslik', metin: o.baslik }), el('span', { sinif: 'alt', metin: o.alt })]),
       sag,
     ]);
   }
@@ -458,11 +467,6 @@
     }
     ic.appendChild(satir({ ikon: 'takvim', baslik: 'Yatılı', alt: y.metin, url: v.yatiliUrl || '#', ekDugme: programDugme,
                            durum: y.durum, durumSinif: y.durum === 'Onay bekliyor' ? 'bekliyor' : '', tikla: yatiliAc }));
-    let kisiRol = null;
-    try { kisiRol = (JSON.parse(depo.al('kisi') || 'null') || {}).rol; } catch (e) {}
-    if (DEMO) kisiRol = 'org';
-    if (kisiRol === 'org' || kisiRol === 'rehber' || kisiRol === 'test')
-      ic.appendChild(satir({ ikon: 'misafir', baslik: 'Yatılı misafirleri', alt: "Sohbetçi · Kur'an hocası · davet", url: '#', tikla: misafirlerAc }));
     ic.appendChild(satir({ ikon: 'kisiler', baslik: 'Grubum', alt: 'Öğrenciler · Durum · Katılım', url: v.grubumUrl || '#', tikla: grubumAc }));
 
     const alt = $('altBilgi');
@@ -498,7 +502,7 @@
   }
 
   function goster(bolum) {
-    ['kurulum', 'pano', 'okuma', 'medya', 'yatili', 'grubum', 'toplanti', 'program', 'misafirler'].forEach(function (b) { $(b).hidden = b !== bolum; });
+    ['kurulum', 'pano', 'okuma', 'medya', 'yatili', 'grubum', 'toplanti', 'program'].forEach(function (b) { $(b).hidden = b !== bolum; });
     if (bolum !== 'medya') $('medyaKutu').textContent = '';   // video arkada çalmaya devam etmesin
     window.scrollTo(0, 0);
   }
@@ -522,6 +526,7 @@
       if (/ekran=toplanti/.test(location.search)) toplantiAc();
       if (/ekran=program/.test(location.search)) programAc(2);
       if (/ekran=misafir/.test(location.search)) misafirlerAc();
+      if (/ekran=yatili/.test(location.search)) yatiliAc();
       return;
     }
     const grup = depo.al('grup') || '', kod = depo.al('kod');
@@ -638,7 +643,7 @@
     goster('medya');
   }
 
-  [$('geri'), $('medyaGeri'), $('yatiliGeri'), $('grubumGeri'), $('toplantiGeri'), $('programGeri'), $('misafirGeri')].forEach(function (b) {
+  [$('geri'), $('medyaGeri'), $('yatiliGeri'), $('grubumGeri'), $('toplantiGeri'), $('programGeri')].forEach(function (b) {
     b.appendChild(ikon('sol')); b.appendChild(document.createTextNode('Geri'));
     b.addEventListener('click', function () { history.back(); });
   });
@@ -660,15 +665,28 @@
   const AYLAR_UZUN = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 
   async function islem(ek) {
+    if (DEMO && /islem=yatili$/.test(ek)) return { ok: true, grup: 'E10', gruplar: ['E10', 'E11', 'E12'], rehber: true, url: '#', slotlar: [
+      { satir: 2, cuma: '2026-10-16', seans: 'Cuma 17:00 → Cmt 13:00', daire: 'Daire 5', grup: 'E10', durum: 'Onaylandı', sohbet: 'Örnek Konuk', hoca: '' },
+      { satir: 3, cuma: '2026-10-16', seans: 'Cuma 17:00 → Cmt 13:00', daire: 'Daire 6', grup: 'E8', durum: 'Talep', sohbet: '', hoca: '' },
+      { satir: 4, cuma: '2026-10-16', seans: 'Cmt 17:00 → Paz 13:00', daire: 'Daire 5', grup: '', durum: '', sohbet: '', hoca: '' }] };
     if (DEMO) return { ok: false, hata: 'demo' };
     return veriCek(depo.al('grup') || '', depo.al('kod'), ek);
   }
 
-  function yatiliAc() {
+  function yatiliAc(sekme) {
     history.pushState({ alt: 'yatili' }, ''); goster('yatili');
-    $('yatiliIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
-    yatiliYukle('&islem=yatili');
+    $('yatiliSekme').hidden = !yonetici();
+    yatiliSekmeSec(sekme === 'misafir' && yonetici() ? 'misafir' : 'rez');
   }
+
+  function yatiliSekmeSec(sekme) {
+    $('yatiliSekme').querySelectorAll('button').forEach(function (b) { b.classList.toggle('secili', b.dataset.sekme === sekme); });
+    const mis = sekme === 'misafir';
+    $('yatiliIcerik').hidden = mis; $('yatiliDis').hidden = mis; $('misafirIcerik').hidden = !mis;
+    if (mis) { $('misafirIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>'; misafirYukle('&islem=misafirListe'); }
+    else { $('yatiliIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>'; yatiliYukle('&islem=yatili'); }
+  }
+  $('yatiliSekme').addEventListener('click', function (ev) { const s = ev.target.dataset && ev.target.dataset.sekme; if (s) yatiliSekmeSec(s); });
 
   async function yatiliYukle(ek, onayMetni) {
     if (onayMetni && !confirm(onayMetni)) return;
@@ -699,7 +717,7 @@
       }
       const benim = x.grup && s.gruplar.indexOf(x.grup) >= 0;
       const seans = /^Cuma/.test(x.seans) ? 'Cuma akşamı → Cumartesi' : 'Cumartesi akşamı → Pazar';
-      const misafir = [x.sohbet && 'Sohbet: ' + x.sohbet, x.hoca && 'Hoca: ' + x.hoca].filter(Boolean).join(' · ');
+      const misafir = [x.sohbet && 'Konuk: ' + x.sohbet, x.hoca && "Kur'an: " + x.hoca].filter(Boolean).join(' · ');
       const sag = [];
       if (x.durum === 'Kapalı') sag.push(el('span', { sinif: 'etiket-kucuk', metin: 'Kapalı' }));
       else if (!x.grup) {
@@ -729,9 +747,16 @@
           sag.push(k);
         }
       }
-      ic.appendChild(el('div', { sinif: 'slot' + (benim ? ' benim' : '') }, [
-        el('span', { sinif: 'orta' }, [el('span', { sinif: 'baslik', metin: x.daire }), el('span', { sinif: 'alt', metin: seans + (misafir ? ' · ' + misafir : '') })]),
-        el('span', { style: 'display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end' }, sag),
+      // üst satır: daire + seans + durum rozeti; düğmeler alt satırda (sıkışmasın)
+      const rozetler = sag.filter(function (x) { return x.tagName === 'SPAN'; });
+      const dugmeler = sag.filter(function (x) { return x.tagName === 'BUTTON'; });
+      const tekDugme = !rozetler.length && dugmeler.length === 1;   // boş slot: "Talep et" sağda kalsın
+      ic.appendChild(el('div', { sinif: 'slot' + (benim ? ' benim' : '') + (tekDugme ? '' : ' dikey') }, [
+        el('div', { sinif: 'slot-ust' }, [
+          el('span', { sinif: 'orta' }, [el('span', { sinif: 'baslik', metin: x.daire }), el('span', { sinif: 'alt', metin: seans + (misafir ? ' · ' + misafir : '') })]),
+          tekDugme ? dugmeler[0] : (rozetler[0] || null),
+        ]),
+        !tekDugme && dugmeler.length ? el('div', { sinif: 'slot-dugmeler' }, dugmeler) : null,
       ]));
     });
   }
@@ -835,17 +860,48 @@
   let programVeri = null, programZamanlayici = null;
   const GUN_ADI = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
 
-  async function programAc(satir) {
-    history.pushState({ alt: 'program' }, ''); goster('program');
-    $('programIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+  async function programAc(satir, yenileme) {
+    if (!yenileme) { history.pushState({ alt: 'program' }, ''); goster('program'); $('programIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>'; }
     try {
       const s = DEMO ? DEMO_PROGRAM() : await islem('&islem=yatiliProgram&satir=' + satir);
       if (!s.ok) { $('programIcerik').textContent = ''; $('programIcerik').appendChild(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s.hata] || 'Bir sorun oluştu.' })); return; }
       programVeri = s;
-      programCiz(true);
+      programCiz(!yenileme);
       clearInterval(programZamanlayici);
       programZamanlayici = setInterval(function () { if (!$('program').hidden) programCiz(false); }, 60000);
     } catch (e) { $('programIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; }
+  }
+
+  const MISAFIR_ALAN = { kuran: ['hoca', "Kur'an dersi", 'h'], sohbetci: ['sohbet', 'Konuk sohbeti', 's'], etut: ['etut', 'Ders koçu', 'e'] };
+  function yonetici() {
+    if (DEMO) return true;
+    try { const k = JSON.parse(depo.al('kisi') || 'null'); return !!k && ['org', 'rehber', 'test'].indexOf(k.rol) >= 0; } catch (e) { return false; }
+  }
+  function misafirHucre(x, saat) {
+    const s = programVeri, m = MISAFIR_ALAN[x.anahtar];
+    if (MISAFIR || !m || !yonetici() || !s.satir) return x.misafir ? el('div', { sinif: 'misafir-ad', metin: x.misafir }) : null;
+    const b = el('button', { sinif: x.misafir ? 'misafir-ad' : 'kucuk', type: 'button', metin: x.misafir || 'Ata' });
+    b.onclick = function () {
+      if (x.misafir) {
+        const sec = prompt(m[1] + ': ' + x.misafir + '\n\n1 = Davet gönder\n2 = Değiştir / kaldır', '1');
+        if (sec === '1') {
+          const y = { prog: s.prog, satir: s.satir, imza: s.imza };
+          paylas(['Selamün aleyküm ' + x.misafir + ' 🙏', 'Yatılı programımıza katılımınız için çok teşekkür ederiz.', '',
+            '📅 ' + tarihEtiket(s.gun1), '📍 ' + (s.yer ? s.yer + ' ' : '') + s.daire, '👥 ' + s.ekip + ' (' + s.grup + ')',
+            '🕰 ' + m[1] + ': ' + saat + ' (namaz vaktine göre birkaç dakika değişebilir)', '',
+            'Günün programı: ' + misafirLink(y, m[2])].join('\n'));
+          return;
+        }
+        if (sec !== '2') return;
+      }
+      const yeni = prompt(m[1] + ' için misafirin adı (boş bırakırsanız kaldırılır):', x.misafir || '');
+      if (yeni === null) return;
+      if (DEMO) { x.misafir = yeni.trim(); programCiz(false); return; }
+      b.disabled = true;
+      islem('&islem=misafirAta&prog=' + s.prog + '&satir=' + s.satir + '&alan=' + m[0] + '&ad=' + encodeURIComponent(yeni.trim()))
+        .then(function (r) { if (r.ok) programAc(s.satir, true); else alert(HATA_METNI[r.hata] || 'Bir sorun oluştu.'); });
+    };
+    return b;
   }
 
   function yerel(s) { const p = s.split(/[-T:]/).map(Number); return new Date(p[0], p[1] - 1, p[2], p[3], p[4]); }
@@ -857,8 +913,6 @@
       (s.yer ? s.yer + ' ' : '') + s.daire + (MISAFIR ? ' · ' + s.ekip + ' (' + s.grup + ')' : '');
     const ic = $('programIcerik');
     ic.textContent = '';
-    const misafir = [s.hoca && "Kur'an: " + s.hoca, s.sohbetci && 'Sohbetçi: ' + s.sohbetci, s.etutcu && 'Ders koçu: ' + s.etutcu].filter(Boolean);
-    if (misafir.length) ic.appendChild(el('div', { sinif: 'misafir' }, misafir.map(function (m) { return el('span', { metin: m }); })));
     const akis = el('div', { sinif: 'akis' });
     let sonGun = 0, simdiEl = null, sonrakiVerildi = false;
     s.akis.forEach(function (x) {
@@ -881,7 +935,8 @@
       const senin = s.vurgu && x.anahtar === s.vurgu;
       if (senin) adSatiri.appendChild(el('span', { sinif: 'rozet-sonra', metin: 'SİZİN BÖLÜMÜNÜZ' }));
       const a = el('div', { sinif: 'adim' + (x.tur === 'namaz' ? ' namaz' : '') + (senin ? ' senin' : '') + (anlik ? ' simdi' : gecti ? ' gecti' : '') }, [
-        el('div', { sinif: 'saat', metin: saat }), adSatiri, x.ek ? el('div', { sinif: 'ek', metin: x.ek }) : null,
+        el('div', { sinif: 'sol' }, [el('div', { sinif: 'saat', metin: saat }), adSatiri, x.ek ? el('div', { sinif: 'ek', metin: x.ek }) : null]),
+        x.misafir !== undefined && x.misafir !== null ? misafirHucre(x, saat) : null,
       ]);
       if (anlik) simdiEl = a;
       akis.appendChild(a);
@@ -891,14 +946,16 @@
   }
 
   function DEMO_PROGRAM() {
-    const a = [[1,'17:00','17:00','Geliş','sabit',''],[1,'17:10','17:45',"Kur'an dersi",'sabit-sure','Hoca: Örnek Hoca'],[1,'17:45','18:41','Oyun / serbest','esnek',''],
+    const a = [[1,'17:00','17:00','Geliş','sabit',''],[1,'17:10','17:45',"Kur'an dersi",'sabit-sure','','kuran','Örnek Hoca'],[1,'17:45','18:41','Oyun / serbest','esnek',''],
       [1,'18:41','18:56','Akşam namazı','namaz',''],[1,'18:56','19:11','Günün sohbeti','esnek',''],[1,'19:11','19:51','Akşam yemeği','esnek','Getiren: Örnek aile'],
-      [1,'19:51','22:00','Oyun + film','esnek',''],[1,'22:00','22:20','Yatsı namazı + tesbihat','namaz',''],[1,'22:20','23:00','Sohbet (misafir)','sabit-sure','Sohbetçi: Örnek Sohbetçi'],
+      [1,'19:51','21:00','Oyun + film','esnek',''],[1,'21:00','21:20','Yatsı namazı + tesbihat','namaz',''],[1,'21:20','22:00','Konuk sohbeti','sabit-sure','','sohbetci',''],[1,'22:00','23:00','Oyun + film','esnek',''],
       [1,'23:00','23:00','Yatış','sabit',''],[2,'06:01','06:31','Teheccüd + dua','esnek',''],[2,'06:31','06:46','Sabah namazı','namaz',''],[2,'06:46','07:01','Kitap okuma','esnek',''],
-      [2,'09:00','10:00','Etüt','sabit-sure','Ders koçu: Örnek Koç'],[2,'10:00','10:40','Kahvaltı','esnek','Getiren: Örnek aile'],[2,'10:40','12:45','Eğlence saati','esnek',''],
+      [2,'09:00','10:00','Etüt','sabit-sure','','etut','Örnek Koç'],[2,'10:00','10:40','Kahvaltı','esnek','Getiren: Örnek aile'],[2,'10:40','12:45','Eğlence saati','esnek',''],
       [2,'12:45','13:00','Temizlik','sabit-sure',''],[2,'13:00','13:00','Dağılış','sabit','Öğle vakti dağılıştan sonra: evde kılınır']];
-    return { ok: true, daire: 'Daire 5', gun1: '2026-10-16', sohbetci: 'Örnek Sohbetçi', hoca: 'Örnek Hoca', etutcu: 'Örnek Koç', demoSimdi: '2026-10-16T19:30',
-      akis: a.map(function (x) { const g = x[0] === 1 ? '2026-10-16T' : '2026-10-17T'; return { gun: x[0], bas: g + x[1], bit: g + x[2], ad: x[3], tur: x[4], ek: x[5] }; }) };
+    return { ok: true, daire: 'Daire 5', gun1: '2026-10-16', sohbetci: 'Örnek Konuk', hoca: 'Örnek Hoca', etutcu: 'Örnek Koç', demoSimdi: '2026-10-16T19:30',
+      prog: 'E', satir: 2, imza: 'demo', yer: 'KM', ekip: 'E Lise', grup: 'E10',
+      akis: a.map(function (x) { const g = x[0] === 1 ? '2026-10-16T' : '2026-10-17T';
+        return { gun: x[0], bas: g + x[1], bit: g + x[2], ad: x[3], tur: x[4], ek: x[5], anahtar: x[6] || 'ek', misafir: x[6] ? x[7] : undefined }; }) };
   }
 
   // ---------- Misafirler ----------
@@ -911,11 +968,7 @@
     catch (e) { prompt('Mesajı kopyalayın:', metin); }
   }
 
-  function misafirlerAc() {
-    history.pushState({ alt: 'misafirler' }, ''); goster('misafirler');
-    $('misafirIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
-    misafirYukle('&islem=misafirListe');
-  }
+  function misafirlerAc() { yatiliAc('misafir'); }
 
   async function misafirYukle(ek) {
     try {
@@ -937,7 +990,7 @@
         eksikler.forEach(function (y) {
           satirlar.push('📅 ' + tarihEtiket(y.gun1) + ' · ' + y.yer + ' ' + y.daire + ' · ' + y.ekip);
           if (!y.hoca) satirlar.push("   • Kur'an dersi: " + y.hocaSaat);
-          if (!y.sohbet) satirlar.push('   • Sohbet: ' + y.sohbetSaat);
+          if (!y.sohbet) satirlar.push('   • Konuk sohbeti: ' + y.sohbetSaat);
           if (!y.etut) satirlar.push('   • Ders koçu (sabah, okul derslerine yardım): ' + y.etutSaat);
         });
         satirlar.push('', 'Katılabilecek olan bana yazabilir 🙏', '(Saatler namaz vaktine göre birkaç dakika değişebilir.)');
@@ -951,7 +1004,7 @@
         el('div', { sinif: 'b1', metin: tarihEtiket(y.gun1) + ' · ' + y.yer + ' ' + y.daire }),
         el('div', { sinif: 'b2', metin: y.ekip + ' · ' + y.grup }),
       ]);
-      [['hoca', "Kur'an dersi", y.hoca, y.hocaSaat, 'h'], ['sohbet', 'Sohbet', y.sohbet, y.sohbetSaat, 's'], ['etut', 'Ders koçu', y.etut, y.etutSaat, 'e']].forEach(function (r) {
+      [['hoca', "Kur'an dersi", y.hoca, y.hocaSaat, 'h'], ['sohbet', 'Konuk sohbeti', y.sohbet, y.sohbetSaat, 's'], ['etut', 'Ders koçu', y.etut, y.etutSaat, 'e']].forEach(function (r) {
         const alan = r[0], baslik = r[1], ad = r[2], saat = r[3], kisa = r[4];
         const ata = el('button', { sinif: 'kucuk', type: 'button', metin: ad ? 'Değiştir' : 'Ata' });
         ata.onclick = function () {
@@ -972,8 +1025,8 @@
           dugmeler.push(dv);
         }
         kart.appendChild(el('div', { sinif: 'rolsatir' }, [
-          el('span', { sinif: 'orta' }, [el('span', { sinif: 'baslik', metin: baslik + ' · ' + saat }),
-            el('span', { sinif: 'alt' + (ad ? '' : ' eksik'), metin: ad || 'Atanmadı' })]),
+          el('span', { sinif: 'orta' }, [el('span', { sinif: 'baslik', metin: baslik }),
+            el('span', { sinif: 'alt' }, [document.createTextNode(saat + ' · '), el('span', { sinif: ad ? '' : 'eksik', metin: ad || 'Atanmadı' })])]),
           el('span', { sinif: 'dugmeler' }, dugmeler),
         ]));
       });
@@ -982,10 +1035,10 @@
   }
 
   function DEMO_MISAFIR() {
-    return [{ prog: 'E', satir: 2, gun1: '2026-10-16', daire: 'Daire 5', yer: 'KM', grup: 'E10', ekip: 'E Lise', sohbet: 'Örnek Sohbetçi', hoca: '', etut: '', etutSaat: '09:00–10:00',
-              sohbetSaat: '22:20–23:00', hocaSaat: '17:10–17:45', imza: 'demo' },
+    return [{ prog: 'E', satir: 2, gun1: '2026-10-16', daire: 'Daire 5', yer: 'KM', grup: 'E10', ekip: 'E Lise', sohbet: 'Örnek Konuk', hoca: '', etut: '', etutSaat: '09:00–10:00',
+              sohbetSaat: '21:20–22:00', hocaSaat: '17:10–17:45', imza: 'demo' },
             { prog: 'E', satir: 5, gun1: '2026-10-24', daire: 'Daire 6', yer: 'KM', grup: 'E8', ekip: 'E Ortaokul', sohbet: '', hoca: '', etut: 'Örnek Koç', etutSaat: '09:00–10:00',
-              sohbetSaat: '22:20–23:00', hocaSaat: '17:10–17:45', imza: 'demo' }];
+              sohbetSaat: '21:20–22:00', hocaSaat: '17:10–17:45', imza: 'demo' }];
   }
 
   // ---------- Misafir linki (kodsuz, salt okunur) ----------
