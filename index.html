@@ -166,6 +166,25 @@
     .ogr dl { margin: 8px 0 0; } .ogr dt { font-weight: 600; color: var(--yazi); margin-top: 6px; } .ogr dd { margin: 2px 0 0; white-space: pre-wrap; }
     .ekle { display: flex; gap: 8px; margin-top: 14px; }
     .ekle input { text-transform: none; letter-spacing: normal; }
+    /* Toplantı notu */
+    .alt-baslik2 { font-size: 15px; color: var(--soluk); margin: -10px 0 18px; }
+    .tur { background: var(--ana-zemin); border: 1px solid var(--ana-cizgi); border-radius: 18px; padding: 16px; margin-bottom: 8px; }
+    .tur .etiket2 { font-size: 13px; font-weight: 600; letter-spacing: .06em; color: var(--ana-etiket); text-transform: uppercase; margin-bottom: 4px; }
+    .tur label { font-size: 15px; font-weight: 600; color: var(--ana); margin: 12px 0 6px; }
+    .tur textarea { width: 100%; min-height: 76px; font: inherit; font-size: 16px; line-height: 1.45; padding: 11px 12px; border-radius: 12px;
+                    border: 1px solid var(--ana-cizgi); background: var(--kart); color: var(--yazi); resize: vertical; }
+    .tur .kaydet-satir { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 12px; }
+    .tur .kaydedildi { font-size: 13px; color: var(--yesil); }
+    .gorev { display: flex; align-items: flex-start; gap: 12px; background: var(--kart); border: 1px solid var(--cizgi); border-radius: 16px;
+             padding: 13px 14px; margin-bottom: 8px; cursor: pointer; }
+    .gorev .kutu { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--ana-cizgi); display: grid; place-items: center;
+                   flex: none; margin-top: 1px; color: #fff; }
+    .gorev .kutu svg { width: 15px; height: 15px; stroke-width: 3; }
+    .gorev.tamam .kutu { background: var(--yesil); border-color: var(--yesil); }
+    .gorev.tamam .baslik { text-decoration: line-through; color: var(--soluk); }
+    .gorev .baslik { font-size: 16px; }
+    .gorev .alt { font-size: 13px; }
+    .not-govde { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 18px; padding: 4px 16px 8px; }
     a.docs { display: block; text-align: center; margin-top: 26px; font-size: 14px; color: var(--soluk); }
   </style>
 </head>
@@ -227,6 +246,15 @@
     <a class="docs" id="grubumDis" target="_blank" rel="noopener">Notları düzenlemek için tabloyu aç</a>
   </section>
 
+  <!-- Toplantı notu -->
+  <section id="toplanti" hidden>
+    <div class="gezinti"><button class="geri" id="toplantiGeri" type="button"></button></div>
+    <h1 class="okuma-baslik">Toplantı notu</h1>
+    <div class="alt-baslik2" id="toplantiAlt"></div>
+    <div id="toplantiIcerik"></div>
+    <a class="docs" id="toplantiDis" target="_blank" rel="noopener">Google Docs'ta aç</a>
+  </section>
+
   <!-- Medya: slayt / video uygulama içinde -->
   <section id="medya" hidden>
     <div class="gezinti"><button class="geri" id="medyaGeri" type="button"></button></div>
@@ -259,6 +287,7 @@
     sag: '<path d="m9 18 6-6-6-6"/>',
     sol: '<path d="m15 18-6-6 6-6"/>',
     asagi: '<path d="m6 9 6 6 6-6"/>',
+    onay: '<path d="M20 6 9 17l-5-5"/>',
     tamam: '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
   };
   function ikon(ad) {
@@ -344,7 +373,8 @@
       ? satir({ ikon: 'kalem', baslik: 'Haftalık rapor', alt: 'Bu hafta gönderildi', url: v.raporUrl, durum: 'Gönderildi' })
       : satir({ ikon: 'kalem', baslik: 'Haftalık rapor', alt: 'Buluşmadan sonra · 2 dk', url: v.raporUrl, sinif: 'rapor' }));
     ic.appendChild(satir({ ikon: 'belge', baslik: 'Toplantı notu',
-      alt: v.toplanti ? v.toplanti.tarih + ' haftası · gündem ve görevler' : 'Henüz toplantı notu yok', url: v.toplanti && v.toplanti.url }));
+      alt: v.toplanti ? v.toplanti.tarih + ' haftası · gündem ve görevler' : 'Henüz toplantı notu yok', url: v.toplanti && v.toplanti.url,
+      tikla: v.toplanti ? toplantiAc : null }));
     const y = yatiliAyir(v.yatili);
     ic.appendChild(satir({ ikon: 'takvim', baslik: 'Yatılı', alt: y.metin, url: v.yatiliUrl || '#',
                            durum: y.durum, durumSinif: y.durum === 'Onay bekliyor' ? 'bekliyor' : '', tikla: yatiliAc }));
@@ -383,7 +413,7 @@
   }
 
   function goster(bolum) {
-    ['kurulum', 'pano', 'okuma', 'medya', 'yatili', 'grubum'].forEach(function (b) { $(b).hidden = b !== bolum; });
+    ['kurulum', 'pano', 'okuma', 'medya', 'yatili', 'grubum', 'toplanti'].forEach(function (b) { $(b).hidden = b !== bolum; });
     if (bolum !== 'medya') $('medyaKutu').textContent = '';   // video arkada çalmaya devam etmesin
     window.scrollTo(0, 0);
   }
@@ -401,7 +431,11 @@
   };
 
   async function yenile() {
-    if (DEMO) { goster('pano'); ciz(DEMO_VERI()); return; }
+    if (DEMO) {
+      goster('pano'); ciz(DEMO_VERI());
+      if (/ekran=toplanti/.test(location.search)) toplantiAc();
+      return;
+    }
     const grup = depo.al('grup') || '', kod = depo.al('kod');
     if (!kod) { goster('kurulum'); return; }
     goster('pano');
@@ -516,7 +550,7 @@
     goster('medya');
   }
 
-  [$('geri'), $('medyaGeri'), $('yatiliGeri'), $('grubumGeri')].forEach(function (b) {
+  [$('geri'), $('medyaGeri'), $('yatiliGeri'), $('grubumGeri'), $('toplantiGeri')].forEach(function (b) {
     b.appendChild(ikon('sol')); b.appendChild(document.createTextNode('Geri'));
     b.addEventListener('click', function () { history.back(); });
   });
@@ -530,6 +564,8 @@
     kilitli: 'Onaylanmış rezervasyon değiştirilemez. Rehberinizle konuşun.', yetki: 'Bu işlem için yetkiniz yok.',
     durum: 'Durum değişmiş, liste yenilendi.', yatiliYok: 'Bu ekip için yatılı tablosu henüz kurulmadı.',
     grubumYok: 'Grup takip dosyası bulunamadı.', kapasite: 'Grup dolu (8 öğrenci). Rehberinize haber verin.',
+    toplantiYok: 'Bu hafta için toplantı belgesi henüz oluşturulmadı.', toplantiYapi: 'Toplantı belgesinde Grup turu tablosu bulunamadı.',
+    satir: 'Liste değişmiş, yeniden açın.',
     ayniIsim: 'Bu isim listede zaten var. Aynı isimde iki öğrenci varsa soyadın baş harfini ekleyin.', ad: 'Geçerli bir isim yazın.',
   };
   const GUNLER = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
@@ -701,6 +737,97 @@
   document.addEventListener('pointerdown', function (e) {
     if (acikKart && !acikKart.parentNode.contains(e.target)) kartKapat(acikKart);
   });
+
+  // ---------- Toplantı notu ----------
+  // Sunucu: islem=toplanti → { tarih, ekip, grup, tur: { gecen, ihtiyac }, gorevler: [{ satir, gorev, sorumlu, tarih, tamam }], html, url }
+  //         islem=toplantiTur&gecen=…&ihtiyac=…  ·  islem=toplantiGorev&satir=N&tamam=1|0
+  let demoToplanti = null;
+
+  function toplantiAc() {
+    history.pushState({ alt: 'toplanti' }, ''); goster('toplanti');
+    $('toplantiIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    toplantiYukle('&islem=toplanti');
+  }
+
+  async function toplantiYukle(ek) {
+    try {
+      let s;
+      if (DEMO) {
+        demoToplanti = demoToplanti || DEMO_TOPLANTI();
+        const m = ek.match(/toplantiGorev&satir=(\d+)&tamam=(\d)/);
+        if (m) demoToplanti.gorevler.forEach(function (g) { if (g.satir == m[1]) g.tamam = m[2] === '1'; });
+        const t = ek.match(/toplantiTur&gecen=([^&]*)&ihtiyac=(.*)/);
+        if (t) { demoToplanti.tur.gecen = decodeURIComponent(t[1]); demoToplanti.tur.ihtiyac = decodeURIComponent(t[2]); }
+        s = Object.assign({ ok: true, kaydedildi: !!t }, demoToplanti);
+      } else s = await islem(ek);
+      if (!s.ok) {
+        $('toplantiIcerik').textContent = '';
+        $('toplantiIcerik').appendChild(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s.hata] || 'Bir sorun oluştu.' }));
+        return;
+      }
+      toplantiCiz(s);
+    } catch (e) { $('toplantiIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; }
+  }
+
+  function toplantiCiz(s) {
+    $('toplantiAlt').textContent = s.tarih + ' haftası · ' + s.ekip;
+    $('toplantiDis').href = s.url;
+    const ic = $('toplantiIcerik');
+    ic.textContent = '';
+
+    // Grup turu: yalnız bu grubun satırı
+    const gecen = el('textarea', { id: 'turGecen', placeholder: 'Kısa bir özet: katılım, ilgi, öne çıkan bir an…' });
+    const ihtiyac = el('textarea', { id: 'turIhtiyac', placeholder: 'Rehberden ya da ekipten beklediğin destek' });
+    gecen.value = s.tur.gecen || ''; ihtiyac.value = s.tur.ihtiyac || '';
+    const durum = el('span', { sinif: 'kaydedildi', metin: s.kaydedildi ? 'Kaydedildi ✓' : '' });
+    const kaydet = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Kaydet' });
+    kaydet.onclick = function () {
+      kaydet.disabled = true; durum.textContent = 'Kaydediliyor…';
+      toplantiYukle('&islem=toplantiTur&gecen=' + encodeURIComponent(gecen.value) + '&ihtiyac=' + encodeURIComponent(ihtiyac.value));
+    };
+    ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Grup turu' }));
+    ic.appendChild(el('div', { sinif: 'tur' }, [
+      el('div', { sinif: 'etiket2', metin: s.grup }),
+      el('label', { for: 'turGecen', metin: 'Geçen hafta nasıl geçti' }), gecen,
+      el('label', { for: 'turIhtiyac', metin: 'Bu hafta ihtiyaç / destek' }), ihtiyac,
+      el('div', { sinif: 'kaydet-satir' }, [durum, kaydet]),
+    ]));
+
+    // Görevler: dokununca ✓
+    ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Görevler' }));
+    if (!s.gorevler.length) ic.appendChild(el('div', { sinif: 'bilgi', metin: 'Bu hafta için görev yazılmamış.' }));
+    s.gorevler.forEach(function (g) {
+      const kutu = el('span', { sinif: 'kutu' }, g.tamam ? [ikon('onay')] : []);
+      const alt = [g.sorumlu, g.tarih && 'son: ' + g.tarih].filter(Boolean).join(' · ');
+      const satirEl = el('div', { sinif: 'gorev' + (g.tamam ? ' tamam' : ''), role: 'checkbox', 'aria-checked': g.tamam ? 'true' : 'false', tabindex: '0' }, [
+        kutu, el('span', { sinif: 'orta' }, [el('span', { sinif: 'baslik', metin: g.gorev }), alt ? el('span', { sinif: 'alt', metin: alt }) : null]),
+      ]);
+      satirEl.onclick = function () { toplantiYukle('&islem=toplantiGorev&satir=' + g.satir + '&tamam=' + (g.tamam ? '0' : '1')); };
+      ic.appendChild(satirEl);
+    });
+
+    // Belgenin geri kalanı: okuma
+    if (s.html) {
+      ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Toplantı notu' }));
+      const govde = el('div', { sinif: 'okuma not-govde' });
+      govde.innerHTML = s.html;   // sunucuda kaçırılarak üretilir
+      ic.appendChild(govde);
+    }
+  }
+
+  function DEMO_TOPLANTI() {
+    return { tarih: '5 Ekim', ekip: 'E Lise', grup: 'E10', url: '#doc',
+      tur: { gecen: '', ihtiyac: '' },
+      gorevler: [
+        { satir: 1, gorev: 'Yatılı için veli izin formlarını topla', sorumlu: 'E10', tarih: '14 Eki', tamam: false },
+        { satir: 2, gorev: 'Kahoot sorularını hazırla (Deizm)', sorumlu: 'E11', tarih: '12 Eki', tamam: true },
+        { satir: 3, gorev: 'Kitap okuma listesini güncelle', sorumlu: 'Tüm mentorlar', tarih: '', tamam: false },
+      ],
+      html: '<h3>1. Rehberlik toplantısından aktarılanlar</h3><ul><li>Yatılılarda misafir programı netleşti.</li></ul>' +
+            '<h3>3. Haftanın gündemi</h3><ul><li>Deizm konusunu tartışma sorusuyla açın.</li><li>Yoklamayı buluşma sonunda girin.</li></ul>' +
+            '<h3>5. Yaklaşan etkinlikler</h3><ul><li>16 Ekim: ilk yatılı (Daire 5)</li></ul>' +
+            '<h3>7. Gelişim köşesi</h3><p>Bu haftanın sorusu: "Bir gencin sorusunu cevaplamak yerine onu nasıl derinleştirirsiniz?"</p>' };
+  }
 
   // Uygulamaya her dönüşte tazele (ana ekrandan açılınca sayfa yeniden yüklenmeyebilir)
   document.addEventListener('visibilitychange', function () {
