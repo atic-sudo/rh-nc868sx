@@ -91,6 +91,9 @@
     .alt-bilgi { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; color: var(--soluk); margin-top: 18px; min-height: 22px; }
     .alt-bilgi svg { color: var(--yesil); }
     .kim { text-align: center; font-size: 13px; color: var(--soluk); margin-top: 22px; }
+    .okuma.yardim { font-size: 16px; }
+    .okuma.yardim h3 { margin-top: 22px; }
+    .okuma.yardim h3:first-child { margin-top: 0; }
     button.baglanti { background: none; border: 0; color: var(--soluk); font: inherit; font-size: 13px; padding: 14px 0 0; cursor: pointer;
                       display: block; margin: 0 auto; text-decoration: underline; text-underline-offset: 3px; }
     .yukleniyor { color: var(--soluk); text-align: center; padding: 40px 0; }
@@ -267,6 +270,7 @@
     <div id="icerik"><div class="yukleniyor">Yükleniyor…</div></div>
     <div class="alt-bilgi" id="altBilgi"></div>
     <div class="kim" id="kim"></div>
+    <button class="baglanti" id="yardimAc" type="button">Nasıl kullanılır</button>
     <button class="baglanti" id="cikis" type="button">Bu telefondan çıkış</button>
   </section>
 
@@ -321,6 +325,48 @@
     <div class="alt-baslik2" id="programAlt"></div>
     <div id="programIcerik"></div>
     <p class="not" style="text-align:center">Saatler o günün namaz vakitlerine (ISNA) göre hesaplanır.</p>
+  </section>
+
+  <!-- Nasıl kullanılır -->
+  <section id="yardim" hidden>
+    <div class="gezinti"><button class="geri" id="yardimGeri" type="button"></button></div>
+    <h1 class="okuma-baslik">Nasıl kullanılır</h1>
+    <div class="okuma yardim">
+      <h3>Her hafta</h3>
+      <ul>
+        <li><b>Haftanın konusu:</b> Konu adına dokun, metin açılır. EN, Slayt ve Video hemen altında.</li>
+        <li><b>Haftalık rapor:</b> Buluşmadan sonra doldur (~2 dk). Yoklama da burada.</li>
+        <li><b>Toplantı notu:</b> Toplantıdan önce kendi grubunun <i>Grup turu</i> kutularını doldur, Kaydet'e bas. Biten görevlerine dokunup ✓ koy; bitmeyenler gelecek haftaya taşınır.</li>
+      </ul>
+      <h3>Yatılı</h3>
+      <ul>
+        <li><b>Talep:</b> Yatılı → boş slotta <b>Talep et</b>. Rehberin onaylayınca kilitlenir; değişiklik için rehberine yaz.</li>
+        <li><b>Program:</b> Yatılı kutusundaki <b>Program</b> düğmesi o günün saat saat akışını açar; şu anki etkinlik vurgulu. Saatler namaz vakitlerine göre hesaplanır.</li>
+        <li>Yatılı günü ana ekranın en üstünde <b>Bugün yatılı</b> kartı çıkar.</li>
+      </ul>
+      <h3>Grubum</h3>
+      <ul>
+        <li><b>Yeni öğrenci:</b> en alta adını yaz → Ekle. Aynı isimde iki öğrenci varsa soyadın baş harfini ekle.</li>
+        <li><b>Ayrılan öğrenci:</b> ismi <b>sola kaydır</b> → Ayrıldı. Silinmez, geçmiş yoklaması korunur; geri dönerse aynı şekilde "Geri al".</li>
+      </ul>
+      <h3>Kurallar</h3>
+      <ul>
+        <li>Doğum tarihi, telefon, adres, veli bilgisi ve sağlık bilgisi <b>yazılmaz</b>.</li>
+        <li>Kişisel kodun sana özel, paylaşma. Telefon değiştirirsen aynı kodla girersin.</li>
+      </ul>
+      <div id="yardimRehber" hidden>
+        <h3>Rehber ve org sorumlusu için</h3>
+        <ul>
+          <li>Üstteki grup menüsünden ekibinin grupları arasında geç.</li>
+          <li><b>Yatılı → Rezervasyonlar:</b> ekibinin taleplerini Onayla; değiştirmek için "Onayı kaldır".</li>
+          <li><b>Yatılı → Misafirler:</b> "Gönüllü çağrısı paylaş" eksik konuk / Kur'an hocası / ders koçu için hazır WhatsApp mesajı yapar. Gönüllü bulununca Ata → Davet gönder; konuğa kendi saatini gösteren program linki gider.</li>
+          <li>Misafirler programın içinden de atanabilir: satırın sağındaki "Ata" ya da isme dokun.</li>
+          <li>Ayrıntılı rehber: 00 Idari → "Rehber ve Org Sorumlusu Rehberi".</li>
+        </ul>
+      </div>
+      <h3>Takıldığında</h3>
+      <p>Önce rehberine, teknik bir sorun varsa sistem sorumlusuna yaz.</p>
+    </div>
   </section>
 
   <!-- Medya: slayt / video uygulama içinde -->
@@ -502,7 +548,7 @@
   }
 
   function goster(bolum) {
-    ['kurulum', 'pano', 'okuma', 'medya', 'yatili', 'grubum', 'toplanti', 'program'].forEach(function (b) { $(b).hidden = b !== bolum; });
+    ['kurulum', 'pano', 'okuma', 'medya', 'yatili', 'grubum', 'toplanti', 'program', 'yardim'].forEach(function (b) { $(b).hidden = b !== bolum; });
     if (bolum !== 'medya') $('medyaKutu').textContent = '';   // video arkada çalmaya devam etmesin
     window.scrollTo(0, 0);
   }
@@ -643,7 +689,7 @@
     goster('medya');
   }
 
-  [$('geri'), $('medyaGeri'), $('yatiliGeri'), $('grubumGeri'), $('toplantiGeri'), $('programGeri')].forEach(function (b) {
+  [$('geri'), $('medyaGeri'), $('yatiliGeri'), $('grubumGeri'), $('toplantiGeri'), $('programGeri'), $('yardimGeri')].forEach(function (b) {
     b.appendChild(ikon('sol')); b.appendChild(document.createTextNode('Geri'));
     b.addEventListener('click', function () { history.back(); });
   });
@@ -886,7 +932,7 @@
         const sec = prompt(m[1] + ': ' + x.misafir + '\n\n1 = Davet gönder\n2 = Değiştir / kaldır', '1');
         if (sec === '1') {
           const y = { prog: s.prog, satir: s.satir, imza: s.imza };
-          paylas(['Selamün aleyküm ' + x.misafir + ' 🙏', 'Yatılı programımıza katılımınız için çok teşekkür ederiz.', '',
+          paylas(['Merhaba ' + x.misafir + ' 🙏', 'Yatılı programımıza katılımınız için çok teşekkür ederiz.', '',
             '📅 ' + tarihEtiket(s.gun1), '📍 ' + (s.yer ? s.yer + ' ' : '') + s.daire, '👥 ' + s.ekip + ' (' + s.grup + ')',
             '🕰 ' + m[1] + ': ' + saat + ' (namaz vaktine göre birkaç dakika değişebilir)', '',
             'Günün programı: ' + misafirLink(y, m[2])].join('\n'));
@@ -1017,7 +1063,7 @@
         if (ad) {
           const dv = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Davet gönder' });
           dv.onclick = function () {
-            paylas(['Selamün aleyküm ' + ad + ' 🙏', 'Yatılı programımıza katılımınız için çok teşekkür ederiz.', '',
+            paylas(['Merhaba ' + ad + ' 🙏', 'Yatılı programımıza katılımınız için çok teşekkür ederiz.', '',
               '📅 ' + tarihEtiket(y.gun1), '📍 ' + y.yer + ' ' + y.daire, '👥 ' + y.ekip + ' (' + y.grup + ')',
               '🕰 ' + baslik + ': ' + saat + ' (namaz vaktine göre birkaç dakika değişebilir)', '',
               'Günün programı: ' + misafirLink(y, kisa)].join('\n'));
@@ -1058,6 +1104,12 @@
       setInterval(function () { programCiz(false); }, 60000);
     } catch (e) { $('programIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; }
   }
+
+  // ---------- Nasıl kullanılır ----------
+  $('yardimAc').addEventListener('click', function () {
+    $('yardimRehber').hidden = !yonetici();
+    history.pushState({ alt: 'yardim' }, ''); goster('yardim');
+  });
 
   // ---------- Toplantı notu ----------
   // Sunucu: islem=toplanti → { tarih, ekip, grup, tur: { gecen, ihtiyac }, gorevler: [{ satir, gorev, sorumlu, tarih, tamam }], html, url }
