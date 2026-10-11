@@ -97,6 +97,10 @@
     .okuma .tablo { overflow-x: auto; margin: 0 0 12px; }
     .okuma table { border-collapse: collapse; font-size: 15px; }
     .okuma td { border: 1px solid var(--cizgi); padding: 6px 8px; vertical-align: top; }
+    .medya { position: relative; width: 100%; border-radius: 12px; overflow: hidden; background: #000; }
+    .medya.video { aspect-ratio: 16 / 9; }
+    .medya.slayt { height: calc(100vh - 170px); min-height: 320px; background: var(--kart); }
+    .medya iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
     a.docs { display: block; text-align: center; margin-top: 28px; font-size: 14px; color: var(--soluk); }
   </style>
 </head>
@@ -144,6 +148,14 @@
     <h1 class="okuma-baslik" id="okumaBaslik"></h1>
     <div class="okuma" id="okumaIcerik"></div>
     <a class="docs" id="okumaDocs" target="_blank" rel="noopener" hidden>Google Docs'ta aç</a>
+  </section>
+
+  <!-- Medya: slayt / video uygulama içinde -->
+  <section id="medya" hidden>
+    <div class="ust"><button class="geri" id="medyaGeri" type="button">‹ Geri</button></div>
+    <h1 class="okuma-baslik" id="medyaBaslik"></h1>
+    <div class="medya" id="medyaKutu"></div>
+    <a class="docs" id="medyaDis" target="_blank" rel="noopener">Yeni pencerede aç</a>
   </section>
 
 </main>
@@ -207,8 +219,13 @@
         en.addEventListener('click', function (ev) { ev.preventDefault(); okuyucuAc('en'); });
         cipler.push(en);
       }
-      [['📊 Slayt', v.konu.slayt], ['▶ Video', v.konu.video]].forEach(function (c) {
-        if (c[1]) cipler.push(el('a', { sinif: 'cip', href: c[1], target: '_blank', rel: 'noopener', metin: c[0] }));
+      [['📊 Slayt', v.konu.slayt, 'slayt'], ['▶ Video', v.konu.video, 'video']].forEach(function (c) {
+        if (!c[1]) return;
+        const a = el('a', { sinif: 'cip', href: c[1], target: '_blank', rel: 'noopener', metin: c[0] });
+        a.addEventListener('click', function (ev) {
+          if (gomuluAdres(c[1])) { ev.preventDefault(); medyaAc(c[2], c[1]); }   // gömülemiyorsa dışarıda açılır
+        });
+        cipler.push(a);
       });
       if (cipler.length) konuKart.appendChild(el('div', { sinif: 'materyal' }, cipler));
     } else {
@@ -230,6 +247,8 @@
     $('kurulum').hidden = bolum !== 'kurulum';
     $('pano').hidden = bolum !== 'pano';
     $('okuma').hidden = bolum !== 'okuma';
+    $('medya').hidden = bolum !== 'medya';
+    if (bolum !== 'medya') $('medyaKutu').textContent = '';   // video arkada çalmaya devam etmesin
     window.scrollTo(0, 0);
   }
 
@@ -273,8 +292,37 @@
     const d = ev.target.dataset && ev.target.dataset.dil;
     if (d) okuyucuAc(d);
   });
+  // ---------- Medya (slayt / video) ----------
+  /** Drive dosyası → önizleme, YouTube/Vimeo → oynatıcı. Tanınmayan adres: null (dışarıda açılır). */
+  function gomuluAdres(url) {
+    let m;
+    if ((m = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([\w-]+)/))) return 'https://drive.google.com/file/d/' + m[1] + '/preview';
+    if ((m = url.match(/docs\.google\.com\/presentation\/d\/([\w-]+)/))) return 'https://docs.google.com/presentation/d/' + m[1] + '/preview';
+    if ((m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/))([\w-]{11})/))) {
+      const t = url.match(/[?&](?:t|start)=(\d+)/);
+      return 'https://www.youtube-nocookie.com/embed/' + m[1] + '?rel=0&playsinline=1' + (t ? '&start=' + t[1] : '');
+    }
+    if ((m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/))) return 'https://player.vimeo.com/video/' + m[1];
+    return null;
+  }
+
+  function medyaAc(tur, url) {
+    $('medyaBaslik').textContent = (tur === 'video' ? '▶ ' : '📊 ') + ((sonVeri && sonVeri.konu && sonVeri.konu.ad) || '');
+    $('medyaDis').href = url;
+    const kutu = $('medyaKutu');
+    kutu.className = 'medya ' + tur;
+    kutu.textContent = '';
+    kutu.appendChild(el('iframe', { src: gomuluAdres(url), allow: 'autoplay; encrypted-media; fullscreen; picture-in-picture',
+                                    allowfullscreen: '', referrerpolicy: 'strict-origin-when-cross-origin' }));
+    history.pushState({ medya: true }, '');
+    goster('medya');
+  }
+
   $('geri').addEventListener('click', function () { history.back(); });
-  window.addEventListener('popstate', function () { if (!$('okuma').hidden) goster('pano'); });
+  $('medyaGeri').addEventListener('click', function () { history.back(); });
+  window.addEventListener('popstate', function () {
+    if (!$('okuma').hidden || !$('medya').hidden) goster('pano');
+  });
 
   async function veriCek(grup, kod) {
     const url = VERI_URL + '?format=json&grup=' + encodeURIComponent(grup) + '&kod=' + encodeURIComponent(kod);
