@@ -12,96 +12,124 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Rehberlik">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="theme-color" content="#f4f6fa">
+  <meta name="theme-color" content="#f7f9f8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1c2321" media="(prefers-color-scheme: dark)">
   <style>
+    /* Yumuşak turkuaz + şeftali (açık) · antrasit + bakır (karanlık) */
     :root {
-      --bg: #f4f6fa; --kart: #ffffff; --yazi: #1d2433; --soluk: #5f6b7d;
-      --ana: #1f4e79; --ana-acik: #e8f0f8; --yesil: #1e7a46; --yesil-acik: #e6f4ec;
-      --sari: #8a5a00; --sari-acik: #fff4d6; --kirmizi: #a3281f; --cizgi: #e3e7ee;
+      --bg: #f7f9f8; --kart: #ffffff; --cizgi: #e4ebe8; --yazi: #1f2a28; --soluk: #6b7774; --ok: #a3aeaa;
+      --ikon-zemin: #f0f4f2; --ikon: #5f6d69;
+      --ana: #2c5a51; --ana-etiket: #4a7a70; --ana-zemin: #eef6f3; --ana-cizgi: #d7e7e1; --rozet: #e3f1ec; --rozet-yazi: #2f6d60;
+      --rapor-zemin: #fcefe6; --rapor-cizgi: #f6dccb; --rapor-baslik: #8a4a2c; --rapor-alt: #a5694c;
+      --rapor-ikon-zemin: #f7dcc8; --rapor-ikon: #c0663b;
+      --yesil: #2f7a4a; --yesil-zemin: #e5f2e8; --kirmizi: #a3281f;
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #12161f; --kart: #1b2130; --yazi: #e8ecf3; --soluk: #9aa5b8;
-        --ana: #7fb2e5; --ana-acik: #1f2c40; --yesil: #6fd39b; --yesil-acik: #183126;
-        --sari: #f0c264; --sari-acik: #33291a; --kirmizi: #f19a92; --cizgi: #2a3245;
+        --bg: #1c2321; --kart: #252d2b; --cizgi: #34403c; --yazi: #e7eeeb; --soluk: #a3b0ac; --ok: #7f8c88;
+        --ikon-zemin: #313b38; --ikon: #b9c6c2;
+        --ana: #b9e3d4; --ana-etiket: #9fc4b8; --ana-zemin: #2a3934; --ana-cizgi: #3a4f48; --rozet: #263f38; --rozet-yazi: #9fd2c3;
+        --rapor-zemin: #4a3a31; --rapor-cizgi: #5e483b; --rapor-baslik: #f3d2bf; --rapor-alt: #d6b09a;
+        --rapor-ikon-zemin: #6b4c3b; --rapor-ikon: #f3c7a8;
+        --yesil: #8fd6a6; --yesil-zemin: #24402f; --kirmizi: #f19a92;
       }
     }
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
       margin: 0; background: var(--bg); color: var(--yazi);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
-      -webkit-font-smoothing: antialiased; line-height: 1.45;
+      -webkit-font-smoothing: antialiased; line-height: 1.4;
     }
-    main { max-width: 480px; margin: 0 auto; padding: calc(20px + env(safe-area-inset-top)) 16px 40px; }
-    header { margin-bottom: 18px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
-    .grup { font-size: 13px; font-weight: 600; letter-spacing: .04em; color: var(--soluk); text-transform: uppercase; }
-    h1 { font-size: 24px; margin: 2px 0 0; }
-    button.baglanti { background: none; border: 0; color: var(--ana); font: inherit; font-size: 14px; padding: 4px 0; cursor: pointer; }
-    .kart { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
-    .etiket { font-size: 13px; color: var(--soluk); margin-bottom: 4px; }
-    .konu { font-size: 19px; font-weight: 600; display: block; }
-    a.konu { color: var(--ana); text-decoration: none; }
-    .bos { color: var(--soluk); font-style: italic; }
-    .materyal { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-    a.cip { font-size: 14px; font-weight: 600; text-decoration: none; color: var(--ana);
-            background: var(--ana-acik); border-radius: 999px; padding: 6px 14px; }
-    a.dugme {
-      display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--yazi);
-      background: var(--kart); border: 1px solid var(--cizgi); border-radius: 14px;
-      padding: 16px; margin-bottom: 10px; min-height: 64px;
-    }
-    a.dugme:active { transform: scale(.99); }
-    .ikon { font-size: 24px; width: 32px; text-align: center; }
-    .metin { flex: 1; }
-    .baslik { font-weight: 600; font-size: 16px; display: block; }
-    .alt { font-size: 13px; color: var(--soluk); }
-    a.dugme.ana { background: var(--ana); border-color: var(--ana); color: #fff; }
-    a.dugme.ana .alt { color: rgba(255,255,255,.8); }
-    @media (prefers-color-scheme: dark) { a.dugme.ana { color: #0d1420; } a.dugme.ana .alt { color: rgba(13,20,32,.75); } }
-    .durum { display: inline-block; font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
-             background: var(--yesil-acik); color: var(--yesil); margin-top: 2px; }
-    .pasif { opacity: .45; pointer-events: none; }
-    label { display: block; font-size: 14px; font-weight: 600; margin: 14px 0 6px; }
-    select, input {
-      width: 100%; font: inherit; font-size: 17px; padding: 12px; border-radius: 10px;
-      border: 1px solid var(--cizgi); background: var(--kart); color: var(--yazi);
-    }
-    input { text-transform: uppercase; letter-spacing: .15em; }
-    button.ana {
-      width: 100%; margin-top: 18px; font: inherit; font-size: 17px; font-weight: 600; padding: 14px;
-      border: 0; border-radius: 12px; background: var(--ana); color: #fff; cursor: pointer;
-    }
-    @media (prefers-color-scheme: dark) { button.ana { color: #0d1420; } }
-    .hata { color: var(--kirmizi); font-size: 14px; margin-top: 12px; min-height: 1em; }
-    .not { font-size: 13px; color: var(--soluk); margin-top: 14px; }
-    .yukleniyor { color: var(--soluk); text-align: center; padding: 40px 0; }
-    footer { font-size: 12px; color: var(--soluk); text-align: center; margin-top: 20px; }
+    main { max-width: 480px; margin: 0 auto; padding: calc(18px + env(safe-area-inset-top)) 18px calc(32px + env(safe-area-inset-bottom)); }
+    svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
     [hidden] { display: none !important; }
-    /* Okuma ekranı */
-    .ust { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-    button.geri { background: none; border: 0; color: var(--ana); font: inherit; font-size: 17px; padding: 6px 0; cursor: pointer; }
-    .dil { display: inline-flex; background: var(--ana-acik); border-radius: 999px; padding: 3px; }
-    .dil button { border: 0; background: none; font: inherit; font-size: 14px; font-weight: 600; color: var(--ana);
+    a { color: inherit; }
+
+    /* Başlık */
+    .ust-satir { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .grup { font-size: 13px; font-weight: 600; letter-spacing: .06em; color: var(--soluk); text-transform: uppercase; }
+    .grup-sec { position: relative; display: inline-flex; align-items: center; gap: 4px; color: var(--ana-etiket);
+                background: var(--ana-zemin); border: 1px solid var(--ana-cizgi); border-radius: 999px; padding: 5px 8px 5px 12px; }
+    .grup-sec svg { width: 16px; height: 16px; }
+    .grup-sec select { position: absolute; inset: 0; opacity: 0; font-size: 16px; cursor: pointer; }
+    .rozet { font-size: 13px; font-weight: 600; color: var(--rozet-yazi); background: var(--rozet); padding: 5px 11px; border-radius: 999px; white-space: nowrap; }
+    h1 { font-size: 30px; font-weight: 750; letter-spacing: -.01em; margin: 14px 0 2px; }
+    .tarih { font-size: 17px; color: var(--soluk); margin-bottom: 20px; }
+
+    /* Konu kartı */
+    .konu-kart { background: var(--ana-zemin); border: 1px solid var(--ana-cizgi); border-radius: 20px; padding: 16px 16px 18px; margin-bottom: 12px; }
+    .konu-kart .etiket { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600;
+                         letter-spacing: .06em; color: var(--ana-etiket); text-transform: uppercase; }
+    .konu-kart .etiket svg { color: var(--ana-etiket); }
+    .konu-ad { display: block; font-size: 25px; font-weight: 700; color: var(--ana); margin: 8px 0 14px; text-decoration: none; line-height: 1.25; }
+    .konu-ad.bos { font-size: 16px; font-weight: 500; font-style: italic; color: var(--soluk); margin-bottom: 0; }
+    .cipler { display: flex; flex-wrap: wrap; gap: 8px; }
+    a.cip { font-size: 15px; font-weight: 600; color: var(--ana); text-decoration: none; background: var(--kart);
+            border: 1px solid var(--ana-cizgi); border-radius: 12px; padding: 8px 16px; }
+
+    /* Satırlar */
+    a.satir { display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--yazi);
+              background: var(--kart); border: 1px solid var(--cizgi); border-radius: 18px; padding: 14px; margin-bottom: 10px; min-height: 72px; }
+    a.satir:active { transform: scale(.99); }
+    .ikon-kutu { width: 46px; height: 46px; border-radius: 13px; background: var(--ikon-zemin); color: var(--ikon); display: grid; place-items: center; flex: none; }
+    .orta { flex: 1; min-width: 0; }
+    .baslik { display: block; font-size: 18px; font-weight: 600; }
+    .alt { display: block; font-size: 15px; color: var(--soluk); margin-top: 2px; }
+    .sag-ok { color: var(--ok); }
+    .durum { font-size: 13px; font-weight: 600; color: var(--yesil); background: var(--yesil-zemin); padding: 5px 11px; border-radius: 999px; white-space: nowrap; }
+    .durum.bekliyor { color: var(--rapor-baslik); background: var(--rapor-zemin); }
+    a.satir.rapor { background: var(--rapor-zemin); border-color: var(--rapor-cizgi); }
+    a.satir.rapor .baslik { color: var(--rapor-baslik); }
+    a.satir.rapor .alt { color: var(--rapor-alt); }
+    a.satir.rapor .ikon-kutu { background: var(--rapor-ikon-zemin); color: var(--rapor-ikon); }
+    a.satir.rapor .sag-ok { color: var(--rapor-ikon); }
+    .pasif { opacity: .5; pointer-events: none; }
+    .alt-bilgi { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; color: var(--soluk); margin-top: 18px; min-height: 22px; }
+    .alt-bilgi svg { color: var(--yesil); }
+    .kim { text-align: center; font-size: 13px; color: var(--soluk); margin-top: 22px; }
+    button.baglanti { background: none; border: 0; color: var(--soluk); font: inherit; font-size: 13px; padding: 14px 0 0; cursor: pointer;
+                      display: block; margin: 0 auto; text-decoration: underline; text-underline-offset: 3px; }
+    .yukleniyor { color: var(--soluk); text-align: center; padding: 40px 0; }
+
+    /* Kurulum */
+    .kart { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 20px; padding: 18px; }
+    label { display: block; font-size: 14px; font-weight: 600; margin: 14px 0 6px; }
+    label:first-child { margin-top: 0; }
+    select, input { width: 100%; font: inherit; font-size: 17px; padding: 13px; border-radius: 12px;
+                    border: 1px solid var(--cizgi); background: var(--bg); color: var(--yazi); }
+    input { text-transform: uppercase; letter-spacing: .15em; }
+    button.ana { width: 100%; margin-top: 18px; font: inherit; font-size: 17px; font-weight: 650; padding: 14px; border: 0;
+                 border-radius: 14px; background: var(--rapor-zemin); color: var(--rapor-baslik); border: 1px solid var(--rapor-cizgi); cursor: pointer; }
+    .hata { color: var(--kirmizi); font-size: 14px; margin-top: 12px; min-height: 1em; }
+    .not { font-size: 13px; color: var(--soluk); margin: 14px 0 0; }
+
+    /* Okuma / medya */
+    .gezinti { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+    button.geri { display: inline-flex; align-items: center; gap: 2px; background: none; border: 0; color: var(--ana); font: inherit;
+                  font-size: 17px; font-weight: 500; padding: 6px 0; cursor: pointer; }
+    .dil { display: inline-flex; background: var(--ana-zemin); border: 1px solid var(--ana-cizgi); border-radius: 999px; padding: 3px; }
+    .dil button { border: 0; background: none; font: inherit; font-size: 14px; font-weight: 600; color: var(--ana-etiket);
                   padding: 5px 14px; border-radius: 999px; cursor: pointer; }
-    .dil button.secili { background: var(--kart); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
-    h1.okuma-baslik { font-size: 22px; margin: 0 0 16px; line-height: 1.3; }
-    .okuma { font-size: 17px; line-height: 1.6; overflow-wrap: anywhere; }
-    .okuma h2 { font-size: 20px; margin: 26px 0 8px; }
-    .okuma h3 { font-size: 18px; margin: 22px 0 6px; }
+    .dil button.secili { background: var(--kart); color: var(--ana); box-shadow: 0 1px 2px rgba(0,0,0,.1); }
+    h1.okuma-baslik { font-size: 24px; margin: 0 0 16px; line-height: 1.25; color: var(--ana); }
+    .okuma { font-size: 17px; line-height: 1.65; overflow-wrap: anywhere; }
+    .okuma h2 { font-size: 20px; margin: 26px 0 8px; color: var(--ana); }
+    .okuma h3 { font-size: 18px; margin: 22px 0 6px; color: var(--ana); }
     .okuma h4 { font-size: 17px; margin: 18px 0 4px; }
     .okuma p { margin: 0 0 12px; }
     .okuma ul, .okuma ol { padding-left: 1.3em; margin: 0 0 12px; }
     .okuma li { margin-bottom: 6px; }
     .okuma a { color: var(--ana); }
-    .okuma img { max-width: 100%; height: auto; border-radius: 8px; margin: 8px 0; }
+    .okuma img { max-width: 100%; height: auto; border-radius: 10px; margin: 8px 0; }
     .okuma .tablo { overflow-x: auto; margin: 0 0 12px; }
     .okuma table { border-collapse: collapse; font-size: 15px; }
     .okuma td { border: 1px solid var(--cizgi); padding: 6px 8px; vertical-align: top; }
-    .medya { position: relative; width: 100%; border-radius: 12px; overflow: hidden; background: #000; }
+    .okuma .bos { color: var(--soluk); font-style: italic; }
+    .medya { position: relative; width: 100%; border-radius: 16px; overflow: hidden; background: #000; }
     .medya.video { aspect-ratio: 16 / 9; }
-    .medya.slayt { height: calc(100vh - 170px); min-height: 320px; background: var(--kart); }
+    .medya.slayt { height: calc(100vh - 190px); min-height: 320px; background: var(--kart); border: 1px solid var(--cizgi); }
     .medya iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-    a.docs { display: block; text-align: center; margin-top: 28px; font-size: 14px; color: var(--soluk); }
+    a.docs { display: block; text-align: center; margin-top: 26px; font-size: 14px; color: var(--soluk); }
   </style>
 </head>
 <body>
@@ -109,16 +137,11 @@
 
   <!-- Kurulum: grup + erişim kodu (bir kez) -->
   <section id="kurulum" hidden>
-    <header><div><div class="grup">Rehberlik</div><h1>Hoş geldiniz</h1></div></header>
+    <div class="ust-satir"><span class="grup">Rehberlik</span></div>
+    <h1>Hoş geldiniz</h1>
+    <div class="tarih">Rehberinizden aldığınız kişisel kodu girin. Grubunuz kendiliğinden açılır.</div>
     <form class="kart" id="kurulumFormu">
-      <label for="grupSec">Grubunuz</label>
-      <select id="grupSec" required>
-        <option value="">Seçin…</option>
-        <optgroup label="E Ortaokul"><option>E6</option><option>E7</option><option>E8</option><option>E9</option></optgroup>
-        <optgroup label="E Lise"><option>E10</option><option>E11</option><option>E12</option></optgroup>
-        <optgroup label="K"><option>K6</option><option>K7</option><option>K8</option><option>K9</option><option>K10</option><option>K11</option><option>K12</option></optgroup>
-      </select>
-      <label for="kodGir">Erişim kodu</label>
+      <label for="kodGir">Kişisel kod</label>
       <input id="kodGir" autocomplete="off" autocapitalize="characters" spellcheck="false" required placeholder="Rehberinizden alın">
       <button class="ana" type="submit">Devam</button>
       <div class="hata" id="kurulumHata"></div>
@@ -128,18 +151,19 @@
 
   <!-- Pano -->
   <section id="pano" hidden>
-    <header>
-      <div><div class="grup" id="grupEtiket"></div><h1 id="haftaBaslik">Bu hafta</h1></div>
-      <button class="baglanti" id="degistir" type="button">Grubu değiştir</button>
-    </header>
+    <div class="ust-satir"><span id="grupAlan"></span><span class="rozet" id="dersRozet" hidden></span></div>
+    <h1>Bu hafta</h1>
+    <div class="tarih" id="tarih"></div>
     <div id="icerik"><div class="yukleniyor">Yükleniyor…</div></div>
-    <footer id="altBilgi"></footer>
+    <div class="alt-bilgi" id="altBilgi"></div>
+    <div class="kim" id="kim"></div>
+    <button class="baglanti" id="cikis" type="button">Bu telefondan çıkış</button>
   </section>
 
   <!-- Okuma: haftanın metni uygulama içinde -->
   <section id="okuma" hidden>
-    <div class="ust">
-      <button class="geri" id="geri" type="button">‹ Geri</button>
+    <div class="gezinti">
+      <button class="geri" id="geri" type="button"></button>
       <div class="dil" id="dilSec">
         <button type="button" data-dil="tr">TR</button>
         <button type="button" data-dil="en">EN</button>
@@ -152,7 +176,7 @@
 
   <!-- Medya: slayt / video uygulama içinde -->
   <section id="medya" hidden>
-    <div class="ust"><button class="geri" id="medyaGeri" type="button">‹ Geri</button></div>
+    <div class="gezinti"><button class="geri" id="medyaGeri" type="button"></button></div>
     <h1 class="okuma-baslik" id="medyaBaslik"></h1>
     <div class="medya" id="medyaKutu"></div>
     <a class="docs" id="medyaDis" target="_blank" rel="noopener">Yeni pencerede aç</a>
@@ -162,6 +186,7 @@
 <script>
   // Apps Script web uygulaması (Mentor Sayfası). Veri yalnız doğru erişim koduyla gelir.
   const VERI_URL = 'https://script.google.com/macros/s/AKfycbzGG4cY3YwsE5ZP5ZiKEt0k7ukVmVSmoCRtRVRJRfNqauqQeViO9Rfm3xm5m_j_NuqM/exec';
+  const DEMO = /[?&]demo\b/.test(location.search);   // ?demo → örnek verilerle görünüm denemesi (sunucuya gitmez)
 
   // localStorage gizli pencerede / kapalıyken hata verebilir: sessizce geç
   const depo = {
@@ -170,6 +195,25 @@
     sil: function (k) { try { localStorage.removeItem(k); } catch (e) {} },
   };
   const $ = function (id) { return document.getElementById(id); };
+
+  // Çizgi ikonlar (Lucide, ISC lisansı)
+  const IKON = {
+    kalem: '<path d="M12 20h9"/><path d="M16.4 3.6a2.1 2.1 0 0 1 3 3L7.4 18.6a2 2 0 0 1-.9.5l-2.9.8.8-2.9a2 2 0 0 1 .5-.9z"/>',
+    belge: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>',
+    takvim: '<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/>',
+    kisiler: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    kitap: '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+    sag: '<path d="m9 18 6-6-6-6"/>',
+    sol: '<path d="m15 18-6-6 6-6"/>',
+    asagi: '<path d="m6 9 6 6 6-6"/>',
+    tamam: '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+  };
+  function ikon(ad) {
+    const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('class', 'i'); s.setAttribute('aria-hidden', 'true');
+    s.innerHTML = IKON[ad];
+    return s;
+  }
 
   function el(etiket, ozellik, cocuklar) {
     const e = document.createElement(etiket);
@@ -182,36 +226,40 @@
     return e;
   }
 
-  function link(sinif, url, cocuklar) {
-    const a = el('a', { sinif: sinif + (url ? '' : ' pasif'), href: url || '#', target: '_blank', rel: 'noopener' }, cocuklar);
-    return a;
-  }
-
-  function dugme(ikon, baslik, alt, url, ana, durum) {
-    return link('dugme' + (ana ? ' ana' : ''), url, [
-      el('span', { sinif: 'ikon', metin: ikon }),
-      el('span', { sinif: 'metin' }, [
-        el('span', { sinif: 'baslik', metin: baslik }),
-        durum ? el('span', { sinif: 'durum', metin: durum }) : el('span', { sinif: 'alt', metin: alt }),
-      ]),
+  /** Satır kartı: ikon kutusu · başlık + alt · sağda durum rozeti ya da ok. */
+  function satir(o) {
+    const sag = o.durum ? el('span', { sinif: 'durum' + (o.durumSinif ? ' ' + o.durumSinif : ''), metin: o.durum }) : el('span', { sinif: 'sag-ok' }, [ikon('sag')]);
+    return el('a', { sinif: 'satir' + (o.sinif ? ' ' + o.sinif : '') + (o.url ? '' : ' pasif'), href: o.url || '#', target: '_blank', rel: 'noopener' }, [
+      el('span', { sinif: 'ikon-kutu' }, [ikon(o.ikon)]),
+      el('span', { sinif: 'orta' }, [el('span', { sinif: 'baslik', metin: o.baslik }), el('span', { sinif: 'alt', metin: o.alt })]),
+      sag,
     ]);
   }
 
+  let sonVeri = null;
+
   function ciz(v) {
     sonVeri = v;
-    $('grupEtiket').textContent = v.grup + ' · ' + v.ekip;
-    $('haftaBaslik').textContent = 'Bu hafta · ' + v.hafta;
+    grupAlaniCiz(v);
+    const rozet = $('dersRozet');
+    rozet.hidden = !(v.konu && v.konu.ders);
+    if (v.konu && v.konu.ders) rozet.textContent = v.konu.ders + '. Ders';
+    $('tarih').textContent = v.hafta.replace(/\s*–\s*/, '–') + ' ' + new Date().getFullYear();
+
     const ic = $('icerik');
     ic.textContent = '';
 
-    const konuKart = el('section', { sinif: 'kart' }, [el('div', { sinif: 'etiket', metin: 'Haftanın konusu' })]);
+    // Konu kartı
+    const kart = el('section', { sinif: 'konu-kart' }, [
+      el('div', { sinif: 'etiket' }, [el('span', { metin: 'Haftanın konusu' }), ikon('kitap')]),
+    ]);
     if (v.konu) {
       if (v.konu.metin || v.konu.en) {
-        const k = el('a', { sinif: 'konu', href: '#', metin: v.konu.ad + ' ›' });
+        const k = el('a', { sinif: 'konu-ad', href: '#', metin: v.konu.ad });
         k.addEventListener('click', function (ev) { ev.preventDefault(); okuyucuAc(v.konu.metin ? 'tr' : 'en'); });
-        konuKart.appendChild(k);
+        kart.appendChild(k);
       } else {
-        konuKart.appendChild(el('div', { sinif: 'konu', metin: v.konu.ad }));
+        kart.appendChild(el('div', { sinif: 'konu-ad', metin: v.konu.ad }));
       }
       const cipler = [];
       if (v.konu.en) {
@@ -219,7 +267,7 @@
         en.addEventListener('click', function (ev) { ev.preventDefault(); okuyucuAc('en'); });
         cipler.push(en);
       }
-      [['📊 Slayt', v.konu.slayt, 'slayt'], ['▶ Video', v.konu.video, 'video']].forEach(function (c) {
+      [['Slayt', v.konu.slayt, 'slayt'], ['Video', v.konu.video, 'video']].forEach(function (c) {
         if (!c[1]) return;
         const a = el('a', { sinif: 'cip', href: c[1], target: '_blank', rel: 'noopener', metin: c[0] });
         a.addEventListener('click', function (ev) {
@@ -227,42 +275,134 @@
         });
         cipler.push(a);
       });
-      if (cipler.length) konuKart.appendChild(el('div', { sinif: 'materyal' }, cipler));
+      if (cipler.length) kart.appendChild(el('div', { sinif: 'cipler' }, cipler));
     } else {
-      konuKart.appendChild(el('div', { sinif: 'bos', metin: 'Bu hafta için müfredatta konu yok.' }));
+      kart.appendChild(el('div', { sinif: 'konu-ad bos', metin: 'Bu hafta için müfredatta konu yok.' }));
     }
-    ic.appendChild(konuKart);
+    ic.appendChild(kart);
 
+    // Satırlar
     ic.appendChild(v.raporGonderildi
-      ? dugme('✏️', 'Haftalık rapor', '', v.raporUrl, false, '✅ Bu hafta gönderildi')
-      : dugme('✏️', 'Haftalık raporu gönder', 'Buluşmadan sonra · yaklaşık 2 dakika', v.raporUrl, true));
-    ic.appendChild(dugme('📄', 'Toplantı notu',
-      v.toplanti ? v.toplanti.tarih + ' haftası · gündem ve görevler' : 'Henüz toplantı notu yok',
-      v.toplanti && v.toplanti.url));
-    ic.appendChild(dugme('🏕️', 'Yatılı', v.yatili || 'Rezervasyon tablosu henüz yok', v.yatiliUrl));
-    ic.appendChild(dugme('👥', 'Grubum', 'Öğrenciler · yoklama · ikram/yemek sırası · notlar', v.grubumUrl));
+      ? satir({ ikon: 'kalem', baslik: 'Haftalık rapor', alt: 'Bu hafta gönderildi', url: v.raporUrl, durum: 'Gönderildi' })
+      : satir({ ikon: 'kalem', baslik: 'Haftalık rapor', alt: 'Buluşmadan sonra · 2 dk', url: v.raporUrl, sinif: 'rapor' }));
+    ic.appendChild(satir({ ikon: 'belge', baslik: 'Toplantı notu',
+      alt: v.toplanti ? v.toplanti.tarih + ' haftası · gündem ve görevler' : 'Henüz toplantı notu yok', url: v.toplanti && v.toplanti.url }));
+    const y = yatiliAyir(v.yatili);
+    ic.appendChild(satir({ ikon: 'takvim', baslik: 'Yatılı', alt: y.metin, url: v.yatiliUrl,
+                           durum: y.durum, durumSinif: y.durum === 'Onay bekliyor' ? 'bekliyor' : '' }));
+    ic.appendChild(satir({ ikon: 'kisiler', baslik: 'Grubum', alt: 'Öğrenciler · Yoklama · Sıralar', url: v.grubumUrl }));
+
+    const alt = $('altBilgi');
+    alt.textContent = '';
+    if (v.raporGonderildi) { alt.appendChild(ikon('tamam')); alt.appendChild(el('span', { metin: 'Bu haftanın raporu gönderildi' })); }
+  }
+
+  /** Mentor: düz etiket. Rehber / org: ekibinin grupları arasında geçiş menüsü (en üstte). */
+  function grupAlaniCiz(v) {
+    const alan = $('grupAlan');
+    alan.textContent = '';
+    let kisi = null;
+    try { kisi = JSON.parse(depo.al('kisi') || 'null'); } catch (e) {}
+    if (DEMO) kisi = { ad: 'Örnek Rehber', rol: 'rehber', gruplar: ['E10', 'E11', 'E12'] };
+    const gruplar = (kisi && kisi.gruplar) || [];
+    const etiket = el('span', { sinif: 'grup', metin: v.grup + ' · ' + v.ekip });
+    if (gruplar.length < 2) { alan.appendChild(etiket); }
+    else {
+      const sec = el('select', { 'aria-label': 'Grup seç' });
+      gruplar.forEach(function (g) { const o = el('option', { value: g, metin: g }); if (g === v.grup) o.selected = true; sec.appendChild(o); });
+      sec.addEventListener('change', function () { depo.yaz('grup', sec.value); $('icerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>'; yenile(); });
+      alan.appendChild(el('label', { sinif: 'grup-sec' }, [etiket, ikon('asagi'), sec]));
+    }
+    $('kim').textContent = kisi && kisi.ad ? kisi.ad + (kisi.rol === 'rehber' ? ' · rehber' : kisi.rol === 'org' ? ' · org sorumlusu' : '') : '';
+  }
+
+  /** "16 Ekim Cuma · Daire 5 · ✅ onaylandı" → metin + rozet */
+  function yatiliAyir(s) {
+    s = s || 'Rezervasyon tablosu henüz yok';
+    if (/onaylandı/i.test(s)) return { metin: s.replace(/\s*·\s*✅\s*onaylandı/i, ''), durum: 'Onaylandı' };
+    if (/onay bekliyor/i.test(s)) return { metin: s.replace(/\s*·\s*⏳\s*onay bekliyor/i, ''), durum: 'Onay bekliyor' };
+    return { metin: s, durum: null };
   }
 
   function goster(bolum) {
-    $('kurulum').hidden = bolum !== 'kurulum';
-    $('pano').hidden = bolum !== 'pano';
-    $('okuma').hidden = bolum !== 'okuma';
-    $('medya').hidden = bolum !== 'medya';
+    ['kurulum', 'pano', 'okuma', 'medya'].forEach(function (b) { $(b).hidden = b !== bolum; });
     if (bolum !== 'medya') $('medyaKutu').textContent = '';   // video arkada çalmaya devam etmesin
     window.scrollTo(0, 0);
   }
 
-  // ---------- Okuma ekranı ----------
-  let sonVeri = null;
+  async function veriCek(grup, kod, ek) {
+    const url = VERI_URL + '?format=json&kod=' + encodeURIComponent(kod) + (grup ? '&grup=' + encodeURIComponent(grup) : '') + (ek || '');
+    const r = await fetch(url, { cache: 'no-store' });
+    return r.json();
+  }
 
+  const HATALAR = {
+    kod: 'Erişim kodu geçersiz. Rehberinizden güncel kodu isteyin.',
+    kilit: 'Çok fazla yanlış deneme oldu. 10 dakika sonra tekrar deneyin.',
+    grup: 'Grup bulunamadı.',
+  };
+
+  async function yenile() {
+    if (DEMO) { goster('pano'); ciz(DEMO_VERI()); return; }
+    const grup = depo.al('grup') || '', kod = depo.al('kod');
+    if (!kod) { goster('kurulum'); return; }
+    goster('pano');
+    const onceki = grup && depo.al('sonVeri_' + grup);
+    if (onceki) { try { ciz(JSON.parse(onceki)); } catch (e) {} }
+    try {
+      const s = await veriCek(grup, kod);
+      if (!s.ok) {
+        depo.sil('kod'); depo.sil('kisi');
+        $('kurulumHata').textContent = HATALAR[s.hata] || 'Bir sorun oluştu.';
+        goster('kurulum');
+        return;
+      }
+      kaydet(s);
+      ciz(s.v);
+    } catch (e) {
+      if (onceki) $('altBilgi').textContent = 'Bağlantı yok · son kayıtlı bilgi gösteriliyor';
+      else $('icerik').textContent = 'Bağlantı kurulamadı. İnternetinizi kontrol edip tekrar açın.';
+    }
+  }
+
+  $('kurulumFormu').addEventListener('submit', async function (ev) {
+    ev.preventDefault();
+    const kod = $('kodGir').value.trim().toUpperCase().replace(/\s/g, '');
+    if (!kod) return;
+    $('kurulumHata').textContent = 'Kontrol ediliyor…';
+    try {
+      const s = await veriCek('', kod);
+      if (!s.ok) { $('kurulumHata').textContent = HATALAR[s.hata] || 'Bir sorun oluştu.'; return; }
+      depo.yaz('kod', kod);
+      kaydet(s);
+      $('kurulumHata').textContent = '';
+      goster('pano'); ciz(s.v);
+    } catch (e) {
+      $('kurulumHata').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.';
+    }
+  });
+
+  function kaydet(s) {
+    depo.yaz('grup', s.v.grup);
+    if (s.kisi) depo.yaz('kisi', JSON.stringify(s.kisi));
+    depo.yaz('sonVeri_' + s.v.grup, JSON.stringify(s.v));
+  }
+
+  $('cikis').addEventListener('click', function () {
+    if (!confirm('Bu telefondan çıkış yapılsın mı? Tekrar girmek için kişisel kodunuz gerekir.')) return;
+    try { localStorage.clear(); } catch (e) {}
+    $('kodGir').value = ''; $('kurulumHata').textContent = '';
+    goster('kurulum');
+  });
+
+  // ---------- Okuma ekranı ----------
   async function okuyucuAc(dil) {
     const v = sonVeri;
     if (!v || !v.konu) return;
     const grup = depo.al('grup'), kod = depo.al('kod');
     $('okumaBaslik').textContent = v.konu.ad;
     $('dilSec').querySelectorAll('button').forEach(function (b) {
-      const var_ = b.dataset.dil === 'en' ? v.konu.en : v.konu.metin;
-      b.hidden = !var_;
+      b.hidden = !(b.dataset.dil === 'en' ? v.konu.en : v.konu.metin);
       b.classList.toggle('secili', b.dataset.dil === dil);
     });
     const docsUrl = dil === 'en' ? v.konu.en : v.konu.metin;
@@ -270,13 +410,12 @@
     $('okumaDocs').hidden = !docsUrl;
     if ($('okuma').hidden) { history.pushState({ okuma: true }, ''); goster('okuma'); }
 
+    if (DEMO) { $('okumaIcerik').innerHTML = '<h3>Bölüm 1: Deizm Nedir?</h3><p>Örnek metin. Gerçek uygulamada haftanın metni burada görünür.</p>'; return; }
     const anahtar = 'metin_' + grup + '_' + dil + '_' + docsUrl;
     const kayitli = depo.al(anahtar);
     $('okumaIcerik').innerHTML = kayitli || '<p class="yukleniyor">Yükleniyor…</p>';
     try {
-      const url = VERI_URL + '?format=json&islem=metin&dil=' + dil + '&grup=' + encodeURIComponent(grup) +
-                  '&kod=' + encodeURIComponent(kod);
-      const s = await (await fetch(url, { cache: 'no-store' })).json();
+      const s = await veriCek(grup, kod, '&islem=metin&dil=' + dil);
       if (!s.ok || !s.html) {
         $('okumaIcerik').innerHTML = '<p class="bos">Bu haftanın metni uygulamada gösterilemiyor. Aşağıdan Google Docs\'ta açabilirsiniz.</p>';
         return;
@@ -292,6 +431,7 @@
     const d = ev.target.dataset && ev.target.dataset.dil;
     if (d) okuyucuAc(d);
   });
+
   // ---------- Medya (slayt / video) ----------
   /** Drive dosyası → önizleme, YouTube/Vimeo → oynatıcı. Tanınmayan adres: null (dışarıda açılır). */
   function gomuluAdres(url) {
@@ -307,7 +447,7 @@
   }
 
   function medyaAc(tur, url) {
-    $('medyaBaslik').textContent = (tur === 'video' ? '▶ ' : '📊 ') + ((sonVeri && sonVeri.konu && sonVeri.konu.ad) || '');
+    $('medyaBaslik').textContent = (tur === 'video' ? 'Video · ' : 'Slayt · ') + ((sonVeri && sonVeri.konu && sonVeri.konu.ad) || '');
     $('medyaDis').href = url;
     const kutu = $('medyaKutu');
     kutu.className = 'medya ' + tur;
@@ -318,79 +458,27 @@
     goster('medya');
   }
 
-  $('geri').addEventListener('click', function () { history.back(); });
-  $('medyaGeri').addEventListener('click', function () { history.back(); });
+  [$('geri'), $('medyaGeri')].forEach(function (b) {
+    b.appendChild(ikon('sol')); b.appendChild(document.createTextNode('Geri'));
+    b.addEventListener('click', function () { history.back(); });
+  });
   window.addEventListener('popstate', function () {
     if (!$('okuma').hidden || !$('medya').hidden) goster('pano');
   });
 
-  async function veriCek(grup, kod) {
-    const url = VERI_URL + '?format=json&grup=' + encodeURIComponent(grup) + '&kod=' + encodeURIComponent(kod);
-    const r = await fetch(url, { cache: 'no-store' });
-    return r.json();
-  }
-
-  const HATALAR = {
-    kod: 'Erişim kodu geçersiz. Rehberinizden güncel kodu isteyin.',
-    kilit: 'Çok fazla yanlış deneme oldu. 10 dakika sonra tekrar deneyin.',
-    grup: 'Grup bulunamadı.',
-  };
-
-  async function yenile() {
-    const grup = depo.al('grup'), kod = depo.al('kod');
-    if (!grup || !kod) { goster('kurulum'); return; }
-    goster('pano');
-    const onceki = depo.al('sonVeri_' + grup);
-    if (onceki) { try { ciz(JSON.parse(onceki)); $('altBilgi').textContent = 'Güncelleniyor…'; } catch (e) {} }
-    try {
-      const s = await veriCek(grup, kod);
-      if (!s.ok) {
-        depo.sil('kod');
-        $('kurulumHata').textContent = HATALAR[s.hata] || 'Bir sorun oluştu.';
-        $('grupSec').value = grup;
-        goster('kurulum');
-        return;
-      }
-      depo.yaz('sonVeri_' + grup, JSON.stringify(s.v));
-      ciz(s.v);
-      $('altBilgi').textContent = 'Ana ekrana ekleyin: Paylaş → Ana Ekrana Ekle';
-    } catch (e) {
-      $('altBilgi').textContent = onceki ? 'Bağlantı yok · son kayıtlı bilgi gösteriliyor' : '';
-      if (!onceki) $('icerik').textContent = 'Bağlantı kurulamadı. İnternetinizi kontrol edip tekrar açın.';
-    }
-  }
-
-  $('kurulumFormu').addEventListener('submit', async function (ev) {
-    ev.preventDefault();
-    const grup = $('grupSec').value, kod = $('kodGir').value.trim().toUpperCase();
-    if (!grup || !kod) return;
-    $('kurulumHata').textContent = 'Kontrol ediliyor…';
-    try {
-      const s = await veriCek(grup, kod);
-      if (!s.ok) { $('kurulumHata').textContent = HATALAR[s.hata] || 'Bir sorun oluştu.'; return; }
-      depo.yaz('grup', grup); depo.yaz('kod', kod);
-      depo.yaz('sonVeri_' + grup, JSON.stringify(s.v));
-      $('kurulumHata').textContent = '';
-      goster('pano'); ciz(s.v);
-      $('altBilgi').textContent = 'Ana ekrana ekleyin: Paylaş → Ana Ekrana Ekle';
-    } catch (e) {
-      $('kurulumHata').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.';
-    }
-  });
-
-  $('degistir').addEventListener('click', function () {
-    $('grupSec').value = depo.al('grup') || '';
-    $('kodGir').value = depo.al('kod') || '';
-    $('kurulumHata').textContent = '';
-    goster('kurulum');
-  });
-
   // Uygulamaya her dönüşte tazele (ana ekrandan açılınca sayfa yeniden yüklenmeyebilir)
   document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'visible' && !$('pano').hidden) yenile();
+    if (document.visibilityState === 'visible' && !$('pano').hidden && !DEMO) yenile();
   });
 
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});
+  function DEMO_VERI() {
+    const gonderildi = /gonderildi/.test(location.search);
+    return { grup: 'E10', ekip: 'E Lise', hafta: '5 – 11 Ekim', raporGonderildi: gonderildi, raporUrl: '#r',
+      konu: { ad: 'Deizm', ders: 2, metin: '#tr', en: '#en', slayt: 'https://drive.google.com/file/d/ornek/view', video: 'https://youtu.be/aaaaaaaaaaa' },
+      toplanti: { url: '#t', tarih: '5 Ekim' }, yatiliUrl: '#y', yatili: '16 Ekim Cuma · Daire 5 · ✅ onaylandı', grubumUrl: '#g' };
+  }
+
+  if (!DEMO && 'serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});
   yenile();
 </script>
 </body>

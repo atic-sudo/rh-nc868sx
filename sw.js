@@ -1,5 +1,5 @@
 // Uygulama kabuğunu önbellekte tutar (hızlı açılış); veri her zaman ağdan gelir.
-const KABUK = 'rehberlik-v2';
+const KABUK = 'rehberlik-v3';
 const DOSYALAR = ['./', 'index.html', 'manifest.webmanifest', 'ikon-192.png', 'ikon-512.png', 'ikon-180.png'];
 
 self.addEventListener('install', function (e) {
@@ -18,7 +18,8 @@ self.addEventListener('fetch', function (e) {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;   // Apps Script verisi: dokunma
   // Önce ağ (güncelleme hemen gelsin), ağ yoksa önbellek
-  e.respondWith(fetch(e.request).then(function (r) {
+  // no-cache: GitHub'ın 10 dk'lık önbelleğini atla → güncelleme uygulamaya hemen gelir
+  e.respondWith(fetch(e.request, { cache: 'no-cache' }).then(function (r) {
     const kopya = r.clone();
     caches.open(KABUK).then(function (c) { c.put(e.request, kopya); });
     return r;
