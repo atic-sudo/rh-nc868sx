@@ -148,8 +148,16 @@
     .bilgi { background: var(--ana-zemin); border: 1px solid var(--ana-cizgi); color: var(--ana); border-radius: 14px; padding: 12px 14px;
              font-size: 14px; margin-bottom: 12px; }
     .bilgi.uyari { background: var(--rapor-zemin); border-color: var(--rapor-cizgi); color: var(--rapor-baslik); }
-    .ogr { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 16px; padding: 12px 14px; margin-bottom: 8px; }
-    .ogr.ayrildi { opacity: .55; }
+    /* Kaydırmalı kart: ön yüz sola kayınca arkadaki işlem düğmesi görünür */
+    .kaydir { position: relative; overflow: hidden; border-radius: 16px; margin-bottom: 8px; }
+    .kaydir .arka { position: absolute; top: 0; right: 0; bottom: 0; width: 104px; display: flex; }
+    .kaydir .arka button { flex: 1; border: 0; font: inherit; font-size: 15px; font-weight: 650; cursor: pointer;
+                           background: var(--rapor-ikon-zemin); color: var(--rapor-baslik); }
+    .kaydir .arka button.geri-al { background: var(--ana-zemin); color: var(--ana); }
+    .ogr { position: relative; background: var(--kart); border: 1px solid var(--cizgi); border-radius: 16px; padding: 12px 14px;
+           touch-action: pan-y; transition: transform .2s ease; user-select: none; -webkit-user-select: none; }
+    .ogr.surukleniyor { transition: none; }
+    .ogr.ayrildi .ad, .ogr.ayrildi .oran { opacity: .55; }
     .ogr .ust2 { display: flex; align-items: center; gap: 10px; }
     .ogr .ad { flex: 1; font-size: 17px; font-weight: 600; }
     .ogr .oran { font-size: 13px; font-weight: 650; color: var(--yesil); background: var(--yesil-zemin); padding: 3px 9px; border-radius: 999px; }
@@ -629,23 +637,25 @@
     ic.appendChild(el('div', { sinif: 'hs-baslik', metin: aktif + ' aktif öğrenci · kapasite ' + s.kapasite }));
     s.ogrenciler.forEach(function (o) {
       const ayrildi = o.durum === 'Ayrıldı';
-      const b = el('button', { sinif: 'kucuk', type: 'button', metin: ayrildi ? 'Geri al' : 'Ayrıldı' });
-      b.onclick = function () {
+      const islemDugme = el('button', { sinif: ayrildi ? 'geri-al' : '', type: 'button', metin: ayrildi ? 'Geri al' : 'Ayrıldı' });
+      islemDugme.onclick = function () {
         grubumYukle('&islem=ogrenciDurum&satir=' + o.satir + '&durum=' + (ayrildi ? 'Aktif' : 'Ayrıldı'),
           ayrildi ? o.ad + ' tekrar aktif yapılsın mı?' : o.ad + ' "Ayrıldı" olarak işaretlensin mi? Formdan çıkar, geçmiş yoklaması korunur.');
       };
-      const kart = el('div', { sinif: 'ogr' + (ayrildi ? ' ayrildi' : '') }, [
+      const on = el('div', { sinif: 'ogr' + (ayrildi ? ' ayrildi' : '') }, [
         el('div', { sinif: 'ust2' }, [el('span', { sinif: 'ad', metin: o.ad + (ayrildi ? ' (ayrıldı)' : '') }),
-          o.oran ? el('span', { sinif: 'oran', metin: o.oran }) : null, b]),
+          o.oran ? el('span', { sinif: 'oran', metin: o.oran }) : null]),
       ]);
       const notlar = [['Hedefler', o.hedefler], ['Ders durumu', o.ders], ['Davranış / gözlem', o.davranis], ['Notlar', o.notlar]]
         .filter(function (n) { return n[1]; });
       if (notlar.length) {
         const dl = el('dl');
         notlar.forEach(function (n) { dl.appendChild(el('dt', { metin: n[0] })); dl.appendChild(el('dd', { metin: n[1] })); });
-        kart.appendChild(el('details', {}, [el('summary', { metin: 'Notlar' }), dl]));
+        on.appendChild(el('details', {}, [el('summary', { metin: 'Notlar' }), dl]));
       }
-      ic.appendChild(kart);
+      const kap = el('div', { sinif: 'kaydir' }, [el('div', { sinif: 'arka' }, [islemDugme]), on]);
+      kaydirmaKur(on);
+      ic.appendChild(kap);
     });
     const giris = el('input', { placeholder: 'Yeni öğrencinin adı', maxlength: '40', autocomplete: 'off' });
     const ekle = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Ekle' });
@@ -654,8 +664,43 @@
       if (ad) grubumYukle('&islem=ogrenciEkle&ad=' + encodeURIComponent(ad), ad + ' gruba eklensin mi?');
     };
     ic.appendChild(el('div', { sinif: 'ekle' }, [giris, ekle]));
-    ic.appendChild(el('p', { sinif: 'not', metin: 'Yeni isimler haftalık rapor formuna ertesi sabah geçer. Öğrenci silinmez; ayrılanı "Ayrıldı" yapın.' }));
+    ic.appendChild(el('p', { sinif: 'not', metin: 'Ayrılan öğrenci için ismi sola kaydırın. Yeni isimler haftalık rapor formuna ertesi sabah geçer.' }));
   }
+
+  /** Kartı sola kaydırınca arkadaki düğme (104 px) açılır; bir kart açılınca diğerleri kapanır. */
+  const ACIK = -104;
+  let acikKart = null;
+  function kartKapat(k) { if (k) { k.style.transform = ''; if (acikKart === k) acikKart = null; } }
+  function kaydirmaKur(k) {
+    let x0 = 0, y0 = 0, dx = 0, bas = 0, yatay = null;
+    k.addEventListener('pointerdown', function (e) {
+      if (acikKart && acikKart !== k) kartKapat(acikKart);
+      x0 = e.clientX; y0 = e.clientY; dx = 0; yatay = null;
+      bas = acikKart === k ? ACIK : 0;
+      k.setPointerCapture(e.pointerId);
+    });
+    k.addEventListener('pointermove', function (e) {
+      if (!k.hasPointerCapture(e.pointerId)) return;
+      const ax = e.clientX - x0, ay = e.clientY - y0;
+      if (yatay === null && (Math.abs(ax) > 6 || Math.abs(ay) > 6)) yatay = Math.abs(ax) > Math.abs(ay);
+      if (!yatay) return;
+      dx = ax;
+      k.classList.add('surukleniyor');
+      k.style.transform = 'translateX(' + Math.max(ACIK - 20, Math.min(0, bas + dx)) + 'px)';
+    });
+    function birak(e) {
+      k.classList.remove('surukleniyor');
+      if (!yatay) return;
+      if (bas + dx < ACIK / 2) { k.style.transform = 'translateX(' + ACIK + 'px)'; acikKart = k; }
+      else kartKapat(k);
+    }
+    k.addEventListener('pointerup', birak);
+    k.addEventListener('pointercancel', birak);
+    k.addEventListener('click', function (e) { if (yatay) { e.preventDefault(); e.stopPropagation(); } }, true);
+  }
+  document.addEventListener('pointerdown', function (e) {
+    if (acikKart && !acikKart.parentNode.contains(e.target)) kartKapat(acikKart);
+  });
 
   // Uygulamaya her dönüşte tazele (ana ekrandan açılınca sayfa yeniden yüklenmeyebilir)
   document.addEventListener('visibilitychange', function () {
