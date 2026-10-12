@@ -19,7 +19,7 @@
     :root {
       --bg: #f7f9f8; --kart: #ffffff; --cizgi: #e4ebe8; --yazi: #1f2a28; --soluk: #5d6966; --ok: #7f8b87;
       --ikon-zemin: #f0f4f2; --ikon: #5f6d69;
-      --at-zemin: #2c5a51;
+      --at-renk: #e2956b;
       --ana: #2c5a51; --ana-etiket: #3e6c62; --ana-zemin: #eef6f3; --ana-cizgi: #d7e7e1; --rozet: #e3f1ec; --rozet-yazi: #2f6d60;
       --rapor-zemin: #fcefe6; --rapor-cizgi: #f6dccb; --rapor-baslik: #8a4a2c; --rapor-alt: #8c5537;
       --rapor-ikon-zemin: #f7dcc8; --rapor-ikon: #ad552b;
@@ -31,7 +31,7 @@
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --at-zemin: #3f8f80;
+        --at-renk: #fdeee4;
         --bg: #1c2321; --kart: #252d2b; --cizgi: #34403c; --yazi: #e7eeeb; --soluk: #a3b0ac; --ok: #7f8c88;
         --ikon-zemin: #313b38; --ikon: #b9c6c2;
         --ana: #b9e3d4; --ana-etiket: #9fc4b8; --ana-zemin: #2a3934; --ana-cizgi: #3a4f48; --rozet: #263f38; --rozet-yazi: #9fd2c3;
@@ -107,14 +107,22 @@
     .okuma.yardim { font-size: 16px; }
     .okuma.yardim h3 { margin-top: 22px; }
     .okuma.yardim h3:first-child { margin-top: 0; }
+    .alt-dugmeler { display: flex; gap: 10px; margin-top: 22px; }
+    .alt-dugme { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 12px;
+                 background: var(--kart); border: 1px solid var(--cizgi); border-radius: 14px; color: var(--yazi);
+                 font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+    .alt-dugme .i { width: 18px; height: 18px; color: var(--soluk); }
+    .alt-dugme.cikis { color: var(--kirmizi); }
+    .alt-dugme.cikis .i { color: var(--kirmizi); }
     button.baglanti { background: none; border: 0; color: var(--soluk); font: inherit; font-size: 13px; padding: 14px 0 0; cursor: pointer;
                       display: block; margin: 0 auto; text-decoration: underline; text-underline-offset: 3px; }
     .yukleniyor { color: var(--soluk); text-align: center; padding: 40px 0; }
     /* Yükleniyor: dört nala koşan at (Eadweard Muybridge, 1887 — kamu malı; 7 karelik şerit, at.png) */
     .yukleniyor:not(button) { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-    .yukleniyor:not(button)::before { content: ''; width: 88px; height: 46px; border: solid var(--at-zemin); border-width: 13px 8px;
-      border-radius: 20px; background: var(--at-zemin) url(at.png) 0 0 / 616px 46px no-repeat; animation: kos .7s steps(7) infinite; }
-    @keyframes kos { to { background-position: -616px 0; } }
+    .yukleniyor:not(button)::before { content: ''; width: 104px; height: 54px; background: var(--at-renk);
+      -webkit-mask: url(at.png) 0 0 / 728px 54px no-repeat; mask: url(at.png) 0 0 / 728px 54px no-repeat;
+      animation: kos .7s steps(7) infinite; }
+    @keyframes kos { to { -webkit-mask-position: -728px 0; mask-position: -728px 0; } }
     @media (prefers-reduced-motion: reduce) { .yukleniyor:not(button)::before { animation: none; } }
 
     /* Kurulum */
@@ -374,8 +382,10 @@
     <div id="icerik"><div class="yukleniyor">Yükleniyor…</div></div>
     <div class="alt-bilgi" id="altBilgi"></div>
     <div class="kim" id="kim"></div>
-    <button class="baglanti" id="yardimAc" type="button">Nasıl kullanılır</button>
-    <button class="baglanti" id="cikis" type="button">Bu telefondan çıkış</button>
+    <div class="alt-dugmeler">
+      <button class="alt-dugme" id="yardimAc" type="button">Yardım</button>
+      <button class="alt-dugme cikis" id="cikis" type="button">Çıkış yap</button>
+    </div>
   </section>
 
   <!-- Okuma: haftanın metni uygulama içinde -->
@@ -533,6 +543,8 @@
     listeArti: '<path d="M11 12H3"/><path d="M16 6H3"/><path d="M16 18H3"/><path d="M18 9v6"/><path d="M21 12h-6"/>',
     pano: '<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/>',
     yuzde: '<path d="M21 12a9 9 0 1 1-6.219-8.56"/>',
+    yardim: '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+    cikis: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>',
     tamam: '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
   };
   function ikon(ad) {
@@ -813,6 +825,7 @@
     depo.yaz('sonVeri_' + s.v.grup, JSON.stringify(s.v));
   }
 
+  $('yardimAc').prepend(ikon('yardim')); $('cikis').prepend(ikon('cikis'));
   $('cikis').addEventListener('click', function () {
     if (!confirm('Bu telefondan çıkış yapılsın mı? Tekrar girmek için kişisel kodunuz gerekir.')) return;
     try { localStorage.clear(); } catch (e) {}
