@@ -23,6 +23,10 @@
       --rapor-zemin: #fcefe6; --rapor-cizgi: #f6dccb; --rapor-baslik: #8a4a2c; --rapor-alt: #8c5537;
       --rapor-ikon-zemin: #f7dcc8; --rapor-ikon: #ad552b;
       --yesil: #2f7a4a; --yesil-zemin: #e5f2e8; --kirmizi: #a3281f;
+      --sec-zemin: #eef2f0; --sec-yazi: #4f5b58;
+      --sec-geldi: #bfe3d5; --sec-geldi-yazi: #163a31;
+      --sec-gelmedi: #f6d6c4; --sec-gelmedi-yazi: #5a2814;
+      --sec-mazeret: #dde3e0; --sec-mazeret-yazi: #2a3431;
     }
     @media (prefers-color-scheme: dark) {
       :root {
@@ -32,6 +36,10 @@
         --rapor-zemin: #4a3a31; --rapor-cizgi: #5e483b; --rapor-baslik: #f3d2bf; --rapor-alt: #d6b09a;
         --rapor-ikon-zemin: #6b4c3b; --rapor-ikon: #f3c7a8;
         --yesil: #8fd6a6; --yesil-zemin: #24402f; --kirmizi: #f19a92;
+        --sec-zemin: #2f3936; --sec-yazi: #b4c1bd;
+        --sec-geldi: #a3d4c3; --sec-geldi-yazi: #14251f;
+        --sec-gelmedi: #e9b89c; --sec-gelmedi-yazi: #2a150b;
+        --sec-mazeret: #c3ceca; --sec-mazeret-yazi: #1c2321;
       }
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -251,25 +259,36 @@
       border-radius: 12px; border: 1px solid var(--cizgi); background: var(--bg); color: var(--yazi); text-transform: none; letter-spacing: normal; }
     .soru textarea { min-height: 80px; resize: vertical; }
     .secimler { display: flex; flex-wrap: wrap; gap: 6px; }
-    .secimler button { font: inherit; font-size: 14px; font-weight: 600; padding: 0 12px; min-height: 44px; border-radius: 10px; cursor: pointer;
-      border: 1px solid var(--cizgi); background: var(--bg); color: var(--yazi); }
-    /* Seçili: her yerde aynı dil — dolu zemin, açık yazı, kalın kenar */
-    .secimler button.secili { background: var(--ana-etiket); border-color: var(--ana-etiket); color: var(--kart); font-weight: 700; }
-    .ogr-yok { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 6px 0; border-top: 1px solid var(--cizgi); }
+    .secimler button { font: inherit; font-size: 14px; font-weight: 600; padding: 0 12px; min-height: 44px; border-radius: 12px; cursor: pointer;
+      border: 0; background: var(--sec-zemin); color: var(--sec-yazi); transition: background .15s, color .15s; }
+    /* Seçili: her yerde aynı dil — yumuşak dolgu, koyu yazı, kalın */
+    .secimler button.secili { background: var(--sec-geldi); color: var(--sec-geldi-yazi); font-weight: 700; }
+    .ogr-yok { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 5px 0; }
     .ogr-yok:first-of-type { border-top: 0; }
     .ogr-yok .isim { flex: 1 1 56px; font-weight: 600; }
     .ogr-yok .secimler { flex: 0 0 auto; margin-left: auto; }
     .ogr-yok .secimler button { padding: 0 7px; font-size: 13px; min-height: 44px; min-width: 44px; }
-    .ogr-yok .secimler button.secili[data-v="Gelmedi"] { background: var(--rapor-ikon); border-color: var(--rapor-ikon); color: var(--kart); }
-    .ogr-yok .secimler button.secili[data-v="Mazeretli"] { background: var(--soluk); border-color: var(--soluk); color: var(--kart); }
+    .ogr-yok .secimler button.secili[data-v="Gelmedi"] { background: var(--sec-gelmedi); color: var(--sec-gelmedi-yazi); }
+    .ogr-yok .secimler button.secili[data-v="Mazeretli"] { background: var(--sec-mazeret); color: var(--sec-mazeret-yazi); }
     .rapor-bas { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
     .rapor-rozet { display: grid; place-items: center; gap: 2px; min-width: 58px; padding: 10px 8px; border-radius: 16px;
       background: var(--ana-zemin); border: 1px solid var(--ana-cizgi); color: var(--ana); font-size: 13px; font-weight: 650; }
     .rapor-rozet svg { width: 22px; height: 22px; }
-    .tarih-satir { position: relative; display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px;
-      border: 1px solid var(--cizgi); background: var(--bg); color: var(--yazi); font-size: 16px; }
-    .tarih-satir span { flex: 1; }
-    .tarih-satir input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; font-size: 16px; }
+    button.tarih-satir { width: 100%; display: flex; align-items: center; gap: 10px; padding: 0 16px; min-height: 48px; border-radius: 999px;
+      border: 1px solid var(--cizgi); background: var(--bg); color: var(--yazi); font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; text-align: left; }
+    button.tarih-satir > span:not(.ok2) { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    button.tarih-satir .ok2 { color: var(--soluk); transition: transform .2s; display: flex; }
+    button.tarih-satir[aria-expanded="true"] .ok2 { transform: rotate(180deg); }
+    .gun-serit { overflow: hidden; max-height: 0; opacity: 0;
+      transition: max-height .25s ease, opacity .2s ease, margin .25s ease; }
+    .gun-serit.acik { max-height: 90px; opacity: 1; margin-top: 10px; }
+    .gun-kaydir { display: flex; gap: 6px; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; padding-bottom: 2px; }
+    .gun-kaydir::-webkit-scrollbar { display: none; }
+    .gun-serit button { flex: 1 0 52px; min-width: 52px; scroll-snap-align: end; display: grid; gap: 2px; justify-items: center; padding: 8px 0; min-height: 56px; border: 0; border-radius: 14px; cursor: pointer;
+      background: var(--sec-zemin); color: var(--sec-yazi); font: inherit; }
+    .gun-serit button small { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+    .gun-serit button b { font-size: 17px; }
+    .gun-serit button.secili { background: var(--sec-geldi); color: var(--sec-geldi-yazi); }
     .soru-bas { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 4px; }
     .soru-bas .b { font-size: 17px; font-weight: 650; display: flex; align-items: center; gap: 8px; }
     .soru-bas .b svg { color: var(--ana-etiket); }
@@ -288,7 +307,8 @@
       .ogr-yok .secimler button { flex: 1; }
     }
     .olcek { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-    .olcek button { font-size: 20px; padding: 14px 0; border-radius: 14px; }
+    .olcek button { font-size: 20px; padding: 14px 0; border-radius: 14px; border: 1px solid var(--cizgi); }
+    .olcek button.secili { border-color: var(--sec-geldi); }
     .olcek-etiket { display: flex; justify-content: space-between; font-size: 13px; color: var(--soluk); margin-top: 8px; }
     details.detay-kutu { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 16px; padding: 4px 14px; margin: 0 0 12px; }
     details.detay-kutu > summary { list-style: none; display: flex; align-items: center; gap: 10px; color: var(--yazi); font-size: 16px; padding: 12px 0; }
@@ -297,7 +317,7 @@
     details.detay-kutu[open] > summary .ok2 { transform: rotate(180deg); }
     details.detay-kutu .soru { border: 0; padding: 10px 0; border-top: 1px solid var(--cizgi); border-radius: 0; margin: 0; }
     .ilerleme-satir { display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: var(--soluk); margin: 4px 4px 10px; }
-    button.gonder:disabled { background: var(--ikon-zemin); border-color: var(--cizgi); color: var(--soluk); cursor: default; }
+    button.gonder:disabled { background: var(--sec-zemin); border-color: transparent; color: var(--sec-yazi); cursor: default; }
     button.gonder.yukleniyor { background: var(--rapor-zemin); color: var(--rapor-baslik); }
     button.gonder.yukleniyor svg { animation: don 1s linear infinite; }
     @keyframes don { to { transform: rotate(360deg); } }
@@ -305,8 +325,11 @@
     .durum-kart.basari { background: var(--yesil-zemin); color: var(--yesil); }
     .durum-kart.hata-kart { background: var(--rapor-zemin); color: var(--kirmizi); border: 1px solid var(--rapor-cizgi); }
     .durum-kart b { display: block; font-size: 17px; margin-bottom: 2px; }
-    .eksik-liste { font-size: 14px; color: var(--rapor-baslik); margin: 0 4px 10px; line-height: 1.45; }
-    .eksik-liste button { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; min-height: 0; }
+    button.ilerleme { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; background: none; border: 0;
+      font: inherit; font-size: 14px; color: var(--soluk); padding: 6px 4px 12px; min-height: 44px; cursor: pointer; text-align: left; }
+    button.ilerleme .sayac { display: flex; align-items: center; gap: 6px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    button.ilerleme svg.halka { width: 18px; height: 18px; transform: rotate(-90deg); }
+    button.ilerleme.hazir { color: var(--yesil); cursor: default; }
     button.gonder { display: flex; align-items: center; justify-content: center; gap: 8px; }
     details.detay-kutu { margin: 0 0 12px; }
     details.detay-kutu > summary { cursor: pointer; font-weight: 600; color: var(--ana-etiket); padding: 10px 4px; }
@@ -1252,31 +1275,60 @@
     const detay = el('details', { sinif: 'detay-kutu' }, [el('summary', {}, [ikon('listeArti'), el('span', { metin: 'Etkinlik ve gözlem detayları' }), el('span', { sinif: 'ok2' }, [ikon('asagi')])])]);
     const gonder = el('button', { sinif: 'gonder', type: 'button' }, [el('span', { metin: 'Raporu gönder' }), ikon('sag')]);
     const zorunlular = [];   // { kutu, eksik(): '' | 'ne eksik' }
-    const eksikListe = el('div', { sinif: 'eksik-liste', 'aria-live': 'polite' });
+    // Alt satır: "Zorunlu alanları tamamlayın · ◔ 5/7" — dokununca ilk eksik alana kayar
+    const eksikListe = el('button', { sinif: 'ilerleme', type: 'button', 'aria-live': 'polite' });
+    let ilkEksik = null;
+    eksikListe.onclick = function () { if (ilkEksik) ilkEksik.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+    const halka = function (oran) {
+      const r = 7, c = 2 * Math.PI * r;
+      const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      s.setAttribute('viewBox', '0 0 18 18'); s.setAttribute('class', 'halka'); s.setAttribute('aria-hidden', 'true');
+      s.innerHTML = '<circle cx="9" cy="9" r="' + r + '" fill="none" stroke="currentColor" stroke-opacity=".25" stroke-width="2.4"/>' +
+        '<circle cx="9" cy="9" r="' + r + '" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="' +
+        (c * oran).toFixed(1) + ' ' + c.toFixed(1) + '"/>';
+      return s;
+    };
     const guncelle = function () {
-      const eksikler = zorunlular.map(function (z) { return { z: z, m: z.eksik() }; }).filter(function (x) { return x.m; });
+      let top = 0, tamam = 0; ilkEksik = null;
+      zorunlular.forEach(function (z) { const t = z.sayac(); top += t[1]; tamam += t[0]; if (t[0] < t[1] && !ilkEksik) ilkEksik = z.kutu; });
+      const hazir = tamam >= top;
       eksikListe.textContent = '';
-      if (eksikler.length) {
-        eksikListe.appendChild(document.createTextNode('Göndermeden önce: '));
-        eksikler.forEach(function (x, i) {
-          const b = el('button', { type: 'button', metin: x.m });
-          b.onclick = function () { x.z.kutu.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
-          eksikListe.appendChild(b);
-          if (i < eksikler.length - 1) eksikListe.appendChild(document.createTextNode(' · '));
-        });
-      } else eksikListe.appendChild(el('span', { style: 'color:var(--yesil);font-weight:600', metin: 'Her şey tamam, gönderebilirsin ✓' }));
-      if (!gonder.classList.contains('yukleniyor')) gonder.disabled = eksikler.length > 0;
+      eksikListe.classList.toggle('hazir', hazir);
+      eksikListe.setAttribute('aria-label', hazir ? 'Gönderilmeye hazır' : 'Eksik alanlar: ' + zorunlular.map(function (z) { return z.eksik(); }).filter(Boolean).join(', '));
+      eksikListe.appendChild(el('span', { metin: hazir ? 'Gönderilmeye hazır' : 'Zorunlu alanları tamamlayın' }));
+      eksikListe.appendChild(el('span', { sinif: 'sayac' }, [hazir ? ikon('tamam') : halka(top ? tamam / top : 0), el('span', { metin: tamam + '/' + top })]));
+      if (!gonder.classList.contains('yukleniyor')) gonder.disabled = !hazir;
     };
 
     s.sorular.forEach(function (q) {
       const al = function () { return raporCevap[q.id]; }, ver = function (v) { raporCevap[q.id] = v; guncelle(); };
       let kutu;
       if (q.tip === 'tarih') {
-        const yazi = el('span'), g = el('input', { type: 'date' });
-        g.value = bugunISO(); raporCevap[q.id] = g.value; yazi.textContent = tarihUzun(g.value);
-        g.onchange = function () { if (g.value) { yazi.textContent = tarihUzun(g.value); ver(g.value); } };
-        kutu = el('div', { sinif: 'soru' }, [el('label', { sinif: 'tarih-satir' }, [ikon('takvim'), yazi, ikon('asagi'), g])]);
-        zorunlular.push({ kutu: kutu, eksik: function () { return raporCevap[q.id] ? '' : 'buluşma tarihi'; } });
+        // Buluşma son 7 gün içinde: telefonun tarih ekranı yerine kart içinde açılan gün şeridi
+        const yazi = el('span'), kaydir = el('div', { sinif: 'gun-kaydir', role: 'listbox', 'aria-label': 'Buluşma günü' });
+        const serit = el('div', { sinif: 'gun-serit' }, [kaydir]);
+        const dugme = el('button', { sinif: 'tarih-satir', type: 'button', 'aria-expanded': 'false' }, [ikon('takvim'), yazi, el('span', { sinif: 'ok2' }, [ikon('asagi')])]);
+        const kisaGun = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+        raporCevap[q.id] = bugunISO(); yazi.textContent = tarihUzun(raporCevap[q.id]);
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(); d.setDate(d.getDate() - i);
+          const iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+          const b = el('button', { type: 'button', role: 'option' }, [el('small', { metin: i === 0 ? 'Bugün' : kisaGun[d.getDay()] }), el('b', { metin: String(d.getDate()) })]);
+          b.dataset.iso = iso;
+          if (iso === raporCevap[q.id]) b.classList.add('secili');
+          b.onclick = function () {
+            serit.querySelectorAll('button').forEach(function (x) { x.classList.toggle('secili', x === b); x.setAttribute('aria-selected', x === b); });
+            yazi.textContent = tarihUzun(iso); ver(iso);
+            serit.classList.remove('acik'); dugme.setAttribute('aria-expanded', 'false');
+          };
+          kaydir.appendChild(b);
+        }
+        dugme.onclick = function () {
+          const ac = !serit.classList.contains('acik'); serit.classList.toggle('acik', ac); dugme.setAttribute('aria-expanded', ac);
+          if (ac) { const sec = kaydir.querySelector('.secili'); if (sec) kaydir.scrollLeft = sec.offsetLeft - kaydir.clientWidth + sec.offsetWidth; }
+        };
+        kutu = el('div', { sinif: 'soru' }, [dugme, serit]);
+        zorunlular.push({ kutu: kutu, eksik: function () { return raporCevap[q.id] ? '' : 'buluşma tarihi'; }, sayac: function () { return [raporCevap[q.id] ? 1 : 0, 1]; } });
       } else if (q.tip === 'yoklama') {
         const durum = {}; raporCevap[q.id] = durum;
         const ozet = el('div', { sinif: 'ozet' });
@@ -1304,7 +1356,7 @@
           if (!kalan.length) return '';
           if (kalan.length === q.satirlar.length) return 'yoklama (' + kalan.length + ' öğrenci)';
           return 'yoklama: ' + kalan.slice(0, 2).join(', ') + (kalan.length > 2 ? ' +' + (kalan.length - 2) : '');
-        } });
+        }, sayac: function () { return [q.satirlar.filter(function (a) { return durum[a]; }).length, q.satirlar.length]; } });
       } else if (q.tip === 'olcek') {
         const deger = el('span', { sinif: 'sag-deger', metin: 'Seçilmedi' });
         const sayilar = []; for (let i = q.alt; i <= q.ust; i++) sayilar.push(i);
@@ -1315,7 +1367,7 @@
           el('div', { sinif: 'a', metin: q.aciklama || 'Buluşma hedeflerine ne ölçüde ulaşıldı?' }), grup,
           el('div', { sinif: 'olcek-etiket' }, [el('span', { metin: q.altEtiket || '' }), el('span', { metin: q.ustEtiket || '' })]),
         ]);
-        if (q.zorunlu) zorunlular.push({ kutu: kutu, eksik: function () { return raporCevap[q.id] ? '' : 'haftanın verimliliği'; } });
+        if (q.zorunlu) zorunlular.push({ kutu: kutu, eksik: function () { return raporCevap[q.id] ? '' : 'haftanın verimliliği'; }, sayac: function () { return [raporCevap[q.id] ? 1 : 0, 1]; } });
       } else {
         const rehberNot = /rehbere not/i.test(q.baslik);
         const bas = el('div', { sinif: 'soru-bas' }, [el('div', { sinif: 'b' }, [rehberNot ? ikon('mesaj') : null,
@@ -1325,7 +1377,8 @@
           const g = el(q.tip === 'metin' ? 'input' : 'textarea', q.tip === 'metin' ? { type: 'text' } : { placeholder: rehberNot ? 'Bir sorun veya destek ihtiyacı var mı?' : '' });
           g.oninput = function () { ver(g.value.trim()); }; kutu.appendChild(g);
         } else if (q.tip === 'tek' || q.tip === 'coklu') kutu.appendChild(secimGrubu(q.secenekler, q.tip === 'coklu', al, ver));
-        if (q.zorunlu && !q.detay) zorunlular.push({ kutu: kutu, eksik: function () { const v = raporCevap[q.id]; return v && (!Array.isArray(v) || v.length) ? '' : q.baslik.toLowerCase(); } });
+        if (q.zorunlu && !q.detay) zorunlular.push({ kutu: kutu, eksik: function () { const v = raporCevap[q.id]; return v && (!Array.isArray(v) || v.length) ? '' : q.baslik.toLowerCase(); },
+          sayac: function () { const v = raporCevap[q.id]; return [v && (!Array.isArray(v) || v.length) ? 1 : 0, 1]; } });
       }
       (q.detay ? detay : ana).appendChild(kutu);
     });
