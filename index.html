@@ -817,6 +817,7 @@
     kilitli: 'Onaylanmış rezervasyon değiştirilemez. Rehberinizle konuşun.', yetki: 'Bu işlem için yetkiniz yok.',
     durum: 'Durum değişmiş, liste yenilendi.', yatiliYok: 'Bu ekip için yatılı tablosu henüz kurulmadı.',
     grubumYok: 'Grup takip dosyası bulunamadı.', kapasite: 'Grup dolu (8 öğrenci). Rehberinize haber verin.',
+    duzenle: 'Güncellenecek rapor bulunamadı; sayfayı kapatıp yeniden aç.',
     raporYok: 'Rapor formu bulunamadı. Sistem sorumlusuna haber verin.', istek: 'İstek okunamadı.',
     toplantiYok: 'Bu hafta için toplantı belgesi henüz oluşturulmadı.', toplantiYapi: 'Toplantı belgesinde Grup turu tablosu bulunamadı.',
     satir: 'Liste değişmiş, yeniden açın.',
@@ -1267,13 +1268,24 @@
   const OLCEK_ETIKET = { 1: 'Çok düşük', 2: 'Düşük', 3: 'Orta', 4: 'İyi', 5: 'Çok iyi' };
   function tarihUzun(iso) { const d = yerel(iso + 'T12:00'); return d.getDate() + ' ' + AYLAR_UZUN[d.getMonth()] + ' ' + d.getFullYear() + ', ' + GUN_ADI[d.getDay()]; }
 
-  function raporCiz(s) {
-    raporCevap = {};
+  function haftaPzt(iso) {
+    const d = yerel(iso + 'T12:00'); d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  /** tarihISO: seçilen buluşma günü. O haftanın raporu varsa önceki cevaplarla dolu gelir ve "güncelle" olur. */
+  function raporCiz(s, tarihISO) {
+    const mevcutHafta = (s.mevcut || {})[haftaPzt(tarihISO || bugunISO())];
+    const tarih = tarihISO || (mevcutHafta ? mevcutHafta.tarih : bugunISO());
+    raporCevap = mevcutHafta ? JSON.parse(JSON.stringify(mevcutHafta.cevaplar)) : {};
     const ic = $('raporIcerik');
     ic.textContent = '';
     const ana = el('div');
     const detay = el('details', { sinif: 'detay-kutu' }, [el('summary', {}, [ikon('listeArti'), el('span', { metin: 'Etkinlik ve gözlem detayları' }), el('span', { sinif: 'ok2' }, [ikon('asagi')])])]);
-    const gonder = el('button', { sinif: 'gonder', type: 'button' }, [el('span', { metin: 'Raporu gönder' }), ikon('sag')]);
+    const gonderMetni = mevcutHafta ? 'Raporu güncelle' : 'Raporu gönder';
+    const gonder = el('button', { sinif: 'gonder', type: 'button' }, [el('span', { metin: gonderMetni }), ikon('sag')]);
+    if (mevcutHafta) ic.appendChild(el('div', { sinif: 'bilgi' }, [el('b', { metin: 'Bu haftanın raporu var' }), document.createElement('br'),
+      document.createTextNode(mevcutHafta.gonderim + ' tarihinde gönderildi. Değiştirip “Raporu güncelle”ye basarsan eskisinin yerini alır.')]));
     const zorunlular = [];   // { kutu, eksik(): '' | 'ne eksik' }
     // Alt satır: "Zorunlu alanları tamamlayın · ◔ 5/7" — dokununca ilk eksik alana kayar
     const eksikListe = el('button', { sinif: 'ilerleme', type: 'button', 'aria-live': 'polite' });
@@ -1309,7 +1321,7 @@
         const serit = el('div', { sinif: 'gun-serit' }, [kaydir]);
         const dugme = el('button', { sinif: 'tarih-satir', type: 'button', 'aria-expanded': 'false' }, [ikon('takvim'), yazi, el('span', { sinif: 'ok2' }, [ikon('asagi')])]);
         const kisaGun = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
-        raporCevap[q.id] = bugunISO(); yazi.textContent = tarihUzun(raporCevap[q.id]);
+        raporCevap[q.id] = tarih; yazi.textContent = tarihUzun(tarih);
         for (let i = 6; i >= 0; i--) {
           const d = new Date(); d.setDate(d.getDate() - i);
           const iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
@@ -1317,6 +1329,7 @@
           b.dataset.iso = iso;
           if (iso === raporCevap[q.id]) b.classList.add('secili');
           b.onclick = function () {
+            if (haftaPzt(iso) !== haftaPzt(tarih)) { raporCiz(s, iso); return; }   // başka hafta: o haftanın raporu (varsa) yüklenir
             serit.querySelectorAll('button').forEach(function (x) { x.classList.toggle('secili', x === b); x.setAttribute('aria-selected', x === b); });
             yazi.textContent = tarihUzun(iso); ver(iso);
             serit.classList.remove('acik'); dugme.setAttribute('aria-expanded', 'false');
@@ -1330,7 +1343,7 @@
         kutu = el('div', { sinif: 'soru' }, [dugme, serit]);
         zorunlular.push({ kutu: kutu, eksik: function () { return raporCevap[q.id] ? '' : 'buluşma tarihi'; }, sayac: function () { return [raporCevap[q.id] ? 1 : 0, 1]; } });
       } else if (q.tip === 'yoklama') {
-        const durum = {}; raporCevap[q.id] = durum;
+        const durum = raporCevap[q.id] && typeof raporCevap[q.id] === 'object' ? raporCevap[q.id] : {}; raporCevap[q.id] = durum;
         const ozet = el('div', { sinif: 'ozet' });
         const satirlar = el('div');
         const ozetYaz = function () {
@@ -1358,7 +1371,7 @@
           return 'yoklama: ' + kalan.slice(0, 2).join(', ') + (kalan.length > 2 ? ' +' + (kalan.length - 2) : '');
         }, sayac: function () { return [q.satirlar.filter(function (a) { return durum[a]; }).length, q.satirlar.length]; } });
       } else if (q.tip === 'olcek') {
-        const deger = el('span', { sinif: 'sag-deger', metin: 'Seçilmedi' });
+        const deger = el('span', { sinif: 'sag-deger', metin: raporCevap[q.id] ? raporCevap[q.id] + ' · ' + (OLCEK_ETIKET[raporCevap[q.id]] || '') : 'Seçilmedi' });
         const sayilar = []; for (let i = q.alt; i <= q.ust; i++) sayilar.push(i);
         const grup = secimGrubu(sayilar, false, al, function (v) { deger.textContent = v ? v + ' · ' + (OLCEK_ETIKET[v] || '') : 'Seçilmedi'; ver(v); });
         grup.classList.add('olcek');
@@ -1375,6 +1388,7 @@
         kutu = el('div', { sinif: 'soru' }, [bas, q.aciklama ? el('div', { sinif: 'a', metin: q.aciklama }) : null]);
         if (q.tip === 'metin' || q.tip === 'paragraf') {
           const g = el(q.tip === 'metin' ? 'input' : 'textarea', q.tip === 'metin' ? { type: 'text' } : { placeholder: rehberNot ? 'Bir sorun veya destek ihtiyacı var mı?' : '' });
+          if (raporCevap[q.id]) g.value = raporCevap[q.id];
           g.oninput = function () { ver(g.value.trim()); }; kutu.appendChild(g);
         } else if (q.tip === 'tek' || q.tip === 'coklu') kutu.appendChild(secimGrubu(q.secenekler, q.tip === 'coklu', al, ver));
         if (q.zorunlu && !q.detay) zorunlular.push({ kutu: kutu, eksik: function () { const v = raporCevap[q.id]; return v && (!Array.isArray(v) || v.length) ? '' : q.baslik.toLowerCase(); },
@@ -1383,7 +1397,10 @@
       (q.detay ? detay : ana).appendChild(kutu);
     });
     ic.appendChild(ana);
-    if (detay.children.length > 1) ic.appendChild(detay);
+    if (detay.children.length > 1) {
+      if (s.sorular.some(function (q) { const v = raporCevap[q.id]; return q.detay && v && (!Array.isArray(v) || v.length); })) detay.open = true;
+      ic.appendChild(detay);
+    }
     ic.appendChild(eksikListe);
     const hata = el('div', { 'aria-live': 'assertive' });
     const gonderEtiket = function (metin, ikonAdi) { gonder.textContent = ''; gonder.appendChild(el('span', { metin: metin })); gonder.appendChild(ikon(ikonAdi)); };
@@ -1401,12 +1418,12 @@
       try {
         let r;
         if (DEMO) { await new Promise(function (ok) { setTimeout(ok, 900); }); r = /demo-hata/.test(location.search) ? { ok: false, hata: 'x' } : { ok: true }; }
-        else r = await (await fetch(VERI_URL, { method: 'POST', body: JSON.stringify({ kod: depo.al('kod'), grup: depo.al('grup'), islem: 'raporGonder', cevaplar: raporCevap }) })).json();
+        else r = await (await fetch(VERI_URL, { method: 'POST', body: JSON.stringify({ kod: depo.al('kod'), grup: depo.al('grup'), islem: 'raporGonder', cevaplar: raporCevap, duzenle: mevcutHafta ? mevcutHafta.id : '' }) })).json();
         if (!r.ok) { hataGoster(r.hata === 'eksik' ? '"' + r.soru + '" eksik.' : (HATALAR[r.hata] || HATA_METNI[r.hata] || 'Sunucu raporu kabul etmedi. Biraz sonra tekrar dene.')); return; }
         bitir();
         ic.textContent = '';
         ic.appendChild(el('div', { sinif: 'durum-kart basari', role: 'status' }, [ikon('tamam'),
-          el('div', {}, [el('b', { metin: 'Rapor gönderildi' }), el('span', { metin: 'Yoklama grubunun dosyasına işlendi. Teşekkürler!' })])]));
+          el('div', {}, [el('b', { metin: mevcutHafta ? 'Rapor güncellendi' : 'Rapor gönderildi' }), el('span', { metin: 'Yoklama grubunun dosyasına işlendi. Teşekkürler!' })])]));
         const don = el('button', { sinif: 'gonder', type: 'button', metin: 'Ana sayfaya dön' });
         don.onclick = function () { history.back(); };
         ic.appendChild(don);
@@ -1425,7 +1442,10 @@
       { id: 4, tip: 'paragraf', baslik: 'Rehbere not / destek ihtiyacı' },
       { id: 5, tip: 'metin', baslik: 'Haftanın konusu', detay: true },
       { id: 6, tip: 'coklu', baslik: 'Konu anlatım yöntemi', secenekler: ['Sunum', 'Tartışma', 'Oyun', 'Video', 'Okuma'], detay: true },
-      { id: 7, tip: 'tek', baslik: 'Buluşma formatı', secenekler: ['Yüz yüze', 'Online', 'Dışarıda etkinlik'], detay: true } ] };
+      { id: 7, tip: 'tek', baslik: 'Buluşma formatı', secenekler: ['Yüz yüze', 'Online', 'Dışarıda etkinlik'], detay: true } ],
+      mevcut: /[?&]var\b/.test(location.search) ? (function () { const h = haftaPzt(bugunISO()); const o = {};
+        o[h] = { id: 'demo', tarih: bugunISO(), gonderim: 'bugün 00:02', cevaplar: { 1: bugunISO(), 2: { 'Ali': 'Geldi', 'Yusuf': 'Gelmedi', 'Ömer': 'Geldi', 'Zafer Aslan': 'Mazeretli', 'Abdurrahman Muhammed Emin Özdemiroğlu': 'Geldi' }, 3: 4, 4: 'Kahvaltı planı lazım.', 7: 'Yüz yüze' } };
+        return o; })() : {} };
   }
 
   // ---------- Toplantı notu ----------
