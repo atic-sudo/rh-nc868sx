@@ -242,6 +242,27 @@
     .dil.sekme { display: flex; margin: -4px 0 16px; }
     .dil.sekme button { flex: 1; font-size: 15px; padding: 8px 10px; }
     .adim.senin { background: var(--rapor-zemin); border: 1px solid var(--rapor-cizgi); }
+    /* Haftalık rapor */
+    .soru { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 16px; padding: 14px; margin-bottom: 10px; }
+    .soru > .b { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .soru > .b .y { color: var(--rapor-ikon); }
+    .soru > .a { font-size: 13px; color: var(--soluk); margin-bottom: 8px; }
+    .soru input[type=date], .soru input[type=text], .soru textarea { width: 100%; font: inherit; font-size: 16px; padding: 10px 12px;
+      border-radius: 12px; border: 1px solid var(--cizgi); background: var(--bg); color: var(--yazi); text-transform: none; letter-spacing: normal; }
+    .soru textarea { min-height: 80px; resize: vertical; }
+    .secimler { display: flex; flex-wrap: wrap; gap: 6px; }
+    .secimler button { font: inherit; font-size: 14px; font-weight: 600; padding: 8px 12px; border-radius: 10px; cursor: pointer;
+      border: 1px solid var(--cizgi); background: var(--bg); color: var(--yazi); }
+    .secimler button.secili { background: var(--ana-zemin); border-color: var(--ana-etiket); color: var(--ana); }
+    .ogr-yok { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--cizgi); }
+    .ogr-yok:first-of-type { border-top: 0; }
+    .ogr-yok .isim { flex: 1; font-weight: 600; }
+    .ogr-yok .secimler button { padding: 6px 9px; font-size: 13px; }
+    .ogr-yok .secimler button.secili[data-v="Gelmedi"] { background: var(--rapor-zemin); border-color: var(--rapor-ikon); color: var(--rapor-baslik); }
+    details.detay-kutu { margin: 6px 0 10px; }
+    details.detay-kutu > summary { cursor: pointer; font-weight: 600; color: var(--ana-etiket); padding: 10px 4px; }
+    button.gonder { width: 100%; margin-top: 6px; font: inherit; font-size: 17px; font-weight: 700; padding: 15px; border-radius: 14px; cursor: pointer;
+      background: var(--rapor-zemin); color: var(--rapor-baslik); border: 1px solid var(--rapor-cizgi); }
     a.docs { display: block; text-align: center; margin-top: 26px; font-size: 14px; color: var(--soluk); }
   </style>
 </head>
@@ -367,6 +388,14 @@
       <h3>Takıldığında</h3>
       <p>Önce rehberine, teknik bir sorun varsa sistem sorumlusuna yaz.</p>
     </div>
+  </section>
+
+  <!-- Haftalık rapor -->
+  <section id="rapor" hidden>
+    <div class="gezinti"><button class="geri" id="raporGeri" type="button"></button></div>
+    <h1 class="okuma-baslik" id="raporBaslik">Haftalık rapor</h1>
+    <div class="alt-baslik2">Buluşmadan sonra · ~2 dk</div>
+    <div id="raporIcerik"></div>
   </section>
 
   <!-- Medya: slayt / video uygulama içinde -->
@@ -500,8 +529,8 @@
 
     // Satırlar
     ic.appendChild(v.raporGonderildi
-      ? satir({ ikon: 'kalem', baslik: 'Haftalık rapor', alt: 'Bu hafta gönderildi', url: v.raporUrl, durum: 'Gönderildi' })
-      : satir({ ikon: 'kalem', baslik: 'Haftalık rapor', alt: 'Buluşmadan sonra · 2 dk', url: v.raporUrl, sinif: 'rapor' }));
+      ? satir({ ikon: 'kalem', baslik: 'Haftalık rapor', alt: 'Bu hafta gönderildi · düzeltmek için dokun', url: '#', durum: 'Gönderildi', tikla: raporAc })
+      : satir({ ikon: 'kalem', baslik: 'Haftalık rapor', alt: 'Buluşmadan sonra · 2 dk', url: '#', sinif: 'rapor', tikla: raporAc }));
     ic.appendChild(satir({ ikon: 'belge', baslik: 'Toplantı notu',
       alt: v.toplanti ? v.toplanti.tarih + ' haftası · gündem ve görevler' : 'Henüz toplantı notu yok', url: v.toplanti && v.toplanti.url,
       tikla: v.toplanti ? toplantiAc : null }));
@@ -548,7 +577,7 @@
   }
 
   function goster(bolum) {
-    ['kurulum', 'pano', 'okuma', 'medya', 'yatili', 'grubum', 'toplanti', 'program', 'yardim'].forEach(function (b) { $(b).hidden = b !== bolum; });
+    ['kurulum', 'pano', 'okuma', 'medya', 'yatili', 'grubum', 'toplanti', 'program', 'yardim', 'rapor'].forEach(function (b) { $(b).hidden = b !== bolum; });
     if (bolum !== 'medya') $('medyaKutu').textContent = '';   // video arkada çalmaya devam etmesin
     window.scrollTo(0, 0);
   }
@@ -561,7 +590,8 @@
 
   const HATALAR = {
     kod: 'Erişim kodu geçersiz. Rehberinizden güncel kodu isteyin.',
-    kilit: 'Çok fazla yanlış deneme oldu. 10 dakika sonra tekrar deneyin.',
+    kilit: 'Çok fazla yanlış deneme oldu; güvenlik için uygulama 30 dakika kilitlendi. Sonra tekrar deneyin.',
+    kurulum: 'Sistem şu an erişime kapalı (bakım). Rehberinize ya da sistem sorumlusuna haber verin.',
     grup: 'Grup bulunamadı.',
   };
 
@@ -573,6 +603,7 @@
       if (/ekran=program/.test(location.search)) programAc(2);
       if (/ekran=misafir/.test(location.search)) misafirlerAc();
       if (/ekran=yatili/.test(location.search)) yatiliAc();
+      if (/ekran=rapor/.test(location.search)) raporAc();
       return;
     }
     const grup = depo.al('grup') || '', kod = depo.al('kod');
@@ -689,7 +720,7 @@
     goster('medya');
   }
 
-  [$('geri'), $('medyaGeri'), $('yatiliGeri'), $('grubumGeri'), $('toplantiGeri'), $('programGeri'), $('yardimGeri')].forEach(function (b) {
+  [$('geri'), $('medyaGeri'), $('yatiliGeri'), $('grubumGeri'), $('toplantiGeri'), $('programGeri'), $('yardimGeri'), $('raporGeri')].forEach(function (b) {
     b.appendChild(ikon('sol')); b.appendChild(document.createTextNode('Geri'));
     b.addEventListener('click', function () { history.back(); });
   });
@@ -703,6 +734,7 @@
     kilitli: 'Onaylanmış rezervasyon değiştirilemez. Rehberinizle konuşun.', yetki: 'Bu işlem için yetkiniz yok.',
     durum: 'Durum değişmiş, liste yenilendi.', yatiliYok: 'Bu ekip için yatılı tablosu henüz kurulmadı.',
     grubumYok: 'Grup takip dosyası bulunamadı.', kapasite: 'Grup dolu (8 öğrenci). Rehberinize haber verin.',
+    raporYok: 'Rapor formu bulunamadı. Sistem sorumlusuna haber verin.', istek: 'İstek okunamadı.',
     toplantiYok: 'Bu hafta için toplantı belgesi henüz oluşturulmadı.', toplantiYapi: 'Toplantı belgesinde Grup turu tablosu bulunamadı.',
     satir: 'Liste değişmiş, yeniden açın.',
     ayniIsim: 'Bu isim listede zaten var. Aynı isimde iki öğrenci varsa soyadın baş harfini ekleyin.', ad: 'Geçerli bir isim yazın.',
@@ -1110,6 +1142,124 @@
     $('yardimRehber').hidden = !yonetici();
     history.pushState({ alt: 'yardim' }, ''); goster('yardim');
   });
+
+  // ---------- Haftalık rapor ----------
+  let raporCevap = {};
+  function bugunISO() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+
+  async function raporAc() {
+    history.pushState({ alt: 'rapor' }, ''); goster('rapor');
+    $('raporBaslik').textContent = 'Haftalık rapor · ' + ((sonVeri && sonVeri.grup) || depo.al('grup') || '');
+    $('raporIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    try {
+      const s = DEMO ? DEMO_RAPOR() : await islem('&islem=raporForm');
+      if (!s.ok) { $('raporIcerik').textContent = ''; $('raporIcerik').appendChild(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s.hata] || 'Bir sorun oluştu.' })); return; }
+      raporCiz(s);
+    } catch (e) { $('raporIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; }
+  }
+
+  function secimGrubu(secenekler, coklu, deger, degisti) {
+    const kap = el('div', { sinif: 'secimler' });
+    secenekler.forEach(function (v) {
+      const b = el('button', { type: 'button', metin: String(v), 'data-v': String(v) });
+      const seciliMi = function () { return coklu ? (deger() || []).indexOf(v) >= 0 : deger() === v; };
+      if (seciliMi()) b.classList.add('secili');
+      b.onclick = function () {
+        if (coklu) { const a = (deger() || []).slice(); const i = a.indexOf(v); if (i >= 0) a.splice(i, 1); else a.push(v); degisti(a); }
+        else degisti(deger() === v ? '' : v);
+        kap.querySelectorAll('button').forEach(function (x) {
+          const xv = x.dataset.v, d = deger();
+          x.classList.toggle('secili', coklu ? (d || []).map(String).indexOf(xv) >= 0 : String(d) === xv);
+        });
+      };
+      kap.appendChild(b);
+    });
+    return kap;
+  }
+
+  function raporCiz(s) {
+    raporCevap = {};
+    const ic = $('raporIcerik');
+    ic.textContent = '';
+    const ana = el('div'), detay = el('details', { sinif: 'detay-kutu' }, [el('summary', { metin: 'Detaylar (isteğe bağlı)' })]);
+    s.sorular.forEach(function (q) {
+      const kutu = el('div', { sinif: 'soru' }, [
+        el('div', { sinif: 'b' }, [document.createTextNode(q.baslik.replace(/^Yoklama\s*[–-]\s*/, 'Yoklama · ')), q.zorunlu ? el('span', { sinif: 'y', metin: ' *' }) : null]),
+        q.aciklama ? el('div', { sinif: 'a', metin: q.aciklama }) : null,
+      ]);
+      const al = function () { return raporCevap[q.id]; }, ver = function (v) { raporCevap[q.id] = v; };
+      if (q.tip === 'tarih') {
+        const g = el('input', { type: 'date' }); g.value = bugunISO(); ver(g.value);
+        g.onchange = function () { ver(g.value); }; kutu.appendChild(g);
+      } else if (q.tip === 'yoklama') {
+        if (!q.satirlar.length) kutu.appendChild(el('div', { sinif: 'a', metin: 'Grubunda henüz öğrenci yok. Grubum ekranından ekleyebilirsin.' }));
+        else {
+          const durum = {}; ver(durum);
+          const hepsi = el('button', { sinif: 'kucuk', type: 'button', metin: 'Herkes geldi' });
+          const satirlar = el('div');
+          const ciz = function () {
+            satirlar.textContent = '';
+            q.satirlar.forEach(function (ad) {
+              satirlar.appendChild(el('div', { sinif: 'ogr-yok' }, [el('span', { sinif: 'isim', metin: ad }),
+                secimGrubu(q.sutunlar, false, function () { return durum[ad]; }, function (v) { if (v) durum[ad] = v; else delete durum[ad]; })]));
+            });
+          };
+          hepsi.onclick = function () { q.satirlar.forEach(function (ad) { durum[ad] = q.sutunlar[0]; }); ciz(); };
+          ciz();
+          kutu.appendChild(satirlar);
+          kutu.appendChild(el('div', { style: 'margin-top:8px;text-align:right' }, [hepsi]));
+        }
+      } else if (q.tip === 'olcek') {
+        const sayilar = []; for (let i = q.alt; i <= q.ust; i++) sayilar.push(i);
+        kutu.appendChild(secimGrubu(sayilar, false, al, ver));
+        if (q.altEtiket || q.ustEtiket) kutu.appendChild(el('div', { sinif: 'a', style: 'margin:6px 0 0;display:flex;justify-content:space-between' },
+          [el('span', { metin: q.alt + ' = ' + (q.altEtiket || '') }), el('span', { metin: q.ust + ' = ' + (q.ustEtiket || '') })]));
+      } else if (q.tip === 'metin' || q.tip === 'paragraf') {
+        const g = el(q.tip === 'metin' ? 'input' : 'textarea', q.tip === 'metin' ? { type: 'text' } : {});
+        g.oninput = function () { ver(g.value.trim()); }; kutu.appendChild(g);
+      } else if (q.tip === 'tek' || q.tip === 'coklu') {
+        kutu.appendChild(secimGrubu(q.secenekler, q.tip === 'coklu', al, ver));
+      }
+      (q.detay ? detay : ana).appendChild(kutu);
+    });
+    ic.appendChild(ana);
+    if (detay.children.length > 1) ic.appendChild(detay);
+    const hata = el('div', { sinif: 'hata' });
+    const gonder = el('button', { sinif: 'gonder', type: 'button', metin: 'Raporu gönder' });
+    gonder.onclick = async function () {
+      for (const q of s.sorular) {
+        if (q.detay || !q.zorunlu) continue;
+        const v = raporCevap[q.id];
+        const eksik = q.tip === 'yoklama' ? q.satirlar.some(function (ad) { return !(v || {})[ad]; }) : (v === undefined || v === '' || (Array.isArray(v) && !v.length));
+        if (eksik) { hata.textContent = '"' + q.baslik + '" eksik.'; return; }
+      }
+      hata.textContent = ''; gonder.disabled = true; gonder.textContent = 'Gönderiliyor…';
+      try {
+        let r;
+        if (DEMO) r = { ok: true };
+        else r = await (await fetch(VERI_URL, { method: 'POST', body: JSON.stringify({ kod: depo.al('kod'), grup: depo.al('grup'), islem: 'raporGonder', cevaplar: raporCevap }) })).json();
+        if (!r.ok) { hata.textContent = r.hata === 'eksik' ? '"' + r.soru + '" eksik.' : (HATALAR[r.hata] || HATA_METNI[r.hata] || 'Gönderilemedi.'); gonder.disabled = false; gonder.textContent = 'Raporu gönder'; return; }
+        ic.textContent = '';
+        ic.appendChild(el('div', { sinif: 'bilgi', metin: 'Teşekkürler! Raporun ve yoklama kaydedildi ✓' }));
+        const don = el('button', { sinif: 'gonder', type: 'button', metin: 'Ana sayfaya dön' });
+        don.onclick = function () { history.back(); };
+        ic.appendChild(don);
+      } catch (e) { hata.textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; gonder.disabled = false; gonder.textContent = 'Raporu gönder'; }
+    };
+    ic.appendChild(hata);
+    ic.appendChild(gonder);
+  }
+
+  function DEMO_RAPOR() {
+    return { ok: true, grup: 'E10', sorular: [
+      { id: 1, tip: 'tarih', baslik: 'Buluşma tarihi', zorunlu: true },
+      { id: 2, tip: 'yoklama', baslik: 'Yoklama – E10', satirlar: ['Ali', 'Mehmet', 'Yusuf', 'Ömer'], sutunlar: ['Geldi', 'Gelmedi', 'Mazeretli'], zorunlu: true },
+      { id: 3, tip: 'olcek', baslik: 'Bu haftanın verimliliği', alt: 1, ust: 5, altEtiket: 'Çok düşük', ustEtiket: 'Çok iyi', zorunlu: true },
+      { id: 4, tip: 'paragraf', baslik: 'Rehbere not / destek ihtiyacı' },
+      { id: 5, tip: 'metin', baslik: 'Haftanın konusu', detay: true },
+      { id: 6, tip: 'coklu', baslik: 'Konu anlatım yöntemi', secenekler: ['Sunum', 'Tartışma', 'Oyun', 'Video', 'Okuma'], detay: true },
+      { id: 7, tip: 'tek', baslik: 'Buluşma formatı', secenekler: ['Yüz yüze', 'Online', 'Dışarıda etkinlik'], detay: true } ] };
+  }
 
   // ---------- Toplantı notu ----------
   // Sunucu: islem=toplanti → { tarih, ekip, grup, tur: { gecen, ihtiyac }, gorevler: [{ satir, gorev, sorumlu, tarih, tamam }], html, url }
