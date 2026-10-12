@@ -19,6 +19,7 @@
     :root {
       --bg: #f7f9f8; --kart: #ffffff; --cizgi: #e4ebe8; --yazi: #1f2a28; --soluk: #5d6966; --ok: #7f8b87;
       --ikon-zemin: #f0f4f2; --ikon: #5f6d69;
+      --at-zemin: #2c5a51;
       --ana: #2c5a51; --ana-etiket: #3e6c62; --ana-zemin: #eef6f3; --ana-cizgi: #d7e7e1; --rozet: #e3f1ec; --rozet-yazi: #2f6d60;
       --rapor-zemin: #fcefe6; --rapor-cizgi: #f6dccb; --rapor-baslik: #8a4a2c; --rapor-alt: #8c5537;
       --rapor-ikon-zemin: #f7dcc8; --rapor-ikon: #ad552b;
@@ -30,6 +31,7 @@
     }
     @media (prefers-color-scheme: dark) {
       :root {
+        --at-zemin: #3f8f80;
         --bg: #1c2321; --kart: #252d2b; --cizgi: #34403c; --yazi: #e7eeeb; --soluk: #a3b0ac; --ok: #7f8c88;
         --ikon-zemin: #313b38; --ikon: #b9c6c2;
         --ana: #b9e3d4; --ana-etiket: #9fc4b8; --ana-zemin: #2a3934; --ana-cizgi: #3a4f48; --rozet: #263f38; --rozet-yazi: #9fd2c3;
@@ -79,7 +81,10 @@
     a.satir { display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--yazi);
               background: var(--kart); border: 1px solid var(--cizgi); border-radius: 18px; padding: 14px; margin-bottom: 10px; min-height: 72px; }
     a.satir:active { transform: scale(.99); }
-    .ikon-kutu { width: 46px; height: 46px; border-radius: 13px; background: var(--ikon-zemin); color: var(--ikon); display: grid; place-items: center; flex: none; }
+    .ikon-kutu { width: 46px; height: 46px; border-radius: 13px; background: var(--ikon-zemin); color: var(--ikon); display: grid; place-items: center; flex: none; position: relative; }
+    .sayi { position: absolute; top: -6px; right: -6px; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px;
+            background: #c8372b; color: #fff; font-size: 12px; font-weight: 700; line-height: 20px; text-align: center;
+            box-shadow: 0 0 0 2px var(--kart); }
     .orta { flex: 1; min-width: 0; }
     .baslik { display: block; font-size: 18px; font-weight: 600; }
     .alt { display: block; font-size: 15px; color: var(--soluk); margin-top: 2px; }
@@ -105,6 +110,12 @@
     button.baglanti { background: none; border: 0; color: var(--soluk); font: inherit; font-size: 13px; padding: 14px 0 0; cursor: pointer;
                       display: block; margin: 0 auto; text-decoration: underline; text-underline-offset: 3px; }
     .yukleniyor { color: var(--soluk); text-align: center; padding: 40px 0; }
+    /* Yükleniyor: dört nala koşan at (Eadweard Muybridge, 1887 — kamu malı; 7 karelik şerit, at.png) */
+    .yukleniyor:not(button) { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .yukleniyor:not(button)::before { content: ''; width: 88px; height: 46px; border: solid var(--at-zemin); border-width: 13px 8px;
+      border-radius: 20px; background: var(--at-zemin) url(at.png) 0 0 / 616px 46px no-repeat; animation: kos .7s steps(7) infinite; }
+    @keyframes kos { to { background-position: -616px 0; } }
+    @media (prefers-reduced-motion: reduce) { .yukleniyor:not(button)::before { animation: none; } }
 
     /* Kurulum */
     .kart { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 20px; padding: 18px; }
@@ -433,7 +444,9 @@
       </ul>
       <h3>Yatılı</h3>
       <ul>
-        <li><b>Talep:</b> Yatılı → boş slotta <b>Talep et</b>. Rehberin onaylayınca kilitlenir; değişiklik için rehberine yaz.</li>
+        <li><b>Talep:</b> Yatılı → boş slotta <b>Talep et</b>. Rehberin onaylayınca kilitlenir.</li>
+        <li><b>İptal:</b> Onaydan önce ve yatılıya bir haftadan fazla varken <b>Vazgeç</b>. Sonrasında <b>İptal iste</b> → sebep yaz; rehberin onaylayınca slot boşalır.</li>
+        <li><b>Kırmızı sayı:</b> Bakman gereken şey var demek (rapor gönderilmedi, yatılı durumu değişti; rehberde onay bekleyen talepler). Telefon ikonunda da görmek için aşağıdaki düğme.</li>
         <li><b>Program:</b> Yatılı kutusundaki <b>Program</b> düğmesi o günün saat saat akışını açar; şu anki etkinlik vurgulu. Saatler namaz vakitlerine göre hesaplanır.</li>
         <li>Yatılı günü ana ekranın en üstünde <b>Bugün yatılı</b> kartı çıkar.</li>
       </ul>
@@ -451,12 +464,16 @@
         <h3>Rehber ve org sorumlusu için</h3>
         <ul>
           <li>Üstteki grup menüsünden ekibinin grupları arasında geç.</li>
-          <li><b>Yatılı → Rezervasyonlar:</b> ekibinin taleplerini Onayla; değiştirmek için "Onayı kaldır".</li>
+          <li><b>Yatılı → Rezervasyonlar:</b> ekibinin taleplerini Onayla; değiştirmek için "Onayı kaldır". İptal talebi gelince sebebi görünür: "İptali onayla" ya da "Reddet" (e-postayla da haber gelir).</li>
           <li><b>Yatılı → Misafirler:</b> "Gönüllü çağrısı paylaş" eksik konuk / Kur'an hocası / ders koçu için hazır WhatsApp mesajı yapar. Gönüllü bulununca Ata → Davet gönder; konuğa kendi saatini gösteren program linki gider.</li>
           <li>Misafirler programın içinden de atanabilir: satırın sağındaki "Ata" ya da isme dokun.</li>
           <li>Ayrıntılı rehber: 00 Idari → "Rehber ve Org Sorumlusu Rehberi".</li>
         </ul>
       </div>
+      <h3>Telefon ikonunda sayı</h3>
+      <p>Ana ekrana eklediysen, bakman gereken şeylerin sayısı uygulama ikonunda da görünebilir (uygulama açıldıkça güncellenir).</p>
+      <button class="ana" id="ikonSayiAc" type="button">İkonda sayı göster</button>
+      <p id="ikonSayiDurum" style="padding:10px 0 0;color:var(--soluk)"></p>
       <h3>Takıldığında</h3>
       <p>Önce rehberine, teknik bir sorun varsa sistem sorumlusuna yaz.</p>
     </div>
@@ -545,7 +562,7 @@
   function satirKur(o) {
     let sag = o.durum ? el('span', { sinif: 'durum' + (o.durumSinif ? ' ' + o.durumSinif : ''), metin: o.durum }) : el('span', { sinif: 'sag-ok' }, [ikon('sag')]);
     if (o.ekDugme) sag = el('span', { sinif: 'sag-sutun' }, [sag, o.ekDugme]);
-    return el('a', { sinif: 'satir' + (o.sinif ? ' ' + o.sinif : '') + (o.url ? '' : ' pasif'), href: o.url || '#', target: '_blank', rel: 'noopener' }, [
+    return el('a', { sinif: 'satir' + (o.sinif ? ' ' + o.sinif : '') + (o.url ? '' : ' pasif'), href: o.url || '#', target: '_blank', rel: 'noopener', 'data-k': o.k || '' }, [
       el('span', { sinif: 'ikon-kutu' }, [ikon(o.ikon)]),
       el('span', { sinif: 'orta' }, [el('span', { sinif: 'baslik', metin: o.baslik }), el('span', { sinif: 'alt', metin: o.alt })]),
       sag,
@@ -612,8 +629,8 @@
 
     // Satırlar
     ic.appendChild(v.raporGonderildi
-      ? satir({ ikon: 'kalem', baslik: 'Haftalık rapor', alt: 'Bu hafta gönderildi · düzeltmek için dokun', url: '#', durum: 'Gönderildi', tikla: raporAc })
-      : satir({ ikon: 'kalem', baslik: 'Haftalık rapor', alt: 'Buluşmadan sonra · 2 dk', url: '#', sinif: 'rapor', tikla: raporAc }));
+      ? satir({ k: 'rapor', ikon: 'kalem', baslik: 'Haftalık rapor', alt: 'Bu hafta gönderildi · düzeltmek için dokun', url: '#', durum: 'Gönderildi', tikla: raporAc })
+      : satir({ k: 'rapor', ikon: 'kalem', baslik: 'Haftalık rapor', alt: 'Buluşmadan sonra · 2 dk', url: '#', sinif: 'rapor', tikla: raporAc }));
     ic.appendChild(satir({ ikon: 'belge', baslik: 'Toplantı notu',
       alt: v.toplanti ? v.toplanti.tarih + ' haftası · gündem ve görevler' : 'Henüz toplantı notu yok', url: v.toplanti && v.toplanti.url,
       tikla: v.toplanti ? toplantiAc : null }));
@@ -623,14 +640,76 @@
       programDugme = el('span', { sinif: 'cip-ic', role: 'button', tabindex: '0' }, [document.createTextNode('Program'), ikon('sag')]);
       programDugme.addEventListener('click', function (ev) { ev.preventDefault(); ev.stopPropagation(); programAc(v.yatiliSatir); });
     }
-    ic.appendChild(satir({ ikon: 'takvim', baslik: 'Yatılı', alt: y.metin, url: v.yatiliUrl || '#', ekDugme: programDugme,
+    ic.appendChild(satir({ k: 'yatili', ikon: 'takvim', baslik: 'Yatılı', alt: y.metin, url: v.yatiliUrl || '#', ekDugme: programDugme,
                            durum: y.durum, durumSinif: y.durum === 'Onay bekliyor' ? 'bekliyor' : '', tikla: yatiliAc }));
     ic.appendChild(satir({ ikon: 'kisiler', baslik: 'Grubum', alt: 'Öğrenciler · Durum · Katılım', url: v.grubumUrl || '#', tikla: grubumAc }));
 
+    sayacGuncelle(v);
     const alt = $('altBilgi');
     alt.textContent = '';
     if (v.raporGonderildi) { alt.appendChild(ikon('tamam')); alt.appendChild(el('span', { metin: 'Bu haftanın raporu gönderildi' })); }
   }
+
+  // ---------- Sayaçlar (WhatsApp'taki gibi kırmızı rozet) ----------
+  // Mentor: bu haftanın raporu gönderilmediyse Rapor'da 1; yatılı durumu (onay, iptal sonucu…) son bakıştan beri
+  // değiştiyse Yatılı'da 1. Rehber: onay bekleyen talep + iptal talebi. Org: misafiri eksik yatılı.
+  // Telefon ikonundaki sayı (Badging API) yalnız uygulama açılınca güncellenir; iPhone'da bildirim izni ister.
+  let sayacZamani = 0, sunucuSayac = 0;
+  function rozetKoy(k, n) {
+    const a = document.querySelector('#icerik [data-k="' + k + '"] .ikon-kutu');
+    if (!a) return;
+    const eski = a.querySelector('.sayi');
+    if (eski) eski.remove();
+    if (n > 0) a.appendChild(el('span', { sinif: 'sayi', metin: n > 9 ? '9+' : String(n), 'aria-label': n + ' yeni' }));
+  }
+  function ikonRozeti(n) {
+    try {
+      if (n > 0 && navigator.setAppBadge) navigator.setAppBadge(n).catch(function () {});
+      else if (navigator.clearAppBadge) navigator.clearAppBadge().catch(function () {});
+    } catch (e) {}
+  }
+  function sayacGuncelle(v) {
+    let kisi = null;
+    try { kisi = JSON.parse(depo.al('kisi') || 'null'); } catch (e) {}
+    const rol = DEMO ? 'rehber' : (kisi && kisi.rol) || '';
+    let yerel = 0;
+    if (rol === 'mentor') {
+      const rapor = v.raporGonderildi ? 0 : 1;
+      const anahtar = 'yatiliGordu_' + v.grup, onceki = depo.al(anahtar), simdi = v.yatili || '';
+      let yatili = 0;
+      if (onceki === null || onceki === '__acildi') depo.yaz(anahtar, simdi);   // ilk açılış / kendi işlemi: rozet yok
+      else if (onceki !== simdi) yatili = 1;
+      rozetKoy('rapor', rapor); rozetKoy('yatili', yatili);
+      ikonRozeti(rapor + yatili);
+      return;
+    }
+    if (['rehber', 'org', 'test'].indexOf(rol) < 0) return;
+    rozetKoy('yatili', sunucuSayac);
+    if (Date.now() - sayacZamani < 60000) return;
+    sayacZamani = Date.now();
+    islem('&islem=sayac').then(function (s) {
+      if (!s || !s.ok) return;
+      sunucuSayac = (s.onay || 0) + (s.misafir || 0);
+      rozetKoy('yatili', sunucuSayac);
+      ikonRozeti(sunucuSayac);
+    }).catch(function () {});
+  }
+
+  // iPhone ikon rozeti bildirim izni ister; izin yalnız bir düğmeye dokununca istenebilir
+  (function () {
+    const d = $('ikonSayiAc'), durum = $('ikonSayiDurum');
+    const destek = 'setAppBadge' in navigator && 'Notification' in window;
+    const yaz = function () {
+      if (!destek) { d.hidden = true; durum.textContent = 'Bu cihaz/tarayıcı ikonda sayı göstermiyor. (iPhone: Safari ya da Chrome ile ana ekrana ekle.)'; return; }
+      const izin = Notification.permission === 'granted';
+      d.hidden = izin;
+      durum.textContent = izin ? 'Açık ✓ — sayı ikonda görünecek.' : Notification.permission === 'denied' ? 'İzin reddedilmiş; telefon Ayarlar → Bildirimler\'den açabilirsin.' : '';
+    };
+    d.addEventListener('click', function () {
+      Notification.requestPermission().then(function () { yaz(); if (sonVeri) { sayacZamani = 0; sayacGuncelle(sonVeri); } }).catch(yaz);
+    });
+    yaz();
+  })();
 
   /** Mentor: düz etiket. Rehber / org: ekibinin grupları arasında geçiş menüsü (en üstte). */
   function grupAlaniCiz(v) {
@@ -655,6 +734,7 @@
   function yatiliAyir(s) {
     s = s || 'Rezervasyon tablosu henüz yok';
     if (/onaylandı/i.test(s)) return { metin: s.replace(/\s*·\s*✅\s*onaylandı/i, ''), durum: 'Onaylandı' };
+    if (/iptal talebi/i.test(s)) return { metin: s.replace(/\s*·\s*⏳\s*iptal talebi/i, ''), durum: 'İptal talebi' };
     if (/onay bekliyor/i.test(s)) return { metin: s.replace(/\s*·\s*⏳\s*onay bekliyor/i, ''), durum: 'Onay bekliyor' };
     return { metin: s, durum: null };
   }
@@ -821,6 +901,8 @@
     raporYok: 'Rapor formu bulunamadı. Sistem sorumlusuna haber verin.', istek: 'İstek okunamadı.',
     toplantiYok: 'Bu hafta için toplantı belgesi henüz oluşturulmadı.', toplantiYapi: 'Toplantı belgesinde Grup turu tablosu bulunamadı.',
     satir: 'Liste değişmiş, yeniden açın.',
+    iptalGerek: 'Yatılıya bir haftadan az kaldı; vazgeçmek için "İptal iste" ile rehberinize sebep bildirin.',
+    sebep: 'İptal sebebini yazın.',
     ayniIsim: 'Bu isim listede zaten var. Aynı isimde iki öğrenci varsa soyadın baş harfini ekleyin.', ad: 'Geçerli bir isim yazın.',
   };
   const GUNLER = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
@@ -829,13 +911,16 @@
   async function islem(ek) {
     if (DEMO && /islem=yatili$/.test(ek)) return { ok: true, grup: 'E10', gruplar: ['E10', 'E11', 'E12'], rehber: true, url: '#', slotlar: [
       { satir: 2, cuma: '2026-10-16', seans: 'Cuma 17:00 → Cmt 13:00', daire: 'Daire 5', grup: 'E10', durum: 'Onaylandı', sohbet: 'Örnek Konuk', hoca: '' },
-      { satir: 3, cuma: '2026-10-16', seans: 'Cuma 17:00 → Cmt 13:00', daire: 'Daire 6', grup: 'E8', durum: 'Talep', sohbet: '', hoca: '' },
+      { satir: 3, cuma: '2026-10-16', seans: 'Cuma 17:00 → Cmt 13:00', daire: 'Daire 6', grup: 'E11', durum: 'İptal talebi', sohbet: '', hoca: '', iptal: { kim: 'Örnek Mentor', sebep: 'Öğrencilerin çoğu sınav haftasında' } },
       { satir: 4, cuma: '2026-10-16', seans: 'Cmt 17:00 → Paz 13:00', daire: 'Daire 5', grup: '', durum: '', sohbet: '', hoca: '' }] };
+    if (DEMO && /islem=sayac/.test(ek)) return { ok: true, onay: 2, misafir: 0 };
     if (DEMO) return { ok: false, hata: 'demo' };
     return veriCek(depo.al('grup') || '', depo.al('kod'), ek);
   }
 
   function yatiliAc(sekme) {
+    if (sonVeri) depo.yaz('yatiliGordu_' + sonVeri.grup, '__acildi');
+    sayacZamani = 0;   // dönüşte rehber/org sayacı tazelensin
     history.pushState({ alt: 'yatili' }, ''); goster('yatili');
     $('yatiliSekme').hidden = !yonetici();
     yatiliSekmeSec(sekme === 'misafir' && yonetici() ? 'misafir' : 'rez');
@@ -887,16 +972,35 @@
         b.onclick = function () { yatiliYukle('&islem=yatiliTalep&satir=' + x.satir, x.daire + ', ' + seans + ' için ' + s.grup + ' adına talep gönderilsin mi?'); };
         sag.push(b);
       } else {
-        sag.push(el('span', { sinif: 'etiket-kucuk ' + (x.durum === 'Onaylandı' ? 'onay' : 'talep'), metin: x.grup + ' · ' + (x.durum === 'Onaylandı' ? 'Onaylandı' : 'Talep') }));
-        if (benim && x.durum === 'Talep') {
-          if (s.rehber) {
-            const o = el('button', { sinif: 'kucuk', type: 'button', metin: 'Onayla' });
-            o.onclick = function () { yatiliYukle('&islem=yatiliOnay&satir=' + x.satir, x.grup + ' talebi onaylansın mı?'); };
-            sag.push(o);
-          }
+        const iptalde = x.durum === 'İptal talebi';
+        sag.push(el('span', { sinif: 'etiket-kucuk ' + (x.durum === 'Onaylandı' ? 'onay' : 'talep'),
+                              metin: x.grup + ' · ' + (x.durum === 'Onaylandı' ? 'Onaylandı' : iptalde ? 'İptal talebi' : 'Talep') }));
+        if (benim && x.durum === 'Talep' && s.rehber) {
+          const o = el('button', { sinif: 'kucuk', type: 'button', metin: 'Onayla' });
+          o.onclick = function () { yatiliYukle('&islem=yatiliOnay&satir=' + x.satir, x.grup + ' talebi onaylansın mı?'); };
+          sag.push(o);
+        }
+        // Mentor: Talep erken dönemde serbestçe geri alınır; onaydan sonra / son haftada rehbere sebepli iptal talebi
+        if (benim && x.durum === 'Talep' && (x.serbest || s.rehber)) {
           const v = el('button', { sinif: 'kucuk', type: 'button', metin: 'Vazgeç' });
           v.onclick = function () { yatiliYukle('&islem=yatiliVazgec&satir=' + x.satir, 'Talepten vazgeçilsin mi?'); };
           sag.push(v);
+        } else if (benim && !s.rehber && (x.durum === 'Talep' || x.durum === 'Onaylandı')) {
+          const v = el('button', { sinif: 'kucuk', type: 'button', metin: 'İptal iste' });
+          v.onclick = function () {
+            const sebep = prompt('İptal sebebi (rehberinize iletilir; o onaylayınca slot boşalır):');
+            if (sebep === null) return;
+            if (!sebep.trim()) { alert(HATA_METNI.sebep); return; }
+            yatiliYukle('&islem=yatiliIptalIste&satir=' + x.satir + '&sebep=' + encodeURIComponent(sebep.trim()));
+          };
+          sag.push(v);
+        }
+        if (benim && iptalde && s.rehber) {
+          const o = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'İptali onayla' });
+          o.onclick = function () { yatiliYukle('&islem=yatiliIptalOnay&satir=' + x.satir, x.grup + ' yatılısı iptal edilsin mi? Slot boşalır; atanmış misafirler de kaldırılır.'); };
+          const r = el('button', { sinif: 'kucuk', type: 'button', metin: 'Reddet' });
+          r.onclick = function () { yatiliYukle('&islem=yatiliIptalRed&satir=' + x.satir, 'İptal talebi reddedilsin mi? Yatılı eski durumuna döner.'); };
+          sag.push(o, r);
         }
         if (benim && (x.durum === 'Onaylandı' || x.durum === 'Talep')) {
           const pr = el('button', { sinif: 'kucuk', type: 'button', metin: 'Program' });
@@ -915,7 +1019,8 @@
       const tekDugme = !rozetler.length && dugmeler.length === 1;   // boş slot: "Talep et" sağda kalsın
       ic.appendChild(el('div', { sinif: 'slot' + (benim ? ' benim' : '') + (tekDugme ? '' : ' dikey') }, [
         el('div', { sinif: 'slot-ust' }, [
-          el('span', { sinif: 'orta' }, [el('span', { sinif: 'baslik', metin: x.daire }), el('span', { sinif: 'alt', metin: seans + (misafir ? ' · ' + misafir : '') })]),
+          el('span', { sinif: 'orta' }, [el('span', { sinif: 'baslik', metin: x.daire }), el('span', { sinif: 'alt', metin: seans + (misafir ? ' · ' + misafir : '') }),
+            x.iptal && benim ? el('span', { sinif: 'alt', metin: 'İptal sebebi (' + (x.iptal.kim || '') + '): ' + (x.iptal.sebep || '') }) : null]),
           tekDugme ? dugmeler[0] : (rozetler[0] || null),
         ]),
         !tekDugme && dugmeler.length ? el('div', { sinif: 'slot-dugmeler' }, dugmeler) : null,
@@ -1122,7 +1227,10 @@
 
   // ---------- Misafirler ----------
   function tarihEtiket(gun1) { const d = yerel(gun1 + 'T12:00'); return d.getDate() + ' ' + AYLAR_UZUN[d.getMonth()] + ' ' + GUN_ADI[d.getDay()]; }
-  function misafirLink(y, rol) { return location.origin + location.pathname + '?m=' + y.prog + '.' + y.satir + '.' + y.imza + '&r=' + rol; }
+  function misafirLink(y, rol) {
+    const imza = y.imza && typeof y.imza === 'object' ? y.imza[rol] : y.imza;   // link kişiye bağlı (rol başına imza)
+    return location.origin + location.pathname + '?m=' + y.prog + '.' + y.satir + '.' + imza + '&r=' + rol;
+  }
 
   async function paylas(metin) {
     try { if (navigator.share) { await navigator.share({ text: metin }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
