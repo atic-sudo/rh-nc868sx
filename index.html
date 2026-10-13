@@ -739,7 +739,7 @@
       sec.addEventListener('change', function () { depo.yaz('grup', sec.value); $('icerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>'; yenile(); });
       alan.appendChild(el('label', { sinif: 'grup-sec' }, [etiket, ikon('asagi'), sec]));
     }
-    $('kim').textContent = kisi && kisi.ad ? kisi.ad + (kisi.rol === 'rehber' ? ' · rehber' : kisi.rol === 'org' ? ' · org sorumlusu' : '') : '';
+    $('kim').textContent = kisi && kisi.ad ? kisi.ad + (kisi.rol === 'rehber' ? ' · rehber' : kisi.rol === 'org' ? ' · org sorumlusu' : kisi.rol === 'musahit' ? ' · müşahit (görüntüleme)' : '') : '';
   }
 
   /** "16 Ekim Cuma · Daire 5 · ✅ onaylandı" → metin + rozet */
@@ -916,6 +916,7 @@
     satir: 'Liste değişmiş, yeniden açın.',
     iptalGerek: 'Yatılıya bir haftadan az kaldı; vazgeçmek için "İptal iste" ile rehberinize sebep bildirin.',
     sebep: 'İptal sebebini yazın.',
+    salt: 'Müşahit hesabı görüntüleme modunda: değişiklik yapılamaz, gönderilemez.',
     ayniIsim: 'Bu isim listede zaten var. Aynı isimde iki öğrenci varsa soyadın baş harfini ekleyin.', ad: 'Geçerli bir isim yazın.',
   };
   const GUNLER = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
@@ -1028,7 +1029,7 @@
       }
       // üst satır: daire + seans + durum rozeti; düğmeler alt satırda (sıkışmasın)
       const rozetler = sag.filter(function (x) { return x.tagName === 'SPAN'; });
-      const dugmeler = sag.filter(function (x) { return x.tagName === 'BUTTON'; });
+      const dugmeler = sag.filter(function (x) { return x.tagName === 'BUTTON' && (!saltOkunur() || x.textContent === 'Program'); });
       const tekDugme = !rozetler.length && dugmeler.length === 1;   // boş slot: "Talep et" sağda kalsın
       ic.appendChild(el('div', { sinif: 'slot' + (benim ? ' benim' : '') + (tekDugme ? '' : ' dikey') }, [
         el('div', { sinif: 'slot-ust' }, [
@@ -1153,6 +1154,9 @@
   }
 
   const MISAFIR_ALAN = { kuran: ['hoca', "Kur'an dersi", 'h'], sohbetci: ['sohbet', 'Konuk sohbeti', 's'], etut: ['etut', 'Ders koçu', 'e'] };
+  function saltOkunur() {
+    try { const k = JSON.parse(depo.al('kisi') || 'null'); return !!k && k.rol === 'musahit'; } catch (e) { return false; }
+  }
   function yonetici() {
     if (DEMO) return true;
     try { const k = JSON.parse(depo.al('kisi') || 'null'); return !!k && ['org', 'rehber', 'test'].indexOf(k.rol) >= 0; } catch (e) { return false; }
