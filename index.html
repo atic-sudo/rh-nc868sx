@@ -641,7 +641,7 @@
 
     // Satırlar
     ic.appendChild(v.raporGonderildi
-      ? satir({ k: 'rapor', ikon: 'kalem', baslik: 'Haftalık rapor', alt: 'Bu hafta gönderildi · düzeltmek için dokun', url: '#', durum: 'Gönderildi', tikla: raporAc })
+      ? satir({ k: 'rapor', ikon: 'kalem', baslik: 'Haftalık rapor', alt: (v.raporGonderildi === 'gecen' ? 'Geçen haftanınki gönderildi' : 'Bu hafta gönderildi') + ' · düzeltmek için dokun', url: '#', durum: 'Gönderildi', tikla: raporAc })
       : satir({ k: 'rapor', ikon: 'kalem', baslik: 'Haftalık rapor', alt: 'Buluşmadan sonra · 2 dk', url: '#', sinif: 'rapor', tikla: raporAc }));
     ic.appendChild(satir({ ikon: 'belge', baslik: 'Toplantı notu',
       alt: v.toplanti ? v.toplanti.tarih + ' haftası · gündem ve görevler' : 'Henüz toplantı notu yok', url: v.toplanti && v.toplanti.url,
@@ -659,7 +659,7 @@
     sayacGuncelle(v);
     const alt = $('altBilgi');
     alt.textContent = '';
-    if (v.raporGonderildi) { alt.appendChild(ikon('tamam')); alt.appendChild(el('span', { metin: 'Bu haftanın raporu gönderildi' })); }
+    if (v.raporGonderildi) { alt.appendChild(ikon('tamam')); alt.appendChild(el('span', { metin: v.raporGonderildi === 'gecen' ? 'Geçen haftanın raporu gönderildi' : 'Bu haftanın raporu gönderildi' })); }
   }
 
   // ---------- Sayaçlar (WhatsApp'taki gibi kırmızı rozet) ----------
