@@ -65,6 +65,19 @@
     .rozet { font-size: 13px; font-weight: 600; color: var(--rozet-yazi); background: var(--rozet); padding: 5px 11px; border-radius: 999px; white-space: nowrap; }
     h1 { font-size: 30px; font-weight: 750; letter-spacing: -.01em; margin: 14px 0 2px; }
     .tarih { font-size: 17px; color: var(--soluk); margin-bottom: 20px; }
+    .pano-bas { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+    .pano-bas .tarih { margin-bottom: 0; }
+    .pano-bas > div { min-width: 0; }
+    .takvim-kutu { flex: 0 1 50%; max-width: 190px; margin-top: 14px; display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+                   padding: 10px 12px; border-radius: 14px; border: 1px solid var(--cizgi); background: var(--kart); color: var(--yazi);
+                   font: inherit; text-align: left; cursor: pointer; }
+    .takvim-kutu .tk-ust { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--ana); }
+    .takvim-kutu .tk-ust svg { width: 16px; height: 16px; }
+    .takvim-kutu .tk-zaman { font-size: 13px; font-weight: 650; }
+    .takvim-kutu .tk-ad { font-size: 12.5px; color: var(--soluk); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .takvim-kutu.vurgu { background: var(--rapor-zemin); border-color: var(--rapor-cizgi); }
+    .takvim-kutu.vurgu .tk-ust, .takvim-kutu.vurgu .tk-zaman { color: var(--rapor-baslik); }
+    .takvim-kutu.vurgu .tk-ad { color: var(--rapor-alt); }
 
     /* Konu kartı */
     .konu-kart { background: var(--ana-zemin); border: 1px solid var(--ana-cizgi); border-radius: 20px; padding: 16px 16px 18px; margin-bottom: 12px; }
@@ -81,6 +94,16 @@
     a.satir { display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--yazi);
               background: var(--kart); border: 1px solid var(--cizgi); border-radius: 18px; padding: 14px; margin-bottom: 10px; min-height: 72px; }
     a.satir:active { transform: scale(.99); }
+    /* Günübirlik + Yatılı yan yana kareler */
+    .ikili { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .ikili a.satir { flex-direction: column; align-items: flex-start; gap: 10px; margin: 0; padding: 14px; min-height: 0; }
+    .ikili .ikon-kutu { width: 40px; height: 40px; border-radius: 12px; }
+    .ikili .baslik { font-size: 17px; }
+    .ikili .alt { font-size: 13.5px; line-height: 1.4; white-space: pre-line; }
+    .ikili .sag-ok { display: none; }
+    .ikili .sag-sutun { align-items: flex-start; }
+    .ikili .baslik-satir { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; }
+    .ikili .durum { font-size: 12px; padding: 3px 8px; }
     .ikon-kutu { width: 46px; height: 46px; border-radius: 13px; background: var(--ikon-zemin); color: var(--ikon); display: grid; place-items: center; flex: none; position: relative; }
     .sayi { position: absolute; top: -6px; right: -6px; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px;
             background: #c8372b; color: #fff; font-size: 12px; font-weight: 700; line-height: 20px; text-align: center;
@@ -175,6 +198,10 @@
     .slot .orta .baslik { font-size: 16px; }
     .slot .orta .alt { font-size: 13px; }
     .slot .orta .alt.cok-satir { white-space: pre-line; }
+    #takvim .slot .orta .alt { white-space: pre-line; }
+    .takvim-etiket { display: flex; gap: 6px; flex-wrap: wrap; }
+    .etiket-kucuk.gri { background: var(--ikon-zemin); color: var(--soluk); }
+    .etiket-kucuk.sicak { background: var(--rapor-zemin); color: var(--rapor-baslik); }
     .isim-not { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
     .isim-not > span { flex: 0 0 34%; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
     .isim-not > input { flex: 1; min-width: 0; margin: 0; }
@@ -386,8 +413,14 @@
   <!-- Pano -->
   <section id="pano" hidden>
     <div class="ust-satir"><span id="grupAlan"></span><span class="rozet" id="dersRozet" hidden></span></div>
-    <h1>Bu hafta</h1>
-    <div class="tarih" id="tarih"></div>
+    <div class="pano-bas">
+      <div><h1>Bu hafta</h1><div class="tarih" id="tarih"></div></div>
+      <button class="takvim-kutu" id="takvimKutu" type="button" hidden>
+        <span class="tk-ust" id="takvimKutuUst"></span>
+        <span class="tk-zaman" id="takvimKutuZaman"></span>
+        <span class="tk-ad" id="takvimKutuAd">Yaklaşan etkinlikler</span>
+      </button>
+    </div>
     <div id="icerik"><div class="yukleniyor">Yükleniyor…</div></div>
     <div class="alt-bilgi" id="altBilgi"></div>
     <div class="kim" id="kim"></div>
@@ -432,10 +465,17 @@
     <a class="docs" id="grubumDis" target="_blank" rel="noopener">Notları düzenlemek için tabloyu aç</a>
   </section>
 
+  <!-- Rehberlik takvimi -->
+  <section id="takvim" hidden>
+    <div class="gezinti"><button class="geri" id="takvimGeri" type="button"></button></div>
+    <h1 class="okuma-baslik" id="takvimBaslik">Takvim</h1>
+    <div id="takvimIcerik"></div>
+  </section>
+
   <!-- Haftalık buluşma -->
   <section id="bulusma" hidden>
     <div class="gezinti"><button class="geri" id="bulusmaGeri" type="button"></button></div>
-    <h1 class="okuma-baslik" id="bulusmaBaslik">Buluşma</h1>
+    <h1 class="okuma-baslik" id="bulusmaBaslik">Günübirlik</h1>
     <div id="bulusmaIcerik"></div>
   </section>
 
@@ -546,6 +586,7 @@
   const IKON = {
     kalem: '<path d="M12 20h9"/><path d="M16.4 3.6a2.1 2.1 0 0 1 3 3L7.4 18.6a2 2 0 0 1-.9.5l-2.9.8.8-2.9a2 2 0 0 1 .5-.9z"/>',
     belge: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>',
+    takvimGun: '<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/>',
     saat: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
     takvim: '<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/>',
     kisiler: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
@@ -600,6 +641,13 @@
   }
 
   let sonVeri = null;
+
+  /** Yan yana kare: durum etiketi başlığın yanına alınır (dar ekranda ikonla çakışmasın). */
+  function kare(a) {
+    const d = a.querySelector('.durum'), b = a.querySelector('.baslik');
+    if (d && b) { const r = el('span', { sinif: 'baslik-satir' }); b.parentNode.insertBefore(r, b); r.appendChild(b); r.appendChild(d); }
+    return a;
+  }
 
   function ciz(v) {
     sonVeri = v;
@@ -664,10 +712,17 @@
     ic.appendChild(satir({ ikon: 'belge', baslik: 'Toplantı notu',
       alt: v.toplanti ? v.toplanti.tarih + ' haftası · gündem ve görevler' : 'Henüz toplantı notu yok', url: v.toplanti && v.toplanti.url,
       tikla: v.toplanti ? toplantiAc : null }));
+    takvimOzet();
+    const ikili = el('div', { sinif: 'ikili' });
+    ic.appendChild(ikili);
     if (v.bulusma) {
-      const b = v.bulusma;
-      ic.appendChild(satir({ k: 'bulusma', ikon: 'saat', baslik: 'Buluşma', url: '#', tikla: bulusmaAc,
-        alt: b.metin + (b.ikram ? ' · İkram: ' + b.ikram : (b.yatili ? '' : ' · İkram seçilmedi')) }));
+      // "Cumartesi 17 Ekim · 18:00 · KM" → "Cmt 17 Ekim · 18:00" / "KM" / "İkram: Ahmet"
+      const b = v.bulusma, p = String(b.metin || '').split(' · ');
+      const kisa = { 'Pazartesi': 'Pzt', 'Salı': 'Sal', 'Çarşamba': 'Çar', 'Perşembe': 'Per', 'Cumartesi': 'Cmt', 'Pazar': 'Paz' };
+      const ilk = p[0].replace(/^(\S+)/, function (g) { return kisa[g] || g; });
+      const alt = b.yatili || p.length < 2 ? b.metin : [ilk + ' · ' + p[1]].concat(p.slice(2)).join('\n');
+      ikili.appendChild(kare(satir({ k: 'bulusma', ikon: 'saat', baslik: 'Günübirlik', url: '#', tikla: bulusmaAc,
+        alt: alt + (b.yatili ? '' : '\nİkram: ' + (b.ikram || 'seçilmedi')) })));
     }
     const y = yatiliAyir(v.yatili);
     let programDugme = null;
@@ -675,8 +730,8 @@
       programDugme = el('span', { sinif: 'cip-ic', role: 'button', tabindex: '0' }, [document.createTextNode('Program'), ikon('sag')]);
       programDugme.addEventListener('click', function (ev) { ev.preventDefault(); ev.stopPropagation(); programAc(v.yatiliSatir); });
     }
-    ic.appendChild(satir({ k: 'yatili', ikon: 'takvim', baslik: 'Yatılı', alt: y.metin, url: v.yatiliUrl || '#', ekDugme: programDugme,
-                           durum: y.durum, durumSinif: y.durum === 'Onay bekliyor' ? 'bekliyor' : '', tikla: yatiliAc }));
+    (v.bulusma ? ikili : ic).appendChild(kare(satir({ k: 'yatili', ikon: 'takvim', baslik: 'Yatılı', alt: v.bulusma ? y.metin.replace(/ · /g, '\n') : y.metin, url: v.yatiliUrl || '#', ekDugme: programDugme,
+                           durum: y.durum, durumSinif: y.durum === 'Onay bekliyor' ? 'bekliyor' : '', tikla: yatiliAc })));
     ic.appendChild(satir({ ikon: 'kisiler', baslik: 'Grubum', alt: 'Öğrenciler · Durum · Katılım', url: v.grubumUrl || '#', tikla: grubumAc }));
 
     sayacGuncelle(v);
@@ -775,7 +830,7 @@
   }
 
   function goster(bolum) {
-    ['kurulum', 'pano', 'okuma', 'medya', 'yatili', 'grubum', 'bulusma', 'toplanti', 'program', 'yardim', 'rapor'].forEach(function (b) { $(b).hidden = b !== bolum; });
+    ['kurulum', 'pano', 'okuma', 'medya', 'yatili', 'grubum', 'bulusma', 'takvim', 'toplanti', 'program', 'yardim', 'rapor'].forEach(function (b) { $(b).hidden = b !== bolum; });
     if (bolum !== 'medya') $('medyaKutu').textContent = '';   // video arkada çalmaya devam etmesin
     window.scrollTo(0, 0);
   }
@@ -804,6 +859,7 @@
       if (/ekran=rapor/.test(location.search)) raporAc();
       if (/ekran=grubum/.test(location.search)) grubumAc();
       if (/ekran=bulusma/.test(location.search)) bulusmaAc();
+      if (/ekran=takvim/.test(location.search)) takvimAc();
       if (/ekran=okuma/.test(location.search)) okuyucuAc('tr');
       if (/ekran=yardim/.test(location.search)) $('yardimAc').click();
       return;
@@ -923,7 +979,7 @@
     goster('medya');
   }
 
-  [$('geri'), $('medyaGeri'), $('yatiliGeri'), $('grubumGeri'), $('bulusmaGeri'), $('toplantiGeri'), $('programGeri'), $('yardimGeri'), $('raporGeri')].forEach(function (b) {
+  [$('geri'), $('medyaGeri'), $('yatiliGeri'), $('grubumGeri'), $('bulusmaGeri'), $('takvimGeri'), $('toplantiGeri'), $('programGeri'), $('yardimGeri'), $('raporGeri')].forEach(function (b) {
     b.appendChild(ikon('sol')); b.appendChild(document.createTextNode('Geri'));
     b.addEventListener('click', function () { history.back(); });
   });
@@ -1082,6 +1138,100 @@
     });
   }
 
+  // ---------- Rehberlik takvimi ----------
+  // Sunucu: islem=takvim → { etiket, olaylar: [{ tur, baslik, bas, bit, tumGun, yer, zorunlu, not, grup }], abonelik, duzenle }
+  let takvimVeri = null, takvimZamani = 0;
+  const TUR_RENK = { 'Mentor semineri': 'sicak', 'Kamp': 'onay', 'Okul tatili': 'gri', 'Ortak etkinlik': 'onay', 'Toplantı': 'gri', 'Günübirlik': 'gri', 'Yatılı': 'gri' };
+
+  async function takvimGetir() {
+    if (takvimVeri && Date.now() - takvimZamani < 120000) return takvimVeri;
+    const s = DEMO ? DEMO_TAKVIM() : await islem('&islem=takvim');
+    if (s && s.ok) { takvimVeri = s; takvimZamani = Date.now(); }
+    return s;
+  }
+
+  function olayZamani(o) {
+    const d = yerel(o.tumGun ? o.bas + 'T12:00' : o.bas);
+    const gun = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'][d.getDay()] + ' ' + d.getDate() + ' ' + AYLAR_UZUN[d.getMonth()];
+    if (o.tumGun) {
+      const b = yerel(o.bit + 'T12:00');
+      return o.bit !== o.bas ? gun + ' – ' + b.getDate() + ' ' + AYLAR_UZUN[b.getMonth()] : gun;
+    }
+    return gun + ' · ' + o.bas.slice(11);
+  }
+
+  /** "Bu hafta" yanındaki kutu: en yakın önemli olay (önce zorunlu/seminer/kamp/ortak, yoksa ilk olay). Zorunluysa şeftali. */
+  async function takvimOzet() {
+    const kutu = $('takvimKutu');
+    const ust = $('takvimKutuUst');
+    if (!ust.firstChild) { ust.appendChild(ikon('takvimGun')); ust.appendChild(document.createTextNode('Takvim')); }
+    kutu.hidden = false;
+    try {
+      const s = await takvimGetir();
+      if (!s || !s.ok) return;
+      const simdi = DEMO ? yerel('2026-10-13T12:00') : new Date();
+      const gelecek = s.olaylar.filter(function (o) { return yerel(o.tumGun ? o.bit + 'T23:59' : o.bit) >= simdi; });
+      const onemli = gelecek.filter(function (o) { return o.zorunlu || ['Mentor semineri', 'Kamp', 'Ortak etkinlik'].indexOf(o.tur) >= 0; });
+      const o = onemli[0] || gelecek[0];
+      $('takvimKutuZaman').textContent = o ? olayZamani(o) : '';
+      $('takvimKutuAd').textContent = o ? o.baslik : 'Yaklaşan etkinlik yok';
+      kutu.classList.toggle('vurgu', !!(o && o.zorunlu));
+    } catch (e) {}
+  }
+  $('takvimKutu').addEventListener('click', function () { takvimAc(); });
+
+  function takvimAc() {
+    history.pushState({ alt: 'takvim' }, ''); goster('takvim');
+    $('takvimIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    takvimGetir().then(takvimCiz).catch(function () { $('takvimIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; });
+  }
+
+  function takvimCiz(s) {
+    const ic = $('takvimIcerik');
+    ic.textContent = '';
+    if (!s || !s.ok) { ic.appendChild(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s && s.hata] || 'Bir sorun oluştu.' })); return; }
+    $('takvimBaslik').textContent = 'Takvim · ' + s.etiket;
+    // Telefon takvimi aboneliği (bir kez; değişiklikler kendiliğinden yansır)
+    const ab = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Takvime ekle' });
+    ab.onclick = function () {
+      const webcal = s.abonelik.replace(/^https?:/, 'webcal:');
+      if (/iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)) location.href = webcal;
+      else window.open('https://calendar.google.com/calendar/r?cid=' + encodeURIComponent(webcal), '_blank');
+    };
+    ic.appendChild(el('div', { sinif: 'slot' }, [
+      el('span', { sinif: 'orta' }, [el('span', { sinif: 'baslik', metin: 'Telefon takvimi' }),
+        el('span', { sinif: 'alt', metin: 'Hepsi telefon takvimine düşer, değişiklikler kendiliğinden yansır.' })]), ab]));
+    if (!s.olaylar.length) { ic.appendChild(el('div', { sinif: 'bilgi', metin: 'Önümüzdeki 8 haftada etkinlik yok.' })); }
+    let sonHafta = '';
+    const buPzt = haftaPzt(bugunISO());
+    s.olaylar.forEach(function (o) {
+      const hp = haftaPzt(o.bas.slice(0, 10));
+      if (hp !== sonHafta) {
+        sonHafta = hp;
+        const d = yerel(hp + 'T12:00'), fark = Math.round((d - yerel(buPzt + 'T12:00')) / 6048e5);
+        ic.appendChild(el('div', { sinif: 'hs-baslik', metin: fark <= 0 ? 'Bu hafta' : fark === 1 ? 'Gelecek hafta' : d.getDate() + ' ' + AYLAR_UZUN[d.getMonth()] + ' haftası' }));
+      }
+      const etiketler = [el('span', { sinif: 'etiket-kucuk ' + (TUR_RENK[o.tur] || ''), metin: o.tur })];
+      if (o.zorunlu) etiketler.push(el('span', { sinif: 'etiket-kucuk sicak', metin: 'Zorunlu' }));
+      ic.appendChild(el('div', { sinif: 'slot dikey' + (o.zorunlu ? ' benim' : '') }, [
+        el('div', { sinif: 'slot-ust' }, [el('span', { sinif: 'orta' }, [
+          el('span', { sinif: 'baslik', metin: o.baslik }),
+          el('span', { sinif: 'alt', metin: olayZamani(o) + (o.yer ? ' · ' + o.yer : '') + (o.not ? '\n' + o.not : '') })])]),
+        el('div', { sinif: 'takvim-etiket' }, etiketler)]));
+    });
+    if (s.duzenle) ic.appendChild(el('a', { sinif: 'docs', href: s.duzenle, target: '_blank', rel: 'noopener', metin: 'Etkinlik eklemek için takvim tablosunu aç' }));
+  }
+
+  function DEMO_TAKVIM() {
+    return { ok: true, etiket: 'E10', abonelik: 'https://example.invalid/demo', olaylar: [
+      { tur: 'Mentor semineri', baslik: 'Mentor Yetiştirme Semineri 3', bas: '2026-10-13T19:00', bit: '2026-10-13T21:00', tumGun: false, yer: 'KM', zorunlu: true, not: '' },
+      { tur: 'Günübirlik', baslik: 'Günübirlik · E10', bas: '2026-10-17T18:00', bit: '2026-10-17T21:00', tumGun: false, yer: 'KM', zorunlu: false, not: 'İkram: Ahmet ailesi' },
+      { tur: 'Toplantı', baslik: 'E Lise mentor toplantısı', bas: '2026-10-19T18:30', bit: '2026-10-19T20:00', tumGun: false, yer: '', zorunlu: false, not: '' },
+      { tur: 'Yatılı', baslik: 'Yatılı · E10', bas: '2026-10-23T17:00', bit: '2026-10-24T13:00', tumGun: false, yer: 'Daire 5', zorunlu: false, not: '' },
+      { tur: 'Okul tatili', baslik: 'Kış tatili', bas: '2026-12-21', bit: '2027-01-03', tumGun: true, yer: '', zorunlu: false, not: '' },
+      { tur: 'Kamp', baslik: 'Kış kampı', bas: '2026-12-26', bit: '2026-12-29', tumGun: true, yer: '', zorunlu: false, not: '' }] };
+  }
+
   // ---------- Haftalık buluşma ----------
   function bulusmaAc() {
     history.pushState({ alt: 'bulusma' }, ''); goster('bulusma');
@@ -1114,13 +1264,13 @@
   }
 
   function bulusmaCiz(s) {
-    $('bulusmaBaslik').textContent = 'Buluşma · ' + s.grup;
+    $('bulusmaBaslik').textContent = 'Günübirlik · ' + s.grup;
     const ic = $('bulusmaIcerik'), salt = saltOkunur();
     ic.textContent = '';
     const v = s.varsayilan || {};
     const varMetin = v.gun ? v.gun + (v.saat ? ' ' + v.saat : '') + (v.yer ? ' · ' + v.yer : '') : 'Henüz girilmedi';
     const vd = el('button', { sinif: 'kucuk', type: 'button', metin: v.gun ? 'Değiştir' : 'Gir' });
-    vd.onclick = function () { const q = bulusmaSor('Her haftaki buluşma', v); if (q) bulusmaYukle('&islem=bulusmaVarsayilan' + q); };
+    vd.onclick = function () { const q = bulusmaSor('Her haftaki günübirlik', v); if (q) bulusmaYukle('&islem=bulusmaVarsayilan' + q); };
     ic.appendChild(el('div', { sinif: 'slot' }, [
       el('span', { sinif: 'orta' }, [el('span', { sinif: 'baslik', metin: 'Her hafta' }), el('span', { sinif: 'alt', metin: varMetin })]),
       salt ? null : vd]));
@@ -1147,7 +1297,7 @@
       // Hatırlatma bir gün önce: velinin e-postası/izni kayıtlıysa veliye, değilse mentora gider
       const hat = function (ad, var_) { return ad ? ad + (var_ ? ' · veliye hatırlatılır' : ' · hatırlatma sana gelir') : 'seçilmedi'; };
       if (h.yatili) {
-        alt = 'Yatılı haftası (buluşma ve ikram yok)\nAkşam yemeği: ' + hat(h.aksam, h.aksamEposta) + '\nKahvaltı: ' + hat(h.kahvalti, h.kahvaltiEposta);
+        alt = 'Yatılı haftası (günübirlik ve ikram yok)\nAkşam yemeği: ' + hat(h.aksam, h.aksamEposta) + '\nKahvaltı: ' + hat(h.kahvalti, h.kahvaltiEposta);
         rozet = el('span', { sinif: 'etiket-kucuk onay', metin: 'Yatılı' });
         if (!salt && h.satir) dugmeler.push(aileDugme('Akşam yemeği', h.aksam, '&islem=bulusmaYemek&alan=aksam'),
                                             aileDugme('Kahvaltı', h.kahvalti, '&islem=bulusmaYemek&alan=kahvalti'));
@@ -1161,7 +1311,7 @@
           const bd = el('button', { sinif: 'kucuk', type: 'button', metin: h.degisti ? 'Varsayılana döndür' : 'Bu haftayı değiştir' });
           bd.onclick = function () {
             if (h.degisti) { if (confirm('Bu hafta her zamanki gün/saat/yerde mi?')) bulusmaYukle('&islem=bulusmaHafta&pzt=' + h.pzt); return; }
-            const q = bulusmaSor(etiket + ' için buluşma', h);
+            const q = bulusmaSor(etiket + ' için günübirlik', h);
             if (q) bulusmaYukle('&islem=bulusmaHafta&pzt=' + h.pzt + q);
           };
           dugmeler.push(ik, bd);
@@ -1173,11 +1323,11 @@
           rozet]),
         dugmeler.length ? el('div', { sinif: 'slot-dugmeler' }, dugmeler) : null]));
     });
-    ic.appendChild(el('p', { sinif: 'not', metin: 'Sıra gelen aileye bir gün önce sabah e-postayla hatırlatma gider (velinin e-postası ve izni rehberde kayıtlıysa; değilse hatırlatma sana gelir). Yatılı haftaları otomatik atlanır.' }));
+    ic.appendChild(el('p', { sinif: 'not', metin: 'Sıra gelen aileye bir gün önce sabah e-postayla hatırlatma gider (velinin e-postası ve izni rehberde kayıtlıysa; değilse hatırlatma sana gelir). Yatılı haftalarında günübirlik yok; otomatik atlanır.' }));
   }
 
   function DEMO_BULUSMA() {
-    return { ok: true, grup: 'E10', varsayilan: { gun: 'Cumartesi', saat: '18:00', yer: 'KM' }, ogrenciler: ['Ahmet', 'Mehmet', 'Yusuf', 'Ali'],
+    return { ok: true, grup: 'E10', varsayilan: { gun: 'Cumartesi', saat: '18:00', yer: 'KM' }, ogrenciler: ['Ahmet', 'Mehmet', 'Yusuf', 'Ali'], takvim: 'https://example.invalid/demo',
       haftalar: [
         { pzt: '2026-10-12', satir: 3, tarih: '2026-10-17', gun: 'Cumartesi', saat: '18:00', yer: 'KM', degisti: false, ikram: 'Ahmet', ikramEposta: true, yatili: false },
         { pzt: '2026-10-19', satir: 4, tarih: '2026-10-25', gun: 'Pazar', saat: '17:00', yer: "Yusuf'ların evi", degisti: true, ikram: '', yatili: false },
