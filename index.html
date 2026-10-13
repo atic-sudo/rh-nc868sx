@@ -516,6 +516,7 @@
   // Apps Script web uygulaması (Mentor Sayfası). Veri yalnız doğru erişim koduyla gelir.
   const VERI_URL = 'https://script.google.com/macros/s/AKfycbzGG4cY3YwsE5ZP5ZiKEt0k7ukVmVSmoCRtRVRJRfNqauqQeViO9Rfm3xm5m_j_NuqM/exec';
   const DEMO = /[?&]demo\b/.test(location.search);   // ?demo → örnek verilerle görünüm denemesi (sunucuya gitmez)
+  const DEMO_MENTOR = DEMO && /rol=mentor/.test(location.search);   // &rol=mentor → mentor gözüyle (kılavuz görüntüleri)
 
   // localStorage gizli pencerede / kapalıyken hata verebilir: sessizce geç
   const depo = {
@@ -683,7 +684,7 @@
   function sayacGuncelle(v) {
     let kisi = null;
     try { kisi = JSON.parse(depo.al('kisi') || 'null'); } catch (e) {}
-    const rol = DEMO ? 'rehber' : (kisi && kisi.rol) || '';
+    const rol = DEMO ? (DEMO_MENTOR ? 'mentor' : 'rehber') : (kisi && kisi.rol) || '';
     let yerel = 0;
     if (rol === 'mentor') {
       const rapor = v.raporGonderildi ? 0 : 1;
@@ -729,7 +730,7 @@
     alan.textContent = '';
     let kisi = null;
     try { kisi = JSON.parse(depo.al('kisi') || 'null'); } catch (e) {}
-    if (DEMO) kisi = { ad: 'Örnek Rehber', rol: 'rehber', gruplar: ['E10', 'E11', 'E12'] };
+    if (DEMO) kisi = DEMO_MENTOR ? { ad: 'Örnek Mentor', rol: 'mentor', gruplar: ['E10'] } : { ad: 'Örnek Rehber', rol: 'rehber', gruplar: ['E10', 'E11', 'E12'] };
     const gruplar = (kisi && kisi.gruplar) || [];
     const etiket = el('span', { sinif: 'grup', metin: v.grup + ' · ' + v.ekip });
     if (gruplar.length < 2) { alan.appendChild(etiket); }
@@ -779,6 +780,9 @@
       if (/ekran=misafir/.test(location.search)) misafirlerAc();
       if (/ekran=yatili/.test(location.search)) yatiliAc();
       if (/ekran=rapor/.test(location.search)) raporAc();
+      if (/ekran=grubum/.test(location.search)) grubumAc();
+      if (/ekran=okuma/.test(location.search)) okuyucuAc('tr');
+      if (/ekran=yardim/.test(location.search)) $('yardimAc').click();
       return;
     }
     const grup = depo.al('grup') || '', kod = depo.al('kod');
@@ -848,7 +852,7 @@
     $('okumaDocs').hidden = !docsUrl;
     if ($('okuma').hidden) { history.pushState({ okuma: true }, ''); goster('okuma'); }
 
-    if (DEMO) { $('okumaIcerik').innerHTML = '<h3>Bölüm 1: Deizm Nedir?</h3><p>Örnek metin. Gerçek uygulamada haftanın metni burada görünür.</p>'; return; }
+    if (DEMO) { $('okumaIcerik').innerHTML = '<h3>Bölüm 1: Deizm Nedir?</h3><p>Örnek metin. Gerçek uygulamada haftanın metni burada, telefona uygun biçimde görünür; Google Docs açmaya gerek kalmaz.</p><p>Üstteki TR / EN düğmeleriyle dil değiştirilir. Metnin altında slayt ve video bağlantıları da bulunur.</p><h3>Bölüm 2: Tartışma soruları</h3><p>1. Örnek soru bir?<br>2. Örnek soru iki?</p>'; return; }
     const anahtar = 'metin_' + grup + '_' + dil + '_' + docsUrl;
     const kayitli = depo.al(anahtar);
     $('okumaIcerik').innerHTML = kayitli || '<p class="yukleniyor">Yükleniyor…</p>';
@@ -923,6 +927,15 @@
   const AYLAR_UZUN = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 
   async function islem(ek) {
+    if (DEMO_MENTOR && /islem=yatili$/.test(ek)) return { ok: true, grup: 'E10', gruplar: ['E10'], rehber: false, url: '#', slotlar: [
+      { satir: 2, cuma: '2026-10-16', seans: 'Cuma 17:00 → Cmt 13:00', daire: 'Daire 5', grup: 'E10', durum: 'Onaylandı', sohbet: 'Örnek Konuk', hoca: '', serbest: false },
+      { satir: 3, cuma: '2026-10-16', seans: 'Cuma 17:00 → Cmt 13:00', daire: 'Daire 6', grup: 'E11', durum: 'Talep', sohbet: '', hoca: '' },
+      { satir: 4, cuma: '2026-10-16', seans: 'Cmt 17:00 → Paz 13:00', daire: 'Daire 5', grup: '', durum: '', sohbet: '', hoca: '' },
+      { satir: 5, cuma: '2026-11-06', seans: 'Cuma 17:00 → Cmt 13:00', daire: 'Daire 5', grup: 'E10', durum: 'Talep', sohbet: '', hoca: '', serbest: true }] };
+    if (DEMO && /islem=grubum$/.test(ek)) return { ok: true, grup: 'E10', kapasite: 8, url: '#', ogrenciler: [
+      { satir: 2, ad: 'Ahmet', oran: '%100', durum: 'Aktif' }, { satir: 3, ad: 'Mehmet', oran: '%75', durum: 'Aktif' },
+      { satir: 4, ad: 'Yusuf', oran: '%100', durum: 'Aktif' }, { satir: 5, ad: 'Ali', oran: '%50', durum: 'Aktif' },
+      { satir: 6, ad: 'Ömer', oran: '%25', durum: 'Ayrıldı' }] };
     if (DEMO && /islem=yatili$/.test(ek)) return { ok: true, grup: 'E10', gruplar: ['E10', 'E11', 'E12'], rehber: true, url: '#', slotlar: [
       { satir: 2, cuma: '2026-10-16', seans: 'Cuma 17:00 → Cmt 13:00', daire: 'Daire 5', grup: 'E10', durum: 'Onaylandı', sohbet: 'Örnek Konuk', hoca: '' },
       { satir: 3, cuma: '2026-10-16', seans: 'Cuma 17:00 → Cmt 13:00', daire: 'Daire 6', grup: 'E11', durum: 'İptal talebi', sohbet: '', hoca: '', iptal: { kim: 'Örnek Mentor', sebep: 'Öğrencilerin çoğu sınav haftasında' } },
@@ -1099,7 +1112,7 @@
       if (ad) grubumYukle('&islem=ogrenciEkle&ad=' + encodeURIComponent(ad), ad + ' gruba eklensin mi?');
     };
     ic.appendChild(el('div', { sinif: 'ekle' }, [giris, ekle]));
-    ic.appendChild(el('p', { sinif: 'not', metin: 'Ayrılan öğrenci için ismi sola kaydırın. Yeni isimler haftalık rapor formuna ertesi sabah geçer.' }));
+    ic.appendChild(el('p', { sinif: 'not', metin: 'Ayrılan öğrenci için ismi sola kaydırın. Değişiklik haftalık rapordaki yoklamaya hemen yansır.' }));
   }
 
   /** Kartı sola kaydırınca arkadaki düğme (104 px) açılır; bir kart açılınca diğerleri kapanır. */
@@ -1158,7 +1171,7 @@
     try { const k = JSON.parse(depo.al('kisi') || 'null'); return !!k && k.rol === 'musahit'; } catch (e) { return false; }
   }
   function yonetici() {
-    if (DEMO) return true;
+    if (DEMO) return !DEMO_MENTOR;
     try { const k = JSON.parse(depo.al('kisi') || 'null'); return !!k && ['org', 'rehber', 'test'].indexOf(k.rol) >= 0; } catch (e) { return false; }
   }
   function misafirHucre(x, saat) {
