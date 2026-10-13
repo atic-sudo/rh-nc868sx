@@ -20,6 +20,9 @@
       --bg: #f7f9f8; --kart: #ffffff; --cizgi: #e4ebe8; --yazi: #1f2a28; --soluk: #5d6966; --ok: #7f8b87;
       --ikon-zemin: #f0f4f2; --ikon: #5f6d69;
       --at-renk: #e2956b;
+      --r-e-gun: #4f8fd0; --r-e-yat: #1f4e9c; --r-k-gun: #e27aae; --r-k-yat: #b0306e; --r-ortak: #ee8434;
+      --r-rehberlik: #1e6b3e; --r-mentor-top: #5fb468; --r-seminer: #8a5cc7; --r-kamp: #d9a521; --r-diger: #9aa3a0;
+      --r-zorunlu: #d23b2f; --r-secili: #2b3331;
       --ana: #2c5a51; --ana-etiket: #3e6c62; --ana-zemin: #eef6f3; --ana-cizgi: #d7e7e1; --rozet: #e3f1ec; --rozet-yazi: #2f6d60;
       --rapor-zemin: #fcefe6; --rapor-cizgi: #f6dccb; --rapor-baslik: #8a4a2c; --rapor-alt: #8c5537;
       --rapor-ikon-zemin: #f7dcc8; --rapor-ikon: #ad552b;
@@ -32,6 +35,9 @@
     @media (prefers-color-scheme: dark) {
       :root {
         --at-renk: #fdeee4;
+        --r-e-gun: #7fb6ea; --r-e-yat: #6e97e0; --r-k-gun: #f29ac4; --r-k-yat: #e06aa3; --r-ortak: #f5a05e;
+        --r-rehberlik: #4fae74; --r-mentor-top: #8fd694; --r-seminer: #b08de8; --r-kamp: #f0c75a; --r-diger: #8c9692;
+        --r-zorunlu: #ff6b5e; --r-secili: #e7eeeb;
         --bg: #1c2321; --kart: #252d2b; --cizgi: #34403c; --yazi: #e7eeeb; --soluk: #a3b0ac; --ok: #7f8c88;
         --ikon-zemin: #313b38; --ikon: #b9c6c2;
         --ana: #b9e3d4; --ana-etiket: #9fc4b8; --ana-zemin: #2a3934; --ana-cizgi: #3a4f48; --rozet: #263f38; --rozet-yazi: #9fd2c3;
@@ -200,6 +206,57 @@
     .slot .orta .alt.cok-satir { white-space: pre-line; }
     #takvim .slot .orta .alt { white-space: pre-line; }
     .takvim-etiket { display: flex; gap: 6px; flex-wrap: wrap; }
+    .ay-kutu { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 18px; padding: 14px 12px 6px; margin-top: 4px; }
+    .ay-bas { display: flex; align-items: center; justify-content: space-between; padding: 0 4px 8px; font-size: 17px; }
+    .ay-ok { width: 40px; height: 40px; border: 0; background: none; color: var(--ana); border-radius: 12px; cursor: pointer; display: inline-grid; place-items: center; }
+    .ay-ok svg { width: 20px; height: 20px; }
+    .ay-izgara { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+    .ay-gunadi { text-align: center; font-size: 12px; font-weight: 600; color: var(--soluk); padding: 4px 0; }
+    .ay-gun { min-height: 46px; border: 0; background: none; border-radius: 12px; font: inherit; font-size: 15px; color: var(--yazi);
+              display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 3px; padding: 6px 0 4px; cursor: pointer; }
+    .ay-gun.tatil { background: var(--ikon-zemin); }
+    .ay-gun.bugun > span:first-child { color: var(--ana); font-weight: 750; }
+    .ay-gun.secili { background: var(--r-secili); }
+    .ay-gun.secili > span:first-child { color: var(--bg); font-weight: 700; }
+    .ay-noktalar { display: flex; gap: 3px; height: 6px; }
+    .ay-noktalar i, .ay-olay > i { width: 6px; height: 6px; border-radius: 50%; display: block; }
+    .ay-gun.secili .ay-noktalar i:not(.zorunlu-halka) { box-shadow: 0 0 0 1.5px var(--bg); }
+    .ay-gun.secili .ay-noktalar i.zorunlu-halka { box-shadow: 0 0 0 1.5px var(--bg), 0 0 0 3px var(--r-zorunlu); }
+    .r-e-gun { background: var(--r-e-gun); } .r-e-yat { background: var(--r-e-yat); } .r-k-gun { background: var(--r-k-gun); }
+    .r-k-yat { background: var(--r-k-yat); } .r-ortak { background: var(--r-ortak); } .r-rehberlik { background: var(--r-rehberlik); }
+    .r-mentor-top { background: var(--r-mentor-top); } .r-seminer { background: var(--r-seminer); } .r-kamp { background: var(--r-kamp); }
+    .r-diger, .r-tatil { background: var(--r-diger); }
+    .zorunlu-halka { box-shadow: 0 0 0 1.5px var(--kart), 0 0 0 3px var(--r-zorunlu); }
+    .ay-gunliste { border-top: 1px solid var(--cizgi); margin-top: 8px; padding: 10px 4px 6px; }
+    .ay-gunbas { font-size: 13px; font-weight: 700; color: var(--soluk); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+    .ay-bos { font-size: 14px; color: var(--soluk); padding: 4px 0 6px; }
+    .ay-olay { display: flex; align-items: center; gap: 10px; padding: 7px 0; }
+    .ay-olay > i { width: 10px; height: 10px; flex: none; }
+    .ay-olay > span:nth-child(2) { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .ay-olay b { font-size: 15px; font-weight: 650; } .ay-olay small { font-size: 13px; color: var(--soluk); }
+    .ay-gunbas-satir { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+    .ay-gunbas-satir .ay-gunbas { margin: 0; }
+    .gorunum-sec { display: inline-flex; border: 1px solid var(--cizgi); border-radius: 10px; overflow: hidden; }
+    .gorunum-sec button { border: 0; background: none; font: inherit; font-size: 13px; font-weight: 600; color: var(--soluk); padding: 6px 10px; cursor: pointer; }
+    .gorunum-sec button.secili { background: var(--ana-zemin); color: var(--ana); }
+    .saat-izgara { position: relative; margin: 6px 0 4px 44px; border-left: 1px solid var(--cizgi); }
+    .saat-satir { height: 44px; border-top: 1px solid var(--cizgi); position: relative; }
+    .saat-satir > span { position: absolute; left: -44px; top: -8px; width: 38px; text-align: right; font-size: 11.5px; color: var(--soluk); }
+    .saat-blok { position: absolute; left: 4px; right: 4px; border-radius: 8px; padding: 4px 8px; font-size: 13px; line-height: 1.25; color: #fff;
+                 overflow: hidden; border: 1px solid rgba(0,0,0,.08); }
+    .saat-blok b { display: block; font-size: 13px; } .saat-blok small { font-size: 12px; opacity: .9; }
+    .saat-blok.zorunlu-halka { box-shadow: 0 0 0 2px var(--r-zorunlu); }
+    .tum-gun { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
+    .tum-gun span { color: #fff; font-size: 12.5px; font-weight: 600; padding: 4px 9px; border-radius: 8px; }
+    .tum-gun span.r-tatil { background: var(--ikon-zemin); color: var(--soluk); }
+    .ekle-form { display: grid; gap: 8px; margin: 8px 0 6px; }
+    .ekle-form input, .ekle-form select { font: inherit; font-size: 15px; padding: 9px 10px; border: 1px solid var(--cizgi); border-radius: 10px; background: var(--bg); color: var(--yazi); min-width: 0; }
+    .ekle-form .iki { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .ekle-form input, .ekle-form input::placeholder { text-transform: none; letter-spacing: normal; text-align: left; }
+    .ekle-form label.onay { display: flex; align-items: center; justify-content: flex-start; gap: 10px; font-size: 15px; font-weight: 600; margin: 0; }
+    .ekle-form label.onay input { width: 20px; height: 20px; margin: 0; flex: none; }
+    .ekle-form .dugmeler { display: flex; gap: 8px; justify-content: flex-end; }
+    #takvim .slot.renkli { border-left-width: 5px; }
     .etiket-kucuk.gri { background: var(--ikon-zemin); color: var(--soluk); }
     .etiket-kucuk.sicak { background: var(--rapor-zemin); color: var(--rapor-baslik); }
     .isim-not { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
@@ -773,7 +830,7 @@
       ikonRozeti(rapor + yatili);
       return;
     }
-    if (['rehber', 'org', 'test'].indexOf(rol) < 0) return;
+    if (['rehber', 'org', 'test', 'akademik'].indexOf(rol) < 0) return;
     rozetKoy('yatili', sunucuSayac);
     if (Date.now() - sayacZamani < 60000) return;
     sayacZamani = Date.now();
@@ -817,7 +874,7 @@
       sec.addEventListener('change', function () { depo.yaz('grup', sec.value); $('icerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>'; yenile(); });
       alan.appendChild(el('label', { sinif: 'grup-sec' }, [etiket, ikon('asagi'), sec]));
     }
-    $('kim').textContent = kisi && kisi.ad ? kisi.ad + (kisi.rol === 'rehber' ? ' · rehber' : kisi.rol === 'org' ? ' · org sorumlusu' : kisi.rol === 'musahit' ? ' · müşahit (görüntüleme)' : '') : '';
+    $('kim').textContent = kisi && kisi.ad ? kisi.ad + (kisi.rol === 'rehber' ? ' · rehber' : kisi.rol === 'org' ? ' · org sorumlusu' : kisi.rol === 'musahit' ? ' · müşahit (görüntüleme)' : kisi.rol === 'akademik' ? ' · akademik' : '') : '';
   }
 
   /** "16 Ekim Cuma · Daire 5 · ✅ onaylandı" → metin + rozet */
@@ -1141,7 +1198,6 @@
   // ---------- Rehberlik takvimi ----------
   // Sunucu: islem=takvim → { etiket, olaylar: [{ tur, baslik, bas, bit, tumGun, yer, zorunlu, not, grup }], abonelik, duzenle }
   let takvimVeri = null, takvimZamani = 0;
-  const TUR_RENK = { 'Mentor semineri': 'sicak', 'Kamp': 'onay', 'Okul tatili': 'gri', 'Ortak etkinlik': 'onay', 'Toplantı': 'gri', 'Günübirlik': 'gri', 'Yatılı': 'gri' };
 
   async function takvimGetir() {
     if (takvimVeri && Date.now() - takvimZamani < 120000) return takvimVeri;
@@ -1191,6 +1247,27 @@
     ic.textContent = '';
     if (!s || !s.ok) { ic.appendChild(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s && s.hata] || 'Bir sorun oluştu.' })); return; }
     $('takvimBaslik').textContent = 'Takvim · ' + s.etiket;
+    ic.appendChild(ayGorunumu(s));
+    ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Yaklaşanlar' }));
+    if (!s.olaylar.length) { ic.appendChild(el('div', { sinif: 'bilgi', metin: 'Yaklaşan etkinlik yok.' })); }
+    let sonHafta = '';
+    const buPzt = haftaPzt(bugunISO());
+    const bugunY = DEMO ? '2026-10-13' : bugunISO(), sinirY = isoGun(new Date(yerel(bugunY + 'T12:00').getTime() + 56 * 864e5));
+    s.olaylar.forEach(function (o) {
+      if ((o.tumGun ? o.bit : o.bas).slice(0, 10) < bugunY || o.bas.slice(0, 10) > sinirY) return;   // yaklaşanlar: bugünden 8 hafta
+      const hp = haftaPzt(o.bas.slice(0, 10));
+      if (hp !== sonHafta) {
+        sonHafta = hp;
+        const d = yerel(hp + 'T12:00'), fark = Math.round((d - yerel(buPzt + 'T12:00')) / 6048e5);
+        ic.appendChild(el('div', { sinif: 'hs-baslik', metin: fark <= 0 ? 'Bu hafta' : fark === 1 ? 'Gelecek hafta' : d.getDate() + ' ' + AYLAR_UZUN[d.getMonth()] + ' haftası' }));
+      }
+      const etiketler = o.zorunlu ? [el('span', { sinif: 'etiket-kucuk sicak', metin: 'Zorunlu' })] : [];
+      ic.appendChild(el('div', { sinif: 'slot dikey renkli', style: 'border-left-color:var(--r-' + (o.renk === 'tatil' ? 'diger' : o.renk || 'diger') + ')' }, [
+        el('div', { sinif: 'slot-ust' }, [el('span', { sinif: 'orta' }, [
+          el('span', { sinif: 'baslik', metin: o.baslik }),
+          el('span', { sinif: 'alt', metin: olayZamani(o) + (o.yer ? ' · ' + o.yer : '') + (o.not ? '\n' + o.not : '') })])]),
+        etiketler.length ? el('div', { sinif: 'takvim-etiket' }, etiketler) : null]));
+    });
     // Telefon takvimi aboneliği (bir kez; değişiklikler kendiliğinden yansır)
     const ab = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Takvime ekle' });
     ab.onclick = function () {
@@ -1198,38 +1275,218 @@
       if (/iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)) location.href = webcal;
       else window.open('https://calendar.google.com/calendar/r?cid=' + encodeURIComponent(webcal), '_blank');
     };
-    ic.appendChild(el('div', { sinif: 'slot' }, [
+    ic.appendChild(el('div', { sinif: 'slot', style: 'margin-top:18px' }, [
       el('span', { sinif: 'orta' }, [el('span', { sinif: 'baslik', metin: 'Telefon takvimi' }),
         el('span', { sinif: 'alt', metin: 'Hepsi telefon takvimine düşer, değişiklikler kendiliğinden yansır.' })]), ab]));
-    if (!s.olaylar.length) { ic.appendChild(el('div', { sinif: 'bilgi', metin: 'Önümüzdeki 8 haftada etkinlik yok.' })); }
-    let sonHafta = '';
-    const buPzt = haftaPzt(bugunISO());
-    s.olaylar.forEach(function (o) {
-      const hp = haftaPzt(o.bas.slice(0, 10));
-      if (hp !== sonHafta) {
-        sonHafta = hp;
-        const d = yerel(hp + 'T12:00'), fark = Math.round((d - yerel(buPzt + 'T12:00')) / 6048e5);
-        ic.appendChild(el('div', { sinif: 'hs-baslik', metin: fark <= 0 ? 'Bu hafta' : fark === 1 ? 'Gelecek hafta' : d.getDate() + ' ' + AYLAR_UZUN[d.getMonth()] + ' haftası' }));
-      }
-      const etiketler = [el('span', { sinif: 'etiket-kucuk ' + (TUR_RENK[o.tur] || ''), metin: o.tur })];
-      if (o.zorunlu) etiketler.push(el('span', { sinif: 'etiket-kucuk sicak', metin: 'Zorunlu' }));
-      ic.appendChild(el('div', { sinif: 'slot dikey' + (o.zorunlu ? ' benim' : '') }, [
-        el('div', { sinif: 'slot-ust' }, [el('span', { sinif: 'orta' }, [
-          el('span', { sinif: 'baslik', metin: o.baslik }),
-          el('span', { sinif: 'alt', metin: olayZamani(o) + (o.yer ? ' · ' + o.yer : '') + (o.not ? '\n' + o.not : '') })])]),
-        el('div', { sinif: 'takvim-etiket' }, etiketler)]));
-    });
     if (s.duzenle) ic.appendChild(el('a', { sinif: 'docs', href: s.duzenle, target: '_blank', rel: 'noopener', metin: 'Etkinlik eklemek için takvim tablosunu aç' }));
   }
 
+  // Ay görünümü (Google Takvim'in telefondaki ay görünümü gibi): günlerde renkli noktalar (zorunluya kırmızı halka);
+  // dokunulan günün etkinlikleri altta — Liste ya da Saatler; rehber/org "+ Ekle" ile etkinlik ekler
+  let takvimAy = null, takvimSecili = null, gunGorunumu = 'liste', ekleAcik = false;
+  function isoGun(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function gunOlaylari(s, iso) {
+    return s.olaylar.filter(function (o) { const b = o.bas.slice(0, 10), e = (o.tumGun ? o.bit : o.bas).slice(0, 10); return b <= iso && e >= iso; });
+  }
+  function renkSinifi(o) { return 'r-' + (o.renk || 'diger'); }
+
+  function saatGorunumu(ol, iso) {
+    const kap = el('div');
+    const tum = ol.filter(function (o) { return o.tumGun || o.bas.slice(0, 10) !== iso || (o.bit.slice(0, 10) !== iso && o.bas.slice(11) <= '06:00'); });
+    const zamanli = ol.filter(function (o) { return tum.indexOf(o) < 0; });
+    if (tum.length) kap.appendChild(el('div', { sinif: 'tum-gun' }, tum.map(function (o) { return el('span', { sinif: renkSinifi(o) + (o.zorunlu ? ' zorunlu-halka' : ''), metin: o.baslik }); })));
+    const dk = function (x) { return +x.slice(11, 13) * 60 + +x.slice(14, 16); };
+    let bas = 8 * 60, bit = 22 * 60;
+    zamanli.forEach(function (o) { bas = Math.min(bas, Math.floor(dk(o.bas) / 60) * 60); bit = Math.max(bit, o.bit.slice(0, 10) === iso ? Math.ceil(dk(o.bit) / 60) * 60 : 24 * 60); });
+    const H = 44, izgara = el('div', { sinif: 'saat-izgara', style: 'height:' + ((bit - bas) / 60) * H + 'px' });
+    for (let t = bas; t < bit; t += 60) izgara.appendChild(el('div', { sinif: 'saat-satir' }, [el('span', { metin: String(t / 60).padStart(2, '0') + ':00' })]));
+    // çakışanlar yan yana sütunlara
+    const sutunSon = [];
+    zamanli.sort(function (a, b) { return a.bas < b.bas ? -1 : 1; }).forEach(function (o) {
+      const b1 = dk(o.bas), b2 = o.bit.slice(0, 10) === iso ? Math.max(dk(o.bit), b1 + 30) : 24 * 60;
+      let c = sutunSon.findIndex(function (x) { return x <= b1; }); if (c < 0) { c = sutunSon.length; sutunSon.push(0); }
+      sutunSon[c] = b2; o._c = c; o._b1 = b1; o._b2 = b2;
+    });
+    const n = Math.max(1, sutunSon.length);
+    zamanli.forEach(function (o) {
+      izgara.appendChild(el('div', { sinif: 'saat-blok ' + renkSinifi(o) + (o.zorunlu ? ' zorunlu-halka' : ''),
+        style: 'top:' + ((o._b1 - bas) / 60) * H + 'px;height:' + Math.max(22, ((o._b2 - o._b1) / 60) * H - 2) + 'px;left:calc(' + (o._c * 100 / n) + '% + 4px);right:auto;width:calc(' + (100 / n) + '% - 8px)' },
+        [el('b', { metin: o.baslik }), el('small', { metin: o.bas.slice(11) + '–' + o.bit.slice(11) + (o.yer ? ' · ' + o.yer : '') })]));
+    });
+    kap.appendChild(izgara);
+    return kap;
+  }
+
+  function ekleFormu(s, iso, iptal) {
+    const f = el('div', { sinif: 'ekle-form' });
+    const baslik = el('input', { type: 'text', placeholder: 'Başlık (ör. Mentor Yetiştirme Semineri 4)', maxlength: '80' });
+    const saat = el('input', { type: 'time', 'aria-label': 'Saat (boş = tüm gün)' });
+    const bitis = el('input', { type: 'date', 'aria-label': 'Bitiş günü (birden çok gün sürüyorsa)' });
+    const tur = el('select', { 'aria-label': 'Tür' }); (s.turler || []).forEach(function (t) { tur.appendChild(el('option', { value: t, metin: t })); });
+    const kimler = el('select', { 'aria-label': 'Kimler' }); (s.kimler || []).forEach(function (t) { kimler.appendChild(el('option', { value: t, metin: t })); });
+    const yer = el('input', { type: 'text', placeholder: 'Yer (isteğe bağlı)', maxlength: '60' });
+    const zorunlu = el('input', { type: 'checkbox' });
+    const kaydet = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Kaydet' }), vazgec = el('button', { sinif: 'kucuk', type: 'button', metin: 'Vazgeç' });
+    vazgec.onclick = iptal;
+    kaydet.onclick = function () {
+      if (!baslik.value.trim()) { baslik.focus(); return; }
+      kaydet.disabled = true;
+      const ek = '&islem=takvimEkle&tarih=' + iso + '&saat=' + encodeURIComponent(saat.value) + '&bitis=' + encodeURIComponent(bitis.value) +
+        '&tur=' + encodeURIComponent(tur.value) + '&kimler=' + encodeURIComponent(kimler.value) + '&baslik=' + encodeURIComponent(baslik.value.trim()) +
+        '&yer=' + encodeURIComponent(yer.value.trim()) + '&zorunlu=' + (zorunlu.checked ? '1' : '0');
+      takvimIslemYap(ek);
+    };
+    [baslik, el('div', { sinif: 'iki' }, [saat, bitis]), el('div', { sinif: 'iki' }, [tur, kimler]), yer,
+     el('label', { sinif: 'onay' }, [zorunlu, document.createTextNode('Zorunlu')]), el('div', { sinif: 'dugmeler' }, [vazgec, kaydet])]
+      .forEach(function (x) { f.appendChild(x); });
+    setTimeout(function () { baslik.focus(); }, 50);
+    return f;
+  }
+
+  // Seminer yoklaması: mentorlar Geldi / Gelmedi / Mazeretli (rehber/org kaydeder, müşahit görür)
+  async function yoklamaAc(o, s, alan) {
+    if (alan.firstChild) { alan.textContent = ''; return; }   // ikinci dokunuş kapatır
+    alan.innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    let y;
+    try { y = DEMO ? { ok: true, mentorlar: ['Ahmet Yılmaz', 'Mehmet Kaya', 'Yusuf Demir', 'Ali Şahin', 'Ömer Çelik'], durum: { 'Ahmet Yılmaz': 'Geldi' } }
+                   : await islem('&islem=yoklamaGetir&satir=' + o.satir); }
+    catch (e) { alan.textContent = 'Bağlantı kurulamadı.'; return; }
+    alan.textContent = '';
+    if (!y.ok) { alan.appendChild(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[y.hata] || 'Bir sorun oluştu.' })); return; }
+    const durum = y.durum || {}, SEC = ['Geldi', 'Gelmedi', 'Mazeretli'];
+    const ozet = el('div', { sinif: 'ozet' });
+    const ozetYaz = function () {
+      const say = function (v) { return y.mentorlar.filter(function (a) { return durum[a] === v; }).length; };
+      ozet.textContent = say('Geldi') + ' geldi · ' + say('Gelmedi') + ' gelmedi · ' + say('Mazeretli') + ' mazeretli · ' + y.mentorlar.length + ' mentor';
+    };
+    const liste = el('div');
+    const ciz = function () {
+      liste.textContent = '';
+      y.mentorlar.forEach(function (ad, i) {
+        liste.appendChild(el('div', { sinif: 'ogr-yok' }, [el('span', { sinif: 'no', metin: String(i + 1) }), el('span', { sinif: 'isim', metin: ad }),
+          s.ekleyebilir ? secimGrubu(SEC, false, function () { return durum[ad]; }, function (v) { if (v) durum[ad] = v; else delete durum[ad]; ozetYaz(); })
+                        : el('span', { sinif: 'etiket-kucuk', metin: durum[ad] || '—' })]));
+      });
+    };
+    const kutu = el('div', { sinif: 'soru', style: 'margin:6px 0 10px' }, [el('div', { sinif: 'soru-bas' }, [el('div', {}, [el('div', { sinif: 'b', metin: 'Yoklama' }), ozet])])]);
+    if (!y.mentorlar.length) kutu.appendChild(el('div', { sinif: 'a', metin: 'Bu etkinliğin kapsamında kodu tanımlı mentor yok.' }));
+    if (s.ekleyebilir && y.mentorlar.length) {
+      const tumu = el('button', { sinif: 'tumu', type: 'button' }, [ikon('ciftTik'), el('span', { metin: 'Tümü geldi' })]);
+      tumu.onclick = function () { y.mentorlar.forEach(function (a) { durum[a] = 'Geldi'; }); ciz(); ozetYaz(); };
+      kutu.firstChild.appendChild(tumu);
+    }
+    ciz(); ozetYaz(); kutu.appendChild(liste);
+    if (s.ekleyebilir && y.mentorlar.length) {
+      const kaydet = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Yoklamayı kaydet', style: 'margin-top:10px' });
+      kaydet.onclick = async function () {
+        kaydet.disabled = true;
+        if (DEMO) { alert('Demo: kaydedilmedi.'); kaydet.disabled = false; return; }
+        try {
+          const r = await islem('&islem=yoklamaKaydet&satir=' + o.satir + '&veri=' + encodeURIComponent(JSON.stringify(durum)));
+          if (!r.ok) { alert(HATA_METNI[r.hata] || 'Bir sorun oluştu.'); kaydet.disabled = false; return; }
+          takvimZamani = 0; takvimCiz(await takvimGetir());   // özet ("Yoklama 12/15") yenilensin
+        } catch (e) { alert('Bağlantı kurulamadı. Tekrar deneyin.'); kaydet.disabled = false; }
+      };
+      kutu.appendChild(el('div', { style: 'display:flex;justify-content:flex-end' }, [kaydet]));
+    }
+    alan.appendChild(kutu);
+  }
+
+  async function takvimIslemYap(ek) {
+    if (DEMO) { alert('Demo: kaydedilmedi.'); ekleAcik = false; takvimCiz(takvimVeri); return; }
+    try {
+      const s = await islem(ek);
+      if (!s.ok) { alert(HATA_METNI[s.hata] || 'Bir sorun oluştu.'); return; }
+      takvimVeri = s; takvimZamani = Date.now(); ekleAcik = false; takvimCiz(s);
+    } catch (e) { alert('Bağlantı kurulamadı. Tekrar deneyin.'); }
+  }
+
+  function ayGorunumu(s) {
+    const bugun = DEMO ? '2026-10-13' : bugunISO();
+    if (!takvimAy) { const b = yerel(bugun + 'T12:00'); takvimAy = new Date(b.getFullYear(), b.getMonth(), 1); takvimSecili = bugun; }
+    const kap = el('div', { sinif: 'ay-kutu' });
+    const ciz = function () {
+      kap.textContent = '';
+      const onceki = el('button', { sinif: 'ay-ok', type: 'button', 'aria-label': 'Önceki ay' }, [ikon('sol')]);
+      const sonraki = el('button', { sinif: 'ay-ok', type: 'button', 'aria-label': 'Sonraki ay' }, [ikon('sag')]);
+      onceki.onclick = function () { takvimAy = new Date(takvimAy.getFullYear(), takvimAy.getMonth() - 1, 1); ciz(); };
+      sonraki.onclick = function () { takvimAy = new Date(takvimAy.getFullYear(), takvimAy.getMonth() + 1, 1); ciz(); };
+      kap.appendChild(el('div', { sinif: 'ay-bas' }, [el('b', { metin: AYLAR_UZUN[takvimAy.getMonth()] + ' ' + takvimAy.getFullYear() }), el('span', {}, [onceki, sonraki])]));
+      const izgara = el('div', { sinif: 'ay-izgara' });
+      ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'].forEach(function (g) { izgara.appendChild(el('span', { sinif: 'ay-gunadi', metin: g })); });
+      const ilk = (takvimAy.getDay() + 6) % 7, gunSayisi = new Date(takvimAy.getFullYear(), takvimAy.getMonth() + 1, 0).getDate();
+      for (let i = 0; i < ilk; i++) izgara.appendChild(el('span'));
+      for (let g = 1; g <= gunSayisi; g++) {
+        const iso = isoGun(new Date(takvimAy.getFullYear(), takvimAy.getMonth(), g));
+        const ol = gunOlaylari(s, iso);
+        const tatil = ol.some(function (o) { return o.renk === 'tatil'; });
+        const noktalar = el('span', { sinif: 'ay-noktalar' });
+        const gorulen = {};
+        ol.filter(function (o) { return o.renk !== 'tatil'; }).forEach(function (o) {
+          const k = o.renk || 'diger';
+          if (!gorulen[k]) gorulen[k] = { zorunlu: false };
+          if (o.zorunlu) gorulen[k].zorunlu = true;
+        });
+        Object.keys(gorulen).slice(0, 4).forEach(function (k) { noktalar.appendChild(el('i', { sinif: 'r-' + k + (gorulen[k].zorunlu ? ' zorunlu-halka' : '') })); });
+        const h = el('button', { type: 'button', sinif: 'ay-gun' + (iso === bugun ? ' bugun' : '') + (iso === takvimSecili ? ' secili' : '') + (tatil ? ' tatil' : ''),
+                                 'aria-label': g + ' ' + AYLAR_UZUN[takvimAy.getMonth()] + (ol.length ? ', ' + ol.length + ' etkinlik' : '') },
+                         [el('span', { metin: String(g) }), noktalar]);
+        h.onclick = function () { takvimSecili = iso; ekleAcik = false; ciz(); };
+        izgara.appendChild(h);
+      }
+      kap.appendChild(izgara);
+      // Seçili gün: Liste | Saatler (+ Ekle)
+      const sec = yerel(takvimSecili + 'T12:00'), gol = gunOlaylari(s, takvimSecili);
+      const secim = el('span', { sinif: 'gorunum-sec' }, [['liste', 'Liste'], ['saat', 'Saatler']].map(function (x) {
+        const b = el('button', { type: 'button', sinif: gunGorunumu === x[0] ? 'secili' : '', metin: x[1] });
+        b.onclick = function () { gunGorunumu = x[0]; ciz(); };
+        return b;
+      }));
+      const sag = el('span', { style: 'display:flex;gap:6px;align-items:center' }, [secim]);
+      if (s.ekleyebilir && !ekleAcik) {
+        const ek = el('button', { sinif: 'kucuk sicak', type: 'button', metin: '+ Ekle' });
+        ek.onclick = function () { ekleAcik = true; ciz(); };
+        sag.appendChild(ek);
+      }
+      const gunListe = el('div', { sinif: 'ay-gunliste' }, [el('div', { sinif: 'ay-gunbas-satir' }, [
+        el('div', { sinif: 'ay-gunbas', metin: GUN_ADI[sec.getDay()] + ', ' + sec.getDate() + ' ' + AYLAR_UZUN[sec.getMonth()] }), sag])]);
+      if (ekleAcik) gunListe.appendChild(ekleFormu(s, takvimSecili, function () { ekleAcik = false; ciz(); }));
+      if (!gol.length && !ekleAcik) gunListe.appendChild(el('div', { sinif: 'ay-bos', metin: 'Bu gün etkinlik yok.' }));
+      else if (gunGorunumu === 'saat' && gol.length) gunListe.appendChild(saatGorunumu(gol, takvimSecili));
+      else gol.forEach(function (o) {
+        const sil = s.ekleyebilir && o.satir ? el('button', { sinif: 'kucuk', type: 'button', metin: 'Sil' }) : null;
+        if (sil) sil.onclick = function () { if (confirm('"' + o.baslik + '" takvimden silinsin mi?')) takvimIslemYap('&islem=takvimSil&satir=' + o.satir + '&baslik=' + encodeURIComponent(o.baslik)); };
+        const yk = o.yoklama !== undefined && o.satir ? el('button', { sinif: 'kucuk' + (o.yoklama === 'yok' ? ' sicak' : ''), type: 'button',
+          metin: o.yoklama === 'yok' ? 'Yoklama' : 'Yoklama ' + o.yoklama }) : null;
+        const ykAlan = el('div');
+        if (yk) yk.onclick = function () { yoklamaAc(o, s, ykAlan); };
+        gunListe.appendChild(el('div', { sinif: 'ay-olay' }, [el('i', { sinif: renkSinifi(o) + (o.zorunlu ? ' zorunlu-halka' : '') }),
+          el('span', {}, [el('b', { metin: o.baslik }), el('small', { metin: (o.tumGun ? 'Tüm gün' : o.bas.slice(11) + '–' + o.bit.slice(11)) + (o.yer ? ' · ' + o.yer : '') })]),
+          yk || sil, yk ? sil : null]));
+        gunListe.appendChild(ykAlan);
+      });
+      kap.appendChild(gunListe);
+    };
+    ciz();
+    return kap;
+  }
+
   function DEMO_TAKVIM() {
-    return { ok: true, etiket: 'E10', abonelik: 'https://example.invalid/demo', olaylar: [
-      { tur: 'Mentor semineri', baslik: 'Mentor Yetiştirme Semineri 3', bas: '2026-10-13T19:00', bit: '2026-10-13T21:00', tumGun: false, yer: 'KM', zorunlu: true, not: '' },
-      { tur: 'Günübirlik', baslik: 'Günübirlik · E10', bas: '2026-10-17T18:00', bit: '2026-10-17T21:00', tumGun: false, yer: 'KM', zorunlu: false, not: 'İkram: Ahmet ailesi' },
-      { tur: 'Toplantı', baslik: 'E Lise mentor toplantısı', bas: '2026-10-19T18:30', bit: '2026-10-19T20:00', tumGun: false, yer: '', zorunlu: false, not: '' },
-      { tur: 'Yatılı', baslik: 'Yatılı · E10', bas: '2026-10-23T17:00', bit: '2026-10-24T13:00', tumGun: false, yer: 'Daire 5', zorunlu: false, not: '' },
-      { tur: 'Okul tatili', baslik: 'Kış tatili', bas: '2026-12-21', bit: '2027-01-03', tumGun: true, yer: '', zorunlu: false, not: '' },
-      { tur: 'Kamp', baslik: 'Kış kampı', bas: '2026-12-26', bit: '2026-12-29', tumGun: true, yer: '', zorunlu: false, not: '' }] };
+    const o = function (tur, renk, baslik, bas, bit, tumGun, yer, zorunlu, not, satir) { return { tur: tur, renk: renk, baslik: baslik, bas: bas, bit: bit, tumGun: tumGun, yer: yer || '', zorunlu: !!zorunlu, not: not || '', satir: satir }; };
+    return { ok: true, etiket: 'E Lise', abonelik: 'https://example.invalid/demo', ekleyebilir: !DEMO_MENTOR,
+      turler: ['Ortak etkinlik', 'Mentor semineri', 'Kamp', 'Okul tatili', 'Diğer'], kimler: ['Herkes', 'Mentorlar', 'Rehberler', 'E Ortaokul', 'E Lise', 'K', 'E10'],
+      olaylar: [
+      Object.assign(o('Mentor semineri', 'seminer', 'Mentor Yetiştirme Semineri 3', '2026-10-13T19:00', '2026-10-13T21:00', false, 'KM', true, '', 2), DEMO_MENTOR ? {} : { yoklama: 'yok' }),
+      o('Toplantı', 'rehberlik', 'Rehberlik toplantısı', '2026-10-14T19:00', '2026-10-14T20:30', false),
+      o('Toplantı', 'mentor-top', 'E Ortaokul mentor toplantısı', '2026-10-16T19:00', '2026-10-16T20:30', false),
+      o('Günübirlik', 'e-gun', 'Günübirlik · E10', '2026-10-17T18:00', '2026-10-17T21:00', false, 'KM', false, 'İkram: Ahmet ailesi'),
+      o('Günübirlik', 'k-gun', 'Günübirlik · K7', '2026-10-17T14:00', '2026-10-17T17:00', false, 'Evde'),
+      o('Yatılı', 'k-yat', 'Yatılı · K9', '2026-10-17T17:00', '2026-10-18T13:00', false, 'Daire 3'),
+      o('Ortak etkinlik', 'ortak', 'Aile pikniği', '2026-10-18T12:00', '2026-10-18T16:00', false, 'Fish Creek Park', false, '', 3),
+      o('Toplantı', 'mentor-top', 'E Lise mentor toplantısı', '2026-10-19T18:30', '2026-10-19T20:00', false),
+      o('Yatılı', 'e-yat', 'Yatılı · E10', '2026-10-23T17:00', '2026-10-24T13:00', false, 'Daire 5'),
+      o('Okul tatili', 'tatil', 'Kış tatili', '2026-12-21', '2027-01-03', true),
+      o('Kamp', 'kamp', 'Kış kampı', '2026-12-26', '2026-12-29', true)] };
   }
 
   // ---------- Haftalık buluşma ----------
@@ -1447,16 +1704,19 @@
   }
 
   const MISAFIR_ALAN = { kuran: ['hoca', "Kur'an dersi", 'h'], sohbetci: ['sohbet', 'Konuk sohbeti', 's'], etut: ['etut', 'Ders koçu', 'e'] };
-  function saltOkunur() {
-    try { const k = JSON.parse(depo.al('kisi') || 'null'); return !!k && k.rol === 'musahit'; } catch (e) { return false; }
+  function saltOkunur() {   // müşahit ve akademik: yatılı/grubum/rapor işlemleri yok (akademik yalnız ders koçu atar)
+    try { const k = JSON.parse(depo.al('kisi') || 'null'); return !!k && (k.rol === 'musahit' || k.rol === 'akademik'); } catch (e) { return false; }
+  }
+  function akademik() {
+    try { const k = JSON.parse(depo.al('kisi') || 'null'); return !!k && k.rol === 'akademik'; } catch (e) { return false; }
   }
   function yonetici() {
     if (DEMO) return !DEMO_MENTOR;
-    try { const k = JSON.parse(depo.al('kisi') || 'null'); return !!k && ['org', 'rehber', 'test'].indexOf(k.rol) >= 0; } catch (e) { return false; }
+    try { const k = JSON.parse(depo.al('kisi') || 'null'); return !!k && ['org', 'rehber', 'test', 'akademik'].indexOf(k.rol) >= 0; } catch (e) { return false; }
   }
   function misafirHucre(x, saat) {
     const s = programVeri, m = MISAFIR_ALAN[x.anahtar];
-    if (MISAFIR || !m || !yonetici() || !s.satir) return null;   // isim artık etkinlik adının yanında
+    if (MISAFIR || !m || !yonetici() || !s.satir || (akademik() && x.anahtar !== 'etut')) return null;   // isim artık etkinlik adının yanında
     const b = el('button', { sinif: 'kucuk', type: 'button', metin: x.misafir ? 'Düzenle' : 'Ata' });
     b.onclick = function () {
       if (x.misafir) {
@@ -1592,15 +1852,16 @@
     const ic = $('misafirIcerik');
     ic.textContent = '';
     if (!liste.length) { ic.appendChild(el('div', { sinif: 'bilgi', metin: 'Önümüzdeki 8 haftada onaylı yatılı yok.' })); return; }
-    const eksikler = liste.filter(function (y) { return !y.sohbet || !y.hoca || !y.etut; });
+    const ak = akademik();   // akademik: yalnız ders koçu
+    const eksikler = liste.filter(function (y) { return ak ? !y.etut : !y.sohbet || !y.hoca || !y.etut; });
     if (eksikler.length) {
       const b = el('button', { sinif: 'kucuk sicak genis', type: 'button', metin: 'Gönüllü çağrısı paylaş (' + eksikler.length + ' yatılıda eksik)' });
       b.onclick = function () {
         const satirlar = ['🌙 Yatılı programlarımız için gönüllü arıyoruz', ''];
         eksikler.forEach(function (y) {
           satirlar.push('📅 ' + tarihEtiket(y.gun1) + ' · ' + y.yer + ' ' + y.daire + ' · ' + y.ekip);
-          if (!y.hoca) satirlar.push("   • Kur'an dersi: " + y.hocaSaat);
-          if (!y.sohbet) satirlar.push('   • Konuk sohbeti: ' + y.sohbetSaat);
+          if (!y.hoca && !ak) satirlar.push("   • Kur'an dersi: " + y.hocaSaat);
+          if (!y.sohbet && !ak) satirlar.push('   • Konuk sohbeti: ' + y.sohbetSaat);
           if (!y.etut) satirlar.push('   • Ders koçu (sabah, okul derslerine yardım): ' + y.etutSaat);
         });
         satirlar.push('', 'Katılabilecek olan bana yazabilir 🙏', '(Saatler namaz vaktine göre birkaç dakika değişebilir.)');
@@ -1623,8 +1884,8 @@
           if (DEMO) { y[alan] = yeni.trim(); misafirCiz(liste); return; }
           misafirYukle('&islem=misafirAta&prog=' + y.prog + '&satir=' + y.satir + '&alan=' + alan + '&ad=' + encodeURIComponent(yeni.trim()));
         };
-        const dugmeler = [ata];
-        if (ad) {
+        const dugmeler = ak && alan !== 'etut' ? [] : [ata];
+        if (ad && dugmeler.length) {
           const dv = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Davet gönder' });
           dv.onclick = function () {
             paylas(['Merhaba ' + ad + ' 🙏', 'Yatılı programımıza katılımınız için çok teşekkür ederiz.', '',
