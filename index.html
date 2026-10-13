@@ -174,6 +174,10 @@
     .slot-dugmeler { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
     .slot .orta .baslik { font-size: 16px; }
     .slot .orta .alt { font-size: 13px; }
+    .slot .orta .alt.cok-satir { white-space: pre-line; }
+    .isim-not { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+    .isim-not > span { flex: 0 0 34%; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+    .isim-not > input { flex: 1; min-width: 0; margin: 0; }
     button.kucuk { font: inherit; font-size: 14px; font-weight: 650; border-radius: 10px; padding: 8px 12px; cursor: pointer; white-space: nowrap;
                    border: 1px solid var(--ana-cizgi); background: var(--kart); color: var(--ana); }
     button.kucuk.sicak { background: var(--rapor-zemin); border-color: var(--rapor-cizgi); color: var(--rapor-baslik); }
@@ -240,12 +244,17 @@
     .adim { display: flex; align-items: center; gap: 10px; }
     .adim .sol { flex: 1; min-width: 0; }
     .adim .misafir-ad { text-align: right; font-size: 15px; font-weight: 650; color: var(--ana); max-width: 45%; }
+    .adim .misafir-isim { color: var(--ana); font-weight: 650; }
+    .adim .misafir-isim.bos { color: var(--soluk); font-weight: 500; font-style: italic; }
     button.misafir-ad { background: none; border: 0; font: inherit; font-size: 15px; font-weight: 650; color: var(--ana); padding: 4px 0; cursor: pointer;
                         text-decoration: underline; text-decoration-color: var(--ana-cizgi); text-underline-offset: 4px; }
     .adim .saat { font-size: 13px; font-weight: 650; color: var(--soluk); font-variant-numeric: tabular-nums; }
     .adim .ad { font-size: 16px; font-weight: 600; margin-top: 1px; }
     .adim .ek { font-size: 13px; color: var(--soluk); margin-top: 1px; }
     .adim.namaz .ad { color: var(--ana); }
+    .kisa-ders { display: inline-flex; align-items: center; min-height: 32px; margin-top: 6px; padding: 0 12px; border-radius: 999px;
+                 border: 1px solid var(--ana-cizgi); background: var(--ana-zemin); color: var(--ana); font: inherit; font-size: 13px;
+                 font-weight: 650; cursor: pointer; }
     .adim.namaz::before { background: var(--ana-zemin); border-color: var(--ana-etiket); }
     .adim.gecti { opacity: .45; }
     .adim.simdi { background: var(--ana-zemin); border: 1px solid var(--ana-cizgi); }
@@ -423,6 +432,13 @@
     <a class="docs" id="grubumDis" target="_blank" rel="noopener">Notları düzenlemek için tabloyu aç</a>
   </section>
 
+  <!-- Haftalık buluşma -->
+  <section id="bulusma" hidden>
+    <div class="gezinti"><button class="geri" id="bulusmaGeri" type="button"></button></div>
+    <h1 class="okuma-baslik" id="bulusmaBaslik">Buluşma</h1>
+    <div id="bulusmaIcerik"></div>
+  </section>
+
   <!-- Toplantı notu -->
   <section id="toplanti" hidden>
     <div class="gezinti"><button class="geri" id="toplantiGeri" type="button"></button></div>
@@ -457,7 +473,7 @@
         <li><b>Talep:</b> Yatılı → boş slotta <b>Talep et</b>. Rehberin onaylayınca kilitlenir.</li>
         <li><b>İptal:</b> Onaydan önce ve yatılıya bir haftadan fazla varken <b>Vazgeç</b>. Sonrasında <b>İptal iste</b> → sebep yaz; rehberin onaylayınca slot boşalır.</li>
         <li><b>Kırmızı sayı:</b> Bakman gereken şey var demek (rapor gönderilmedi, yatılı durumu değişti; rehberde onay bekleyen talepler). Telefon ikonunda da görmek için aşağıdaki düğme.</li>
-        <li><b>Program:</b> Yatılı kutusundaki <b>Program</b> düğmesi o günün saat saat akışını açar; şu anki etkinlik vurgulu. Saatler namaz vakitlerine göre hesaplanır.</li>
+        <li><b>Program:</b> Yatılı kutusundaki <b>Program</b> düğmesi o günün saat saat akışını açar; şu anki etkinlik vurgulu. Saatler namaz vakitlerine göre hesaplanır. Namaz satırlarındaki <b>Kısa ders</b> namazdan sonra okunacak 5–10 dakikalık dersleri açar.</li>
         <li>Yatılı günü ana ekranın en üstünde <b>Bugün yatılı</b> kartı çıkar.</li>
       </ul>
       <h3>Grubum</h3>
@@ -530,6 +546,7 @@
   const IKON = {
     kalem: '<path d="M12 20h9"/><path d="M16.4 3.6a2.1 2.1 0 0 1 3 3L7.4 18.6a2 2 0 0 1-.9.5l-2.9.8.8-2.9a2 2 0 0 1 .5-.9z"/>',
     belge: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>',
+    saat: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
     takvim: '<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/>',
     kisiler: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
     kitap: '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
@@ -647,6 +664,11 @@
     ic.appendChild(satir({ ikon: 'belge', baslik: 'Toplantı notu',
       alt: v.toplanti ? v.toplanti.tarih + ' haftası · gündem ve görevler' : 'Henüz toplantı notu yok', url: v.toplanti && v.toplanti.url,
       tikla: v.toplanti ? toplantiAc : null }));
+    if (v.bulusma) {
+      const b = v.bulusma;
+      ic.appendChild(satir({ k: 'bulusma', ikon: 'saat', baslik: 'Buluşma', url: '#', tikla: bulusmaAc,
+        alt: b.metin + (b.ikram ? ' · İkram: ' + b.ikram : (b.yatili ? '' : ' · İkram seçilmedi')) }));
+    }
     const y = yatiliAyir(v.yatili);
     let programDugme = null;
     if (v.yatiliSatir) {
@@ -753,7 +775,7 @@
   }
 
   function goster(bolum) {
-    ['kurulum', 'pano', 'okuma', 'medya', 'yatili', 'grubum', 'toplanti', 'program', 'yardim', 'rapor'].forEach(function (b) { $(b).hidden = b !== bolum; });
+    ['kurulum', 'pano', 'okuma', 'medya', 'yatili', 'grubum', 'bulusma', 'toplanti', 'program', 'yardim', 'rapor'].forEach(function (b) { $(b).hidden = b !== bolum; });
     if (bolum !== 'medya') $('medyaKutu').textContent = '';   // video arkada çalmaya devam etmesin
     window.scrollTo(0, 0);
   }
@@ -781,6 +803,7 @@
       if (/ekran=yatili/.test(location.search)) yatiliAc();
       if (/ekran=rapor/.test(location.search)) raporAc();
       if (/ekran=grubum/.test(location.search)) grubumAc();
+      if (/ekran=bulusma/.test(location.search)) bulusmaAc();
       if (/ekran=okuma/.test(location.search)) okuyucuAc('tr');
       if (/ekran=yardim/.test(location.search)) $('yardimAc').click();
       return;
@@ -900,11 +923,13 @@
     goster('medya');
   }
 
-  [$('geri'), $('medyaGeri'), $('yatiliGeri'), $('grubumGeri'), $('toplantiGeri'), $('programGeri'), $('yardimGeri'), $('raporGeri')].forEach(function (b) {
+  [$('geri'), $('medyaGeri'), $('yatiliGeri'), $('grubumGeri'), $('bulusmaGeri'), $('toplantiGeri'), $('programGeri'), $('yardimGeri'), $('raporGeri')].forEach(function (b) {
     b.appendChild(ikon('sol')); b.appendChild(document.createTextNode('Geri'));
     b.addEventListener('click', function () { history.back(); });
   });
   window.addEventListener('popstate', function () {
+    if (okumaDonus && !$('okuma').hidden) { goster(okumaDonus); okumaDonus = null; return; }   // kısa dersten programa dön
+    okumaDonus = null;
     if ($('pano').hidden && $('kurulum').hidden) { goster('pano'); yenile(); }
   });
 
@@ -916,6 +941,8 @@
     grubumYok: 'Grup takip dosyası bulunamadı.', kapasite: 'Grup dolu (8 öğrenci). Rehberinize haber verin.',
     duzenle: 'Güncellenecek rapor bulunamadı; sayfayı kapatıp yeniden aç.',
     raporYok: 'Rapor formu bulunamadı. Sistem sorumlusuna haber verin.', istek: 'İstek okunamadı.',
+    kisaDers: 'Kısa dersler belgesi henüz bağlanmadı.',
+    bulusmaBicim: 'Gün ve saati anlaşılır yazın (ör. Cumartesi, 18:00).', bulusmaHafta: 'Bu hafta Sıralar tablosunda yok (sezon dışı).',
     toplantiYok: 'Bu hafta için toplantı belgesi henüz oluşturulmadı.', toplantiYapi: 'Toplantı belgesinde Grup turu tablosu bulunamadı.',
     satir: 'Liste değişmiş, yeniden açın.',
     iptalGerek: 'Yatılıya bir haftadan az kaldı; vazgeçmek için "İptal iste" ile rehberinize sebep bildirin.',
@@ -1055,6 +1082,109 @@
     });
   }
 
+  // ---------- Haftalık buluşma ----------
+  function bulusmaAc() {
+    history.pushState({ alt: 'bulusma' }, ''); goster('bulusma');
+    $('bulusmaIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    bulusmaYukle('&islem=bulusma');
+  }
+
+  async function bulusmaYukle(ek) {
+    try {
+      const s = DEMO ? DEMO_BULUSMA() : await islem(ek);
+      if (!s.ok) {
+        $('bulusmaIcerik').textContent = '';
+        $('bulusmaIcerik').appendChild(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s.hata] || 'Bir sorun oluştu.' }));
+        if (ek !== '&islem=bulusma') setTimeout(function () { bulusmaYukle('&islem=bulusma'); }, 1800);
+        return;
+      }
+      bulusmaCiz(s);
+    } catch (e) { $('bulusmaIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; }
+  }
+
+  /** Gün / saat / yer sorar; iptalde null. */
+  function bulusmaSor(baslik, onceki) {
+    const gun = prompt(baslik + '\n\nGün (ör. Cumartesi):', onceki.gun || '');
+    if (gun === null) return null;
+    const saat = prompt(baslik + '\n\nSaat (ör. 18:00):', onceki.saat || '');
+    if (saat === null) return null;
+    const yer = prompt(baslik + '\n\nYer (ör. KM ya da "Ahmet\'lerin evi"):', onceki.yer || '');
+    if (yer === null) return null;
+    return '&gun=' + encodeURIComponent(gun.trim()) + '&saat=' + encodeURIComponent(saat.trim()) + '&yer=' + encodeURIComponent(yer.trim());
+  }
+
+  function bulusmaCiz(s) {
+    $('bulusmaBaslik').textContent = 'Buluşma · ' + s.grup;
+    const ic = $('bulusmaIcerik'), salt = saltOkunur();
+    ic.textContent = '';
+    const v = s.varsayilan || {};
+    const varMetin = v.gun ? v.gun + (v.saat ? ' ' + v.saat : '') + (v.yer ? ' · ' + v.yer : '') : 'Henüz girilmedi';
+    const vd = el('button', { sinif: 'kucuk', type: 'button', metin: v.gun ? 'Değiştir' : 'Gir' });
+    vd.onclick = function () { const q = bulusmaSor('Her haftaki buluşma', v); if (q) bulusmaYukle('&islem=bulusmaVarsayilan' + q); };
+    ic.appendChild(el('div', { sinif: 'slot' }, [
+      el('span', { sinif: 'orta' }, [el('span', { sinif: 'baslik', metin: 'Her hafta' }), el('span', { sinif: 'alt', metin: varMetin })]),
+      salt ? null : vd]));
+
+    ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Haftalar' }));
+    s.haftalar.forEach(function (h, i) {
+      const d = new Date(h.pzt + 'T12:00:00');
+      const etiket = i === 0 ? 'Bu hafta' : i === 1 ? 'Gelecek hafta' : d.getDate() + ' ' + AYLAR_UZUN[d.getMonth()] + ' haftası';
+      let alt, rozet = null;
+      const dugmeler = [];
+      // Aile seçimi (ikram / akşam yemeği / kahvaltı): numaralı öğrenci listesi
+      const aileDugme = function (etiketAd, mevcut, ek) {
+        const d = el('button', { sinif: 'kucuk' + (mevcut ? '' : ' sicak'), type: 'button', metin: etiketAd + (mevcut ? ': değiştir' : ' seç') });
+        d.onclick = function () {
+          const liste = s.ogrenciler.map(function (o, j) { return (j + 1) + ' = ' + o; }).join('\n');
+          const c = prompt(etiketAd + ' kimin ailesinde? Numarayı yaz (0 = kaldır):\n\n' + liste, '');
+          if (c === null || c.trim() === '') return;
+          const n = parseInt(c, 10);
+          if (!(n >= 0 && n <= s.ogrenciler.length)) { alert('Listeden bir numara yazın.'); return; }
+          bulusmaYukle(ek + '&pzt=' + h.pzt + '&ad=' + encodeURIComponent(n ? s.ogrenciler[n - 1] : ''));
+        };
+        return d;
+      };
+      // Hatırlatma bir gün önce: velinin e-postası/izni kayıtlıysa veliye, değilse mentora gider
+      const hat = function (ad, var_) { return ad ? ad + (var_ ? ' · veliye hatırlatılır' : ' · hatırlatma sana gelir') : 'seçilmedi'; };
+      if (h.yatili) {
+        alt = 'Yatılı haftası (buluşma ve ikram yok)\nAkşam yemeği: ' + hat(h.aksam, h.aksamEposta) + '\nKahvaltı: ' + hat(h.kahvalti, h.kahvaltiEposta);
+        rozet = el('span', { sinif: 'etiket-kucuk onay', metin: 'Yatılı' });
+        if (!salt && h.satir) dugmeler.push(aileDugme('Akşam yemeği', h.aksam, '&islem=bulusmaYemek&alan=aksam'),
+                                            aileDugme('Kahvaltı', h.kahvalti, '&islem=bulusmaYemek&alan=kahvalti'));
+      } else {
+        const t = h.tarih ? new Date(h.tarih + 'T12:00:00') : null;
+        alt = (t ? h.gun + ' ' + t.getDate() + ' ' + AYLAR_UZUN[t.getMonth()] + (h.saat ? ' · ' + h.saat : '') + (h.yer ? ' · ' + h.yer : '') : 'Gün girilmedi') +
+              '\nİkram: ' + hat(h.ikram, h.ikramEposta);
+        if (h.degisti) rozet = el('span', { sinif: 'etiket-kucuk talep', metin: 'Bu hafta farklı' });
+        if (!salt && h.satir) {
+          const ik = aileDugme('İkram', h.ikram, '&islem=bulusmaIkram');
+          const bd = el('button', { sinif: 'kucuk', type: 'button', metin: h.degisti ? 'Varsayılana döndür' : 'Bu haftayı değiştir' });
+          bd.onclick = function () {
+            if (h.degisti) { if (confirm('Bu hafta her zamanki gün/saat/yerde mi?')) bulusmaYukle('&islem=bulusmaHafta&pzt=' + h.pzt); return; }
+            const q = bulusmaSor(etiket + ' için buluşma', h);
+            if (q) bulusmaYukle('&islem=bulusmaHafta&pzt=' + h.pzt + q);
+          };
+          dugmeler.push(ik, bd);
+        }
+      }
+      ic.appendChild(el('div', { sinif: 'slot dikey' + (i === 0 ? ' benim' : '') }, [
+        el('div', { sinif: 'slot-ust' }, [
+          el('span', { sinif: 'orta' }, [el('span', { sinif: 'baslik', metin: etiket }), el('span', { sinif: 'alt cok-satir', metin: alt })]),
+          rozet]),
+        dugmeler.length ? el('div', { sinif: 'slot-dugmeler' }, dugmeler) : null]));
+    });
+    ic.appendChild(el('p', { sinif: 'not', metin: 'Sıra gelen aileye bir gün önce sabah e-postayla hatırlatma gider (velinin e-postası ve izni rehberde kayıtlıysa; değilse hatırlatma sana gelir). Yatılı haftaları otomatik atlanır.' }));
+  }
+
+  function DEMO_BULUSMA() {
+    return { ok: true, grup: 'E10', varsayilan: { gun: 'Cumartesi', saat: '18:00', yer: 'KM' }, ogrenciler: ['Ahmet', 'Mehmet', 'Yusuf', 'Ali'],
+      haftalar: [
+        { pzt: '2026-10-12', satir: 3, tarih: '2026-10-17', gun: 'Cumartesi', saat: '18:00', yer: 'KM', degisti: false, ikram: 'Ahmet', ikramEposta: true, yatili: false },
+        { pzt: '2026-10-19', satir: 4, tarih: '2026-10-25', gun: 'Pazar', saat: '17:00', yer: "Yusuf'ların evi", degisti: true, ikram: '', yatili: false },
+        { pzt: '2026-10-26', satir: 5, tarih: '', gun: '', saat: '', yer: '', degisti: false, ikram: '', yatili: true, aksam: 'Ali', kahvalti: '' },
+        { pzt: '2026-11-02', satir: 6, tarih: '2026-11-07', gun: 'Cumartesi', saat: '18:00', yer: 'KM', degisti: false, ikram: 'Mehmet', yatili: false }] };
+  }
+
   // ---------- Grubum ----------
   function grubumAc() {
     history.pushState({ alt: 'grubum' }, ''); goster('grubum');
@@ -1176,8 +1306,8 @@
   }
   function misafirHucre(x, saat) {
     const s = programVeri, m = MISAFIR_ALAN[x.anahtar];
-    if (MISAFIR || !m || !yonetici() || !s.satir) return x.misafir ? el('div', { sinif: 'misafir-ad', metin: x.misafir }) : null;
-    const b = el('button', { sinif: x.misafir ? 'misafir-ad' : 'kucuk', type: 'button', metin: x.misafir || 'Ata' });
+    if (MISAFIR || !m || !yonetici() || !s.satir) return null;   // isim artık etkinlik adının yanında
+    const b = el('button', { sinif: 'kucuk', type: 'button', metin: x.misafir ? 'Düzenle' : 'Ata' });
     b.onclick = function () {
       if (x.misafir) {
         const sec = prompt(m[1] + ': ' + x.misafir + '\n\n1 = Davet gönder\n2 = Değiştir / kaldır', '1');
@@ -1223,6 +1353,11 @@
       const gecti = (x.bas === x.bit ? simdi > bas : simdi >= bit);
       const saat = x.bas.slice(11) + (x.bas !== x.bit ? '–' + x.bit.slice(11) : '');
       const adSatiri = el('div', { sinif: 'ad', metin: x.ad });
+      // Konuk / Kur'an hocası / ders koçu: isim etkinliğin hemen yanında
+      if (x.misafir !== undefined && x.misafir !== null) {
+        adSatiri.appendChild(document.createTextNode(' · '));
+        adSatiri.appendChild(el('span', { sinif: 'misafir-isim' + (x.misafir ? '' : ' bos'), metin: x.misafir || 'atanmadı' }));
+      }
       if (anlik) adSatiri.appendChild(el('span', { sinif: 'rozet-simdi', metin: 'ŞİMDİ' }));
       else if (!gecti && !sonrakiVerildi && simdi >= yerel(s.akis[0].bas)) {
         const dk = Math.round((bas - simdi) / 60000);
@@ -1232,7 +1367,8 @@
       const senin = s.vurgu && x.anahtar === s.vurgu;
       if (senin) adSatiri.appendChild(el('span', { sinif: 'rozet-sonra', metin: 'SİZİN BÖLÜMÜNÜZ' }));
       const a = el('div', { sinif: 'adim' + (x.tur === 'namaz' ? ' namaz' : '') + (senin ? ' senin' : '') + (anlik ? ' simdi' : gecti ? ' gecti' : '') }, [
-        el('div', { sinif: 'sol' }, [el('div', { sinif: 'saat', metin: saat }), adSatiri, x.ek ? el('div', { sinif: 'ek', metin: x.ek }) : null]),
+        el('div', { sinif: 'sol' }, [el('div', { sinif: 'saat', metin: saat }), adSatiri, x.ek ? el('div', { sinif: 'ek', metin: x.ek }) : null,
+          x.tur === 'namaz' && s.namazDersi && !MISAFIR ? kisaDersDugme() : null]),
         x.misafir !== undefined && x.misafir !== null ? misafirHucre(x, saat) : null,
       ]);
       if (anlik) simdiEl = a;
@@ -1242,15 +1378,39 @@
     if (kaydir && simdiEl) setTimeout(function () { simdiEl.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 150);
   }
 
+  // Namazlardan sonra okunacak 5–10 dk'lık kısa dersler (01 Genel → "Namaz Sonrası Kısa Dersler"), uygulama içinde
+  function kisaDersDugme() {
+    const d = el('button', { sinif: 'kisa-ders', type: 'button', metin: 'Kısa ders' });
+    d.onclick = kisaDersAc;
+    return d;
+  }
+  let okumaDonus = null;
+  async function kisaDersAc() {
+    $('okumaBaslik').textContent = 'Namaz sonrası kısa dersler';
+    $('dilSec').querySelectorAll('button').forEach(function (b) { b.hidden = true; });
+    $('okumaDocs').href = programVeri && programVeri.namazDersi || '#';
+    $('okumaDocs').hidden = !(programVeri && programVeri.namazDersi);
+    okumaDonus = 'program';
+    history.pushState({ okuma: true }, ''); goster('okuma');
+    if (DEMO) { $('okumaIcerik').innerHTML = '<h3>Namazın huzuru</h3><p>Örnek kısa ders. Gerçek uygulamada rehberlerin hazırladığı dersler burada görünür.</p><h3>Sabrın meyvesi</h3><p>Örnek metin.</p>'; return; }
+    $('okumaIcerik').innerHTML = '<p class="yukleniyor">Yükleniyor…</p>';
+    try {
+      const s = await veriCek(depo.al('grup') || '', depo.al('kod'), '&islem=kisaDers');
+      $('okumaIcerik').innerHTML = s.ok && s.html ? s.html   // HTML sunucuda kaçırılarak üretiliyor (metinHtml_)
+        : '<p class="bos">Kısa dersler uygulamada gösterilemiyor. Aşağıdan Google Docs\'ta açabilirsiniz.</p>';
+    } catch (e) { $('okumaIcerik').innerHTML = '<p class="bos">Bağlantı kurulamadı. Tekrar deneyin.</p>'; }
+  }
+
   function DEMO_PROGRAM() {
     const a = [[1,'17:00','17:00','Geliş','sabit',''],[1,'17:10','17:45',"Kur'an dersi",'sabit-sure','','kuran','Örnek Hoca'],[1,'17:45','18:41','Oyun / serbest','esnek',''],
-      [1,'18:41','18:56','Akşam namazı','namaz',''],[1,'18:56','19:11','Günün sohbeti','esnek',''],[1,'19:11','19:51','Akşam yemeği','esnek','Getiren: Örnek aile'],
-      [1,'19:51','21:00','Oyun + film','esnek',''],[1,'21:00','21:20','Yatsı namazı + tesbihat','namaz',''],[1,'21:20','22:00','Konuk sohbeti','sabit-sure','','sohbetci',''],[1,'22:00','23:00','Oyun + film','esnek',''],
+      [1,'18:41','19:06','Akşam namazı + tesbihat','namaz',''],[1,'19:06','19:21','Günün sohbeti','esnek',''],[1,'19:21','20:01','Akşam yemeği','esnek','Getiren: Örnek aile'],
+      [1,'20:01','21:00','Oyun + film','esnek',''],[1,'21:00','21:20','Yatsı namazı + tesbihat','namaz',''],[1,'21:20','22:00','Konuk sohbeti','sabit-sure','','sohbetci',''],[1,'22:00','23:00','Oyun + film','esnek',''],
       [1,'23:00','23:00','Yatış','sabit',''],[2,'06:01','06:31','Teheccüd + dua','esnek',''],[2,'06:31','06:46','Sabah namazı','namaz',''],[2,'06:46','07:01','Kitap okuma','esnek',''],
+      [2,'07:01','08:55','Uyku (tekrar yatış)','esnek',''],[2,'08:55','09:00','Yatak toplama','sabit-sure',''],
       [2,'09:00','10:00','Etüt','sabit-sure','','etut','Örnek Koç'],[2,'10:00','10:40','Kahvaltı','esnek','Getiren: Örnek aile'],[2,'10:40','12:45','Eğlence saati','esnek',''],
       [2,'12:45','13:00','Temizlik','sabit-sure',''],[2,'13:00','13:00','Dağılış','sabit','Öğle vakti dağılıştan sonra: evde kılınır']];
     return { ok: true, daire: 'Daire 5', gun1: '2026-10-16', sohbetci: 'Örnek Konuk', hoca: 'Örnek Hoca', etutcu: 'Örnek Koç', demoSimdi: '2026-10-16T19:30',
-      prog: 'E', satir: 2, imza: 'demo', yer: 'KM', ekip: 'E Lise', grup: 'E10',
+      prog: 'E', satir: 2, imza: 'demo', yer: 'KM', ekip: 'E Lise', grup: 'E10', namazDersi: '#kisa',
       akis: a.map(function (x) { const g = x[0] === 1 ? '2026-10-16T' : '2026-10-17T';
         return { gun: x[0], bas: g + x[1], bit: g + x[2], ad: x[3], tur: x[4], ek: x[5], anahtar: x[6] || 'ek', misafir: x[6] ? x[7] : undefined }; }) };
   }
@@ -1419,12 +1579,14 @@
     const ic = $('raporIcerik');
     ic.textContent = '';
     const ana = el('div');
-    const detay = el('details', { sinif: 'detay-kutu' }, [el('summary', {}, [ikon('listeArti'), el('span', { metin: 'Etkinlik ve gözlem detayları' }), el('span', { sinif: 'ok2' }, [ikon('asagi')])])]);
+    const detay = el('details', { sinif: 'detay-kutu' }, [el('summary', {}, [ikon('listeArti'), el('span', { metin: 'Detaylar ve gözlemler' }), el('span', { sinif: 'ok2' }, [ikon('asagi')])])]);
     const gonderMetni = mevcutHafta ? 'Raporu güncelle' : 'Raporu gönder';
     const gonder = el('button', { sinif: 'gonder', type: 'button' }, [el('span', { metin: gonderMetni }), ikon('sag')]);
     if (mevcutHafta) ic.appendChild(el('div', { sinif: 'bilgi' }, [el('b', { metin: 'Bu haftanın raporu var' }), document.createElement('br'),
       document.createTextNode(mevcutHafta.gonderim + ' tarihinde gönderildi. Değiştirip “Raporu güncelle”ye basarsan eskisinin yerini alır.')]));
     const zorunlular = [];   // { kutu, eksik(): '' | 'ne eksik' }
+    let yok = null;           // yoklama: { satirlar, durum } — mazeret tablosu buradan beslenir
+    const yoklamaDegisti = [];
     // Alt satır: "Zorunlu alanları tamamlayın · ◔ 5/7" — dokununca ilk eksik alana kayar
     const eksikListe = el('button', { sinif: 'ilerleme', type: 'button', 'aria-live': 'polite' });
     let ilkEksik = null;
@@ -1482,6 +1644,7 @@
         zorunlular.push({ kutu: kutu, eksik: function () { return raporCevap[q.id] ? '' : 'buluşma tarihi'; }, sayac: function () { return [raporCevap[q.id] ? 1 : 0, 1]; } });
       } else if (q.tip === 'yoklama') {
         const durum = raporCevap[q.id] && typeof raporCevap[q.id] === 'object' ? raporCevap[q.id] : {}; raporCevap[q.id] = durum;
+        yok = { satirlar: q.satirlar, durum: durum, mazeret: q.sutunlar[2] };
         const ozet = el('div', { sinif: 'ozet' });
         const satirlar = el('div');
         const ozetYaz = function () {
@@ -1492,11 +1655,11 @@
           satirlar.textContent = '';
           q.satirlar.forEach(function (ad, i) {
             satirlar.appendChild(el('div', { sinif: 'ogr-yok' }, [el('span', { sinif: 'no', metin: String(i + 1) }), el('span', { sinif: 'isim', metin: ad }),
-              secimGrubu(q.sutunlar, false, function () { return durum[ad]; }, function (v) { if (v) durum[ad] = v; else delete durum[ad]; ozetYaz(); guncelle(); })]));
+              secimGrubu(q.sutunlar, false, function () { return durum[ad]; }, function (v) { if (v) durum[ad] = v; else delete durum[ad]; ozetYaz(); guncelle(); yoklamaDegisti.forEach(function (f) { f(); }); })]));
           });
         };
         const tumu = el('button', { sinif: 'tumu', type: 'button' }, [ikon('ciftTik'), el('span', { metin: 'Tümü geldi' })]);
-        tumu.onclick = function () { q.satirlar.forEach(function (ad) { durum[ad] = q.sutunlar[0]; }); ciz(); ozetYaz(); guncelle(); };
+        tumu.onclick = function () { q.satirlar.forEach(function (ad) { durum[ad] = q.sutunlar[0]; }); ciz(); ozetYaz(); guncelle(); yoklamaDegisti.forEach(function (f) { f(); }); };
         kutu = el('div', { sinif: 'soru' }, [
           el('div', { sinif: 'soru-bas' }, [el('div', {}, [el('div', { sinif: 'b', metin: 'Yoklama' }), ozet]), q.satirlar.length ? tumu : null]),
         ]);
@@ -1524,7 +1687,44 @@
         const bas = el('div', { sinif: 'soru-bas' }, [el('div', { sinif: 'b' }, [rehberNot ? ikon('mesaj') : null,
           document.createTextNode(rehberNot ? 'Rehbere not' : q.baslik), !q.zorunlu && !q.detay ? el('small', { metin: '(isteğe bağlı)' }) : null])]);
         kutu = el('div', { sinif: 'soru' }, [bas, q.aciklama ? el('div', { sinif: 'a', metin: q.aciklama }) : null]);
-        if (q.tip === 'metin' || q.tip === 'paragraf') {
+        const mazeretSorusu = /^mazeret açıklaması/i.test(q.baslik), dikkatSorusu = /^dikkat isteyen/i.test(q.baslik);
+        if ((mazeretSorusu || dikkatSorusu) && yok && yok.satirlar.length) {
+          // İsimli notlar: "Ali – hasta; Yusuf – seyahat" (forma tek metin olarak gider)
+          bas.firstChild.lastChild.textContent = mazeretSorusu ? 'Mazeretler' : 'Dikkat isteyen öğrenci';
+          if (q.aciklama) kutu.removeChild(kutu.lastChild);
+          const notlar = {};
+          String(raporCevap[q.id] || '').split(/;\s*/).forEach(function (x) {
+            const m = x.match(/^(.+?)\s+[–-]\s+(.*)$/); if (m) notlar[m[1].trim()] = m[2];
+          });
+          let secili = Object.keys(notlar).filter(function (a) { return yok.satirlar.indexOf(a) >= 0; });
+          const adlar = function () { return mazeretSorusu ? yok.satirlar.filter(function (a) { return yok.durum[a] === yok.mazeret; }) : secili; };
+          const yaz = function () {
+            const v = adlar().filter(function (a) { return (notlar[a] || '').trim(); }).map(function (a) { return a + ' – ' + notlar[a].trim(); }).join('; ');
+            ver(v);
+          };
+          const liste = el('div');
+          const ciz = function () {
+            liste.textContent = '';
+            const a = adlar();
+            if (mazeretSorusu) kutu.hidden = !a.length;
+            a.forEach(function (ad) {
+              const g = el('input', { type: 'text', placeholder: mazeretSorusu ? 'Sebep (kısa)' : 'Kısa not' });
+              g.value = notlar[ad] || '';
+              g.oninput = function () { notlar[ad] = g.value; yaz(); };
+              liste.appendChild(el('div', { sinif: 'isim-not' }, [el('span', { metin: ad }), g]));
+            });
+            yaz();
+          };
+          if (mazeretSorusu) {
+            kutu.appendChild(el('div', { sinif: 'a', metin: 'Yoklamada mazeretli işaretlenenler. Yanına kısa sebebi yaz.' }));
+            yoklamaDegisti.push(ciz);
+          } else {
+            kutu.appendChild(el('div', { sinif: 'a', metin: 'Davranış, devamsızlık ya da başka bir nedenle takip edilmesi gereken öğrenciyi seç, kısa not yaz.' }));
+            kutu.appendChild(secimGrubu(yok.satirlar, true, function () { return secili; }, function (v) { secili = v; ciz(); }));
+          }
+          kutu.appendChild(liste);
+          ciz();
+        } else if (q.tip === 'metin' || q.tip === 'paragraf') {
           const g = el(q.tip === 'metin' ? 'input' : 'textarea', q.tip === 'metin' ? { type: 'text' } : { placeholder: rehberNot ? 'Bir sorun veya destek ihtiyacı var mı?' : '' });
           if (raporCevap[q.id]) g.value = raporCevap[q.id];
           g.oninput = function () { ver(g.value.trim()); }; kutu.appendChild(g);
@@ -1578,11 +1778,15 @@
       { id: 2, tip: 'yoklama', baslik: 'Yoklama – E10', satirlar: ['Ali', 'Abdurrahman Muhammed Emin Özdemiroğlu', 'Yusuf', 'Ömer', 'Zafer Aslan'], sutunlar: ['Geldi', 'Gelmedi', 'Mazeretli'], zorunlu: true },
       { id: 3, tip: 'olcek', baslik: 'Bu haftanın verimliliği', alt: 1, ust: 5, altEtiket: 'Çok düşük', ustEtiket: 'Çok iyi', zorunlu: true },
       { id: 4, tip: 'paragraf', baslik: 'Rehbere not / destek ihtiyacı' },
-      { id: 5, tip: 'metin', baslik: 'Haftanın konusu', detay: true },
-      { id: 6, tip: 'coklu', baslik: 'Konu anlatım yöntemi', secenekler: ['Sunum', 'Tartışma', 'Oyun', 'Video', 'Okuma'], detay: true },
-      { id: 7, tip: 'tek', baslik: 'Buluşma formatı', secenekler: ['Yüz yüze', 'Online', 'Dışarıda etkinlik'], detay: true } ],
+      { id: 5, tip: 'metin', baslik: 'Mazeret açıklaması (isim – kısa sebep)', detay: true },
+      { id: 6, tip: 'paragraf', baslik: 'Dikkat isteyen öğrenci (isim – kısa not)', detay: true },
+      { id: 7, tip: 'paragraf', baslik: 'Bu hafta iyi giden / öne çıkan', detay: true },
+      { id: 8, tip: 'paragraf', baslik: 'Verilen ödev / ezber', aciklama: 'Varsa: dua, sure ezberi vb.', detay: true },
+      { id: 9, tip: 'tek', baslik: 'Geçen haftanın ödev / ezber kontrolü', secenekler: ['Hepsi yaptı', 'Çoğu yaptı', 'Azı yaptı', 'Kimse yapmadı', 'Ödev yoktu'], detay: true },
+      { id: 10, tip: 'tek', baslik: 'Veliyle temas', secenekler: ['Ziyaret', 'Telefon / mesaj', 'Yok'], detay: true },
+      { id: 11, tip: 'metin', baslik: 'Veliyle temas notu', aciklama: 'Kısa ve genel yazın.', detay: true } ],
       mevcut: /[?&]var\b/.test(location.search) ? (function () { const h = haftaPzt(bugunISO()); const o = {};
-        o[h] = { id: 'demo', tarih: bugunISO(), gonderim: 'bugün 00:02', cevaplar: { 1: bugunISO(), 2: { 'Ali': 'Geldi', 'Yusuf': 'Gelmedi', 'Ömer': 'Geldi', 'Zafer Aslan': 'Mazeretli', 'Abdurrahman Muhammed Emin Özdemiroğlu': 'Geldi' }, 3: 4, 4: 'Kahvaltı planı lazım.', 7: 'Yüz yüze' } };
+        o[h] = { id: 'demo', tarih: bugunISO(), gonderim: 'bugün 00:02', cevaplar: { 1: bugunISO(), 2: { 'Ali': 'Geldi', 'Yusuf': 'Gelmedi', 'Ömer': 'Geldi', 'Zafer Aslan': 'Mazeretli', 'Abdurrahman Muhammed Emin Özdemiroğlu': 'Geldi' }, 3: 4, 4: 'Kahvaltı planı lazım.', 5: 'Zafer Aslan – ailesiyle seyahatte', 6: 'Yusuf – iki haftadır sessiz', 10: 'Telefon / mesaj' } };
         return o; })() : {} };
   }
 
@@ -1686,7 +1890,7 @@
     const gonderildi = /gonderildi/.test(location.search);
     return { grup: 'E10', ekip: 'E Lise', hafta: '5 – 11 Ekim', raporGonderildi: gonderildi, raporUrl: '#r',
       konu: { ad: 'Deizm', ders: 2, metin: '#tr', en: '#en', slayt: 'https://drive.google.com/file/d/ornek/view', video: 'https://youtu.be/aaaaaaaaaaa' },
-      toplanti: { url: '#t', tarih: '5 Ekim' }, yatiliUrl: '#y', yatiliSatir: 2, yatiliBugun: /bugun/.test(location.search) ? { satir: 2, daire: 'Daire 5' } : null, yatili: '16 Ekim Cuma · Daire 5 · ✅ onaylandı', grubumUrl: '#g' };
+      toplanti: { url: '#t', tarih: '5 Ekim' }, bulusma: { metin: 'Cumartesi 17 Ekim · 18:00 · KM', ikram: 'Ahmet', yatili: false }, yatiliUrl: '#y', yatiliSatir: 2, yatiliBugun: /bugun/.test(location.search) ? { satir: 2, daire: 'Daire 5' } : null, yatili: '16 Ekim Cuma · Daire 5 · ✅ onaylandı', grubumUrl: '#g' };
   }
 
   if (!DEMO && 'serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});
