@@ -285,6 +285,16 @@
     .ogr.ayrildi .ad, .ogr.ayrildi .oran { opacity: .55; }
     .ogr .ust2 { display: flex; align-items: center; gap: 10px; }
     .ogr .ad { flex: 1; font-size: 17px; font-weight: 600; }
+    button.veli-rozet { font: inherit; font-size: 13px; font-weight: 650; padding: 3px 10px; border-radius: 999px; cursor: pointer;
+      border: 1px solid var(--rapor-cizgi); background: var(--rapor-zemin); color: var(--rapor-baslik); }
+    button.veli-rozet.tamam { border-color: var(--ana-cizgi); background: var(--ana-zemin); color: var(--ana); }
+    .veli-form { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 16px; padding: 12px 14px; margin: -2px 0 10px; }
+    .veli-form .not { margin: 0; }
+    .veli-blok { display: grid; gap: 8px; }
+    .veli-blok + .veli-blok { padding-top: 12px; border-top: 1px solid var(--cizgi); }
+    .veli-baslik { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 15px; font-weight: 700; color: var(--ana-etiket); }
+    .veli-durum { font-size: 12px; font-weight: 500; color: var(--soluk); }
+    button.baglanti-kucuk { justify-self: start; background: none; border: 0; padding: 2px 0; font: inherit; font-size: 13px; color: var(--soluk); text-decoration: underline; cursor: pointer; }
     .ogr .oran { font-size: 13px; font-weight: 650; color: var(--yesil); background: var(--yesil-zemin); padding: 3px 9px; border-radius: 999px; }
     .ogr details { margin-top: 8px; font-size: 14px; color: var(--soluk); }
     .ogr summary { cursor: pointer; color: var(--ana-etiket); font-weight: 600; }
@@ -580,7 +590,7 @@
       </ul>
       <h3>Kurallar</h3>
       <ul>
-        <li>Doğum tarihi, telefon, adres, veli bilgisi ve sağlık bilgisi <b>yazılmaz</b>.</li>
+        <li>Doğum tarihi, adres ve sağlık bilgisi <b>yazılmaz</b>. Veli e-posta ve telefonu yalnız Grubum'daki <b>Veli</b> formuna yazılır; notlara yazılmaz.</li>
         <li>Kişisel kodun sana özel, paylaşma. Telefon değiştirirsen aynı kodla girersin.</li>
       </ul>
       <div id="yardimRehber" hidden>
@@ -1082,7 +1092,9 @@
     if (DEMO && /islem=grubum$/.test(ek)) return { ok: true, grup: 'E10', kapasite: 10, url: '#', ogrenciler: [
       { satir: 2, ad: 'Ahmet', oran: '%100', durum: 'Aktif' }, { satir: 3, ad: 'Mehmet', oran: '%75', durum: 'Aktif' },
       { satir: 4, ad: 'Yusuf', oran: '%100', durum: 'Aktif' }, { satir: 5, ad: 'Ali', oran: '%50', durum: 'Aktif' },
-      { satir: 6, ad: 'Ömer', oran: '%25', durum: 'Ayrıldı' }] };
+      { satir: 6, ad: 'Ömer', oran: '%25', durum: 'Ayrıldı' }],
+      veli: { Ahmet: { Anne: { ad: true, eposta: true, tel: true, epostaIzin: true, waIzin: true }, Baba: { ad: true, eposta: false, tel: true, epostaIzin: false, waIzin: true } },
+              Mehmet: { Anne: { ad: true, eposta: true, tel: false, epostaIzin: true, waIzin: false } } } };
     if (DEMO && /islem=yatili$/.test(ek)) return { ok: true, grup: 'E10', gruplar: ['E10', 'E11', 'E12'], rehber: true, url: '#', slotlar: [
       { satir: 2, cuma: '2026-10-16', seans: 'Cuma 17:00 → Cmt 13:00', daire: 'Daire 5', grup: 'E10', durum: 'Onaylandı', sohbet: 'Örnek Konuk', hoca: '' },
       { satir: 3, cuma: '2026-10-16', seans: 'Cuma 17:00 → Cmt 13:00', daire: 'Daire 6', grup: 'E11', durum: 'İptal talebi', sohbet: '', hoca: '', iptal: { kim: 'Örnek Mentor', sebep: 'Öğrencilerin çoğu sınav haftasında' } },
@@ -1639,9 +1651,13 @@
         grubumYukle('&islem=ogrenciDurum&satir=' + o.satir + '&durum=' + (ayrildi ? 'Aktif' : 'Ayrıldı'),
           ayrildi ? o.ad + ' tekrar aktif yapılsın mı?' : o.ad + ' "Ayrıldı" olarak işaretlensin mi? Formdan çıkar, geçmiş yoklaması korunur.');
       };
+      const vd = (s.veli || {})[o.ad] || {};
+      const kayitli = vd.diger || ['Anne', 'Baba'].some(function (y) { return vd[y] && (vd[y].eposta || vd[y].tel); });
+      const veliDugme = ayrildi ? null : el('button', { sinif: 'veli-rozet' + (kayitli ? ' tamam' : ''), type: 'button',
+        metin: kayitli ? 'Veli ✓' : 'Veli +', 'aria-expanded': 'false' });
       const on = el('div', { sinif: 'ogr' + (ayrildi ? ' ayrildi' : '') }, [
         el('div', { sinif: 'ust2' }, [el('span', { sinif: 'ad', metin: o.ad + (ayrildi ? ' (ayrıldı)' : '') }),
-          o.oran ? el('span', { sinif: 'oran', metin: o.oran }) : null]),
+          veliDugme, o.oran ? el('span', { sinif: 'oran', metin: o.oran }) : null]),
       ]);
       const notlar = [['Hedefler', o.hedefler], ['Ders durumu', o.ders], ['Davranış / gözlem', o.davranis], ['Notlar', o.notlar]]
         .filter(function (n) { return n[1]; });
@@ -1653,6 +1669,17 @@
       const kap = el('div', { sinif: 'kaydir' }, [el('div', { sinif: 'arka' }, [islemDugme]), on]);
       kaydirmaKur(on);
       ic.appendChild(kap);
+      if (veliDugme) {
+        const form = veliFormu(o.ad, vd, s);
+        form.hidden = true;
+        ic.appendChild(form);
+        veliDugme.onclick = function (e) {
+          e.stopPropagation();
+          form.hidden = !form.hidden;
+          veliDugme.setAttribute('aria-expanded', String(!form.hidden));
+          if (!form.hidden) { const i = form.querySelector('input'); if (i) i.focus(); }
+        };
+      }
     });
     const giris = el('input', { placeholder: 'Yeni öğrencinin adı', maxlength: '40', autocomplete: 'off' });
     const ekle = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Ekle' });
@@ -1663,6 +1690,81 @@
     ic.appendChild(el('div', { sinif: 'ekle' }, [giris, ekle]));
     ic.appendChild(el('p', { sinif: 'not', metin: 'Ayrılan öğrenci için ismi sola kaydırın. Değişiklik haftalık rapordaki yoklamaya hemen yansır.' }));
   }
+
+  /**
+   * Veli formu (anne + baba ayrı): yalnız KAYDEDER. Kayıtlı bilgi gizlilik için geri gösterilmez (yalnız var/yok + izin).
+   * Boş bırakılan alan değişmez. Gönderim POST ile (e-posta/telefon URL'ye ve tarayıcı geçmişine girmesin).
+   */
+  function veliFormu(ad, vd, s) {
+    const isaret = function (x) { return x ? '✓' : '—'; };
+    const durumMetni = function (y) { const d = vd[y] || {}; return 'kayıtlı: e-posta ' + isaret(d.eposta) + ' · telefon ' + isaret(d.tel); };
+    const baslik = function (y) { return el('div', { sinif: 'veli-baslik' }, [el('span', { metin: y }), el('span', { sinif: 'veli-durum', metin: durumMetni(y) })]); };
+    const diger = vd.diger ? el('p', { sinif: 'not', metin: 'Tabloda ' + vd.diger + ' başka veli kaydı var (rehber girmiş).' }) : null;
+    if (saltOkunur()) return el('div', { sinif: 'ekle-form veli-form' }, [baslik('Anne'), baslik('Baba'), diger]);
+    const kutu = function (metin, acik) {
+      const i = el('input', { type: 'checkbox' }); i.checked = !!acik;
+      return [i, el('label', { sinif: 'onay' }, [i, el('span', { metin: metin })])];
+    };
+    const blok = function (y) {
+      const d = vd[y] || {}, k = ' · kayıtlı';
+      const b = {
+        y: y, d: d,
+        ad: el('input', { placeholder: y + ' adı' + (d.ad ? k : ''), maxlength: '60', autocomplete: 'off' }),
+        eposta: el('input', { type: 'email', inputmode: 'email', placeholder: 'E-posta' + (d.eposta ? k : ''), maxlength: '120', autocomplete: 'off' }),
+        tel: el('input', { type: 'tel', inputmode: 'tel', placeholder: 'Telefon' + (d.tel ? k : ' (403 555 1234)'), maxlength: '20', autocomplete: 'off' }),
+        ei: kutu('E-posta almayı kabul etti', d.epostaIzin), wi: kutu('WhatsApp mesajı almayı kabul etti', d.waIzin), sil: false
+      };
+      b.kutu = el('div', { sinif: 'veli-blok' }, [baslik(y), b.ad, b.eposta, b.tel, b.ei[1], b.wi[1]]);
+      if (d.ad || d.eposta || d.tel) {
+        const sil = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: y + ' bilgilerini sil' });
+        sil.onclick = function () { if (confirm(ad + ' — ' + y.toLowerCase() + ' adı, e-posta ve telefonu silinsin mi?')) { b.sil = true; gonder(); } };
+        b.kutu.appendChild(sil);
+      }
+      return b;
+    };
+    const bloklar = [blok('Anne'), blok('Baba')];
+    const kaydet = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Kaydet' });
+    const mesaj = el('p', { sinif: 'not', metin: '' });
+    const gonder = async function () {
+      for (const b of bloklar) {
+        if (b.sil) continue;
+        const e = b.eposta.value.trim(), t = b.tel.value.replace(/\D/g, '');
+        if (e && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) { mesaj.textContent = b.y + ': ' + VELI_HATA.eposta; return; }
+        if (b.tel.value.trim() && (t.length < 10 || t.length > 15)) { mesaj.textContent = b.y + ': ' + VELI_HATA.tel; return; }
+      }
+      kaydet.disabled = true; mesaj.textContent = 'Kaydediliyor…';
+      const g = { kod: depo.al('kod'), grup: s.grup, islem: 'veliKaydet', ogrenci: ad };
+      bloklar.forEach(function (b) {
+        g[b.y.toLowerCase()] = { sil: b.sil, ad: b.ad.value.trim(), eposta: b.eposta.value.trim(), tel: b.tel.value.trim(),
+                                 epostaIzin: b.ei[0].checked, waIzin: b.wi[0].checked };
+      });
+      try {
+        let r;
+        if (DEMO) {
+          await new Promise(function (ok) { setTimeout(ok, 600); });
+          const yeni = Object.assign({}, vd);
+          bloklar.forEach(function (b) {
+            const x = g[b.y.toLowerCase()], d = b.d;
+            yeni[b.y] = { ad: !x.sil && (d.ad || !!x.ad), eposta: !x.sil && (d.eposta || !!x.eposta), tel: !x.sil && (d.tel || !!x.tel),
+                          epostaIzin: x.epostaIzin, waIzin: x.waIzin };
+          });
+          r = { ok: true, veli: Object.assign({}, s.veli, { [ad]: yeni }) };
+        } else r = await (await fetch(VERI_URL, { method: 'POST', body: JSON.stringify(g) })).json();
+        if (!r.ok) { mesaj.textContent = (r.kim ? r.kim + ': ' : '') + (VELI_HATA[r.hata] || HATA_METNI[r.hata] || 'Kaydedilemedi.'); return; }
+        s.veli = r.veli; grubumCiz(s);
+        const silinen = bloklar.filter(function (b) { return b.sil; }).map(function (b) { return b.y.toLowerCase(); });
+        const bilgi = el('div', { sinif: 'bilgi', metin: ad + ': veli bilgisi ' + (silinen.length ? '(' + silinen.join(', ') + ') silindi.' : 'kaydedildi.') });
+        $('grubumIcerik').prepend(bilgi); setTimeout(function () { bilgi.remove(); }, 4000);
+      } catch (e) { mesaj.textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; }
+      finally { kaydet.disabled = false; bloklar.forEach(function (b) { b.sil = false; }); }
+    };
+    kaydet.onclick = function () { gonder(); };
+    return el('div', { sinif: 'ekle-form veli-form' }, [diger, bloklar[0].kutu, bloklar[1].kutu,
+      el('p', { sinif: 'not', metin: 'Kayıtlı bilgi gizlilik için gösterilmez; değiştirmek istediğiniz alanı yazın, boş bırakılan değişmez. Bilgiyi yalnız rehberler görür.' }),
+      mesaj, el('div', { sinif: 'dugmeler' }, [kaydet])]);
+  }
+  const VELI_HATA = { eposta: 'E-posta adresi geçerli görünmüyor.', tel: 'Telefon numarası geçerli görünmüyor (ör. 403 555 1234).',
+                      veliTablo: 'Veli tablosu henüz kurulmamış; rehberinize haber verin.', satir: 'Öğrenci bulunamadı; sayfayı yenileyin.' };
 
   /** Kartı sola kaydırınca arkadaki düğme (104 px) açılır; bir kart açılınca diğerleri kapanır. */
   const ACIK = -104;
