@@ -292,6 +292,12 @@
     .kaydir .arka button { flex: 1; border: 0; font: inherit; font-size: 15px; font-weight: 650; cursor: pointer;
                            background: var(--rapor-ikon-zemin); color: var(--rapor-baslik); }
     .kaydir .arka button.geri-al { background: var(--ana-zemin); color: var(--ana); }
+    .gorev-kart { background: var(--kart); border: 1px solid var(--cizgi); border-left: 4px solid var(--ana-cizgi); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; }
+    .gorev-kart.yakin { border-left-color: var(--rapor-cizgi); } .gorev-kart.gecikti { border-left-color: var(--r-zorunlu); }
+    .gorev-metin { font-size: 16px; font-weight: 600; }
+    .gorev-alt { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 4px; font-size: 13px; color: var(--soluk); }
+    .gorev-kart.gecikti .gorev-tarih { color: var(--r-zorunlu); font-weight: 650; } .gorev-kart.yakin .gorev-tarih { color: var(--rapor-baslik); font-weight: 650; }
+    .gorev-kart .dugmeler { display: flex; justify-content: flex-end; margin-top: 8px; }
     .ogr { position: relative; background: var(--kart); border: 1px solid var(--cizgi); border-radius: 16px; padding: 12px 14px;
            touch-action: pan-y; transition: transform .2s ease; user-select: none; -webkit-user-select: none; }
     .ogr.surukleniyor { transition: none; }
@@ -548,6 +554,14 @@
     <h1 class="okuma-baslik" id="grubumBaslik">Grubum</h1>
     <div id="grubumIcerik"></div>
     <a class="docs" id="grubumDis" target="_blank" rel="noopener">Notları düzenlemek için tabloyu aç</a>
+  </section>
+
+  <!-- Görevlerim: rehberlik toplantısında bu kişiye verilen görevler (Rehberlik Defteri) -->
+  <section id="gorevler" hidden>
+    <div class="gezinti"><button class="geri" id="gorevlerGeri" type="button"></button></div>
+    <h1 class="okuma-baslik">Görevlerim</h1>
+    <div id="gorevlerIcerik"></div>
+    <a class="docs" id="gorevlerDefter" target="_blank" rel="noopener" hidden>Rehberlik Defteri'ni aç</a>
   </section>
 
   <!-- Rehberlik takvimi -->
@@ -823,6 +837,8 @@
     (v.bulusma ? ikili : ic).appendChild(kare(satir({ k: 'yatili', ikon: 'takvim', baslik: 'Yatılı', alt: v.bulusma ? y.metin.replace(/ · /g, '\n') : y.metin, url: v.yatiliUrl || '#', ekDugme: programDugme,
                            durum: y.durum, durumSinif: y.durum === 'Onay bekliyor' ? 'bekliyor' : '', tikla: yatiliAc })));
     ic.appendChild(satir({ ikon: 'kisiler', baslik: 'Grubum', alt: 'Öğrenciler · Durum · Katılım', url: v.grubumUrl || '#', tikla: grubumAc }));
+    if (['rehber', 'org', 'test', 'akademik'].indexOf(kisiRolu()) >= 0)
+      ic.appendChild(satir({ k: 'gorev', ikon: 'onay', baslik: 'Görevlerim', alt: 'Rehberlik toplantısından · bitince ✓', url: '#', tikla: gorevlerAc }));
 
     sayacGuncelle(v);
     const alt = $('altBilgi');
@@ -834,7 +850,11 @@
   // Mentor: bu haftanın raporu gönderilmediyse Rapor'da 1; yatılı durumu (onay, iptal sonucu…) son bakıştan beri
   // değiştiyse Yatılı'da 1. Rehber: onay bekleyen talep + iptal talebi. Org: misafiri eksik yatılı.
   // Telefon ikonundaki sayı (Badging API) yalnız uygulama açılınca güncellenir; iPhone'da bildirim izni ister.
-  let sayacZamani = 0, sunucuSayac = 0;
+  let sayacZamani = 0, sunucuSayac = 0, gorevSayac = 0;
+  function kisiRolu() {
+    if (DEMO) return DEMO_MENTOR ? 'mentor' : 'rehber';
+    try { return (JSON.parse(depo.al('kisi') || 'null') || {}).rol || ''; } catch (e) { return ''; }
+  }
   function rozetKoy(k, n) {
     const a = document.querySelector('#icerik [data-k="' + k + '"] .ikon-kutu');
     if (!a) return;
@@ -864,14 +884,16 @@
       return;
     }
     if (['rehber', 'org', 'test', 'akademik'].indexOf(rol) < 0) return;
-    rozetKoy('yatili', sunucuSayac);
+    rozetKoy('yatili', sunucuSayac); rozetKoy('gorev', gorevSayac);
     if (Date.now() - sayacZamani < 60000) return;
     sayacZamani = Date.now();
+    if (DEMO) { gorevSayac = 1; rozetKoy('gorev', 1); return; }
     islem('&islem=sayac').then(function (s) {
       if (!s || !s.ok) return;
       sunucuSayac = (s.onay || 0) + (s.misafir || 0);
-      rozetKoy('yatili', sunucuSayac);
-      ikonRozeti(sunucuSayac);
+      gorevSayac = s.gorev || 0;
+      rozetKoy('yatili', sunucuSayac); rozetKoy('gorev', gorevSayac);
+      ikonRozeti(sunucuSayac + gorevSayac);
     }).catch(function () {});
   }
 
@@ -920,7 +942,7 @@
   }
 
   function goster(bolum) {
-    ['kurulum', 'pano', 'okuma', 'medya', 'yatili', 'grubum', 'bulusma', 'takvim', 'toplanti', 'program', 'yardim', 'rapor'].forEach(function (b) { $(b).hidden = b !== bolum; });
+    ['kurulum', 'pano', 'okuma', 'medya', 'yatili', 'grubum', 'gorevler', 'bulusma', 'takvim', 'toplanti', 'program', 'yardim', 'rapor'].forEach(function (b) { $(b).hidden = b !== bolum; });
     if (bolum !== 'medya') $('medyaKutu').textContent = '';   // video arkada çalmaya devam etmesin
     window.scrollTo(0, 0);
   }
@@ -948,6 +970,7 @@
       if (/ekran=yatili/.test(location.search)) yatiliAc();
       if (/ekran=rapor/.test(location.search)) raporAc();
       if (/ekran=grubum/.test(location.search)) grubumAc();
+      if (/ekran=gorevler/.test(location.search)) gorevlerAc();
       if (/ekran=bulusma/.test(location.search)) bulusmaAc();
       if (/ekran=gprogram/.test(location.search)) gunubirlikProgramAc('');
       if (/ekran=takvim/.test(location.search)) takvimAc();
@@ -1070,7 +1093,7 @@
     goster('medya');
   }
 
-  [$('geri'), $('medyaGeri'), $('yatiliGeri'), $('grubumGeri'), $('bulusmaGeri'), $('takvimGeri'), $('toplantiGeri'), $('programGeri'), $('yardimGeri'), $('raporGeri')].forEach(function (b) {
+  [$('geri'), $('medyaGeri'), $('yatiliGeri'), $('grubumGeri'), $('gorevlerGeri'), $('bulusmaGeri'), $('takvimGeri'), $('toplantiGeri'), $('programGeri'), $('yardimGeri'), $('raporGeri')].forEach(function (b) {
     b.appendChild(ikon('sol')); b.appendChild(document.createTextNode('Geri'));
     b.addEventListener('click', function () { history.back(); });
   });
@@ -1089,6 +1112,7 @@
     duzenle: 'Güncellenecek rapor bulunamadı; sayfayı kapatıp yeniden aç.',
     raporYok: 'Rapor formu bulunamadı. Sistem sorumlusuna haber verin.', istek: 'İstek okunamadı.',
     kisaDers: 'Kısa dersler belgesi henüz bağlanmadı.',
+    gorevYok: 'Rehberlik Defteri bulunamadı.',
     takvimTekrar: 'Tekrar eden etkinlik için başlangıçtan sonraki bir "Ne zamana kadar" tarihi seçin.',
     bulusmaBicim: 'Gün ve saati anlaşılır yazın (ör. Cumartesi, 18:00).',
     gunubirlikYok: 'Bu hafta için günübirlik günü/saati girilmemiş (Günübirlik → Her hafta).', gunubirlikYatili: 'Bu hafta yatılı var; günübirlik yok.', bulusmaHafta: 'Bu hafta Sıralar tablosunda yok (sezon dışı).',
@@ -1830,6 +1854,53 @@
       ac.hidden = true;
     };
     return kutu;
+  }
+
+  // ---------- Görevlerim ----------
+  // Toplantı notunda "Kim"e yazılan / @ ile etiketlenen kişinin açık görevleri. ✓ → defterde Tamamlandı (geri alınabilir).
+  let demoGorev = null;
+  function DEMO_GOREVLER() {
+    if (demoGorev) return { ok: true, defter: '#', gorevler: demoGorev };
+    return { ok: true, defter: '#', gorevler: demoGorev = [
+      { no: 'G-012', gorev: 'Mentorlara uygulama anlatılacak ve kurdurulacak', sorumlu: 'Rehber', tarih: '2026-10-21', tarihMetni: '21 Eki', gecikti: false, yakin: true, durum: 'Açık' },
+      { no: 'G-015', gorev: 'Veli ziyaretleri: tanışma ziyareti, akşam yemeği', sorumlu: 'Rehberler', tarih: '2026-11-01', tarihMetni: '1 Kas', gecikti: false, yakin: false, durum: 'Açık' },
+      { no: 'G-008', gorev: 'Öğrencilere sohbet yapacak abiyi bulmak', sorumlu: 'Rehberlik', tarih: '', tarihMetni: '', gecikti: false, yakin: false, durum: 'Takıldı' }] };
+  }
+  function gorevlerAc() {
+    history.pushState({ alt: 'gorevler' }, ''); goster('gorevler');
+    $('gorevlerIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    gorevlerYukle('&islem=gorevlerim');
+  }
+  async function gorevlerYukle(ek, bilgi) {
+    let s;
+    try { s = DEMO ? DEMO_GOREVLER() : await islem(ek); }
+    catch (e) { $('gorevlerIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; return; }
+    const ic = $('gorevlerIcerik');
+    if (!s.ok) { ic.prepend(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s.hata] || 'Bir sorun oluştu.' })); return; }
+    ic.textContent = '';
+    if (bilgi) ic.appendChild(bilgi);
+    $('gorevlerDefter').href = s.defter || '#'; $('gorevlerDefter').hidden = !s.defter;
+    gorevSayac = s.gorevler.filter(function (g) { return g.yakin; }).length;
+    if (!s.gorevler.length) { ic.appendChild(el('p', { sinif: 'bos', metin: 'Açık görevin yok. 🎉' })); return; }
+    s.gorevler.forEach(function (g) {
+      const tarih = g.tarihMetni ? (g.gecikti ? 'Gecikti · ' : 'Son tarih ') + g.tarihMetni : 'Tarih yok';
+      const bitti = el('button', { sinif: 'kucuk sicak', type: 'button', metin: '✓ Bitti' });
+      bitti.onclick = function () {
+        bitti.disabled = true;
+        const geri = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Geri al' });
+        geri.onclick = function () { gorevlerYukle('&islem=gorevTamam&geri=1&no=' + encodeURIComponent(g.no)); };
+        const b = el('div', { sinif: 'bilgi' }, [document.createTextNode('“' + g.gorev + '” tamamlandı. '), geri]);
+        if (DEMO) { demoGorev = demoGorev.filter(function (x) { return x !== g; }); gorevlerYukle('', b); return; }
+        gorevlerYukle('&islem=gorevTamam&no=' + encodeURIComponent(g.no), b);
+      };
+      ic.appendChild(el('div', { sinif: 'gorev-kart' + (g.gecikti ? ' gecikti' : g.yakin ? ' yakin' : '') }, [
+        el('div', { sinif: 'gorev-metin', metin: g.gorev }),
+        el('div', { sinif: 'gorev-alt' }, [
+          el('span', { sinif: 'gorev-tarih', metin: tarih }),
+          el('span', { metin: g.no + (g.durum !== 'Açık' ? ' · ' + g.durum : '') + (g.sorumlu ? ' · ' + g.sorumlu : '') })]),
+        el('div', { sinif: 'dugmeler' }, [bitti])]));
+    });
+    ic.appendChild(el('p', { sinif: 'not', metin: 'Görevler rehberlik toplantısı notundan gelir. Bitirdiğin görevi ✓ ile kapat; bir sonraki toplantıda tamamlanmış görünür.' }));
   }
 
   /** Kartı sola kaydırınca arkadaki düğme (104 px) açılır; bir kart açılınca diğerleri kapanır. */
