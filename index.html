@@ -261,7 +261,10 @@
     .tum-gun span.r-tatil { background: var(--ikon-zemin); color: var(--soluk); }
     .ekle-form { display: grid; gap: 8px; margin: 8px 0 6px; }
     .ekle-form input, .ekle-form select { font: inherit; font-size: 15px; padding: 9px 10px; border: 1px solid var(--cizgi); border-radius: 10px; background: var(--bg); color: var(--yazi); min-width: 0; }
-    .ekle-form .iki { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .ekle-form .iki { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+    .ekle-form label.alan { display: grid; gap: 3px; min-width: 0; margin: 0; }
+    .ekle-form label.alan > span { font-size: 12.5px; font-weight: 600; color: var(--soluk); text-align: left; }
+    .ekle-form input[type="date"], .ekle-form input[type="time"] { -webkit-appearance: none; appearance: none; display: block; width: 100%; min-height: 42px; }
     .ekle-form input, .ekle-form input::placeholder { text-transform: none; letter-spacing: normal; text-align: left; }
     .ekle-form label.onay { display: flex; align-items: center; justify-content: flex-start; gap: 10px; font-size: 15px; font-weight: 600; margin: 0; }
     .ekle-form label.onay input { width: 20px; height: 20px; margin: 0; flex: none; }
@@ -1086,6 +1089,7 @@
     duzenle: 'Güncellenecek rapor bulunamadı; sayfayı kapatıp yeniden aç.',
     raporYok: 'Rapor formu bulunamadı. Sistem sorumlusuna haber verin.', istek: 'İstek okunamadı.',
     kisaDers: 'Kısa dersler belgesi henüz bağlanmadı.',
+    takvimTekrar: 'Tekrar eden etkinlik için başlangıçtan sonraki bir "Ne zamana kadar" tarihi seçin.',
     bulusmaBicim: 'Gün ve saati anlaşılır yazın (ör. Cumartesi, 18:00).',
     gunubirlikYok: 'Bu hafta için günübirlik günü/saati girilmemiş (Günübirlik → Her hafta).', gunubirlikYatili: 'Bu hafta yatılı var; günübirlik yok.', bulusmaHafta: 'Bu hafta Sıralar tablosunda yok (sezon dışı).',
     toplantiYok: 'Bu hafta için toplantı belgesi henüz oluşturulmadı.', toplantiYapi: 'Toplantı belgesinde Grup turu tablosu bulunamadı.',
@@ -1359,7 +1363,12 @@
     const f = el('div', { sinif: 'ekle-form' });
     const baslik = el('input', { type: 'text', placeholder: 'Başlık (ör. Mentor Yetiştirme Semineri 4)', maxlength: '80' });
     const saat = el('input', { type: 'time', 'aria-label': 'Saat (boş = tüm gün)' });
-    const bitis = el('input', { type: 'date', 'aria-label': 'Bitiş günü (birden çok gün sürüyorsa)' });
+    const bitis = el('input', { type: 'date', 'aria-label': 'Bitiş günü (birden çok gün sürüyorsa)', min: iso });
+    const tekrar = el('select', { 'aria-label': 'Tekrar' });
+    ['Tekrar yok', 'Her gün', 'Her hafta', 'Her ay'].forEach(function (t, i) { tekrar.appendChild(el('option', { value: i ? t : '', metin: t })); });
+    const bitisEtiket = el('span', { metin: 'Bitiş · çok günlüyse' });
+    tekrar.onchange = function () { bitisEtiket.textContent = tekrar.value ? 'Ne zamana kadar' : 'Bitiş · çok günlüyse'; };
+    const alan = function (etiket, girdi) { return el('label', { sinif: 'alan' }, [typeof etiket === 'string' ? el('span', { metin: etiket }) : etiket, girdi]); };
     const tur = el('select', { 'aria-label': 'Tür' }); (s.turler || []).forEach(function (t) { tur.appendChild(el('option', { value: t, metin: t })); });
     const kimler = el('select', { 'aria-label': 'Kimler' }); (s.kimler || []).forEach(function (t) { kimler.appendChild(el('option', { value: t, metin: t })); });
     const yer = el('input', { type: 'text', placeholder: 'Yer (isteğe bağlı)', maxlength: '60' });
@@ -1368,14 +1377,18 @@
     vazgec.onclick = iptal;
     kaydet.onclick = function () {
       if (!baslik.value.trim()) { baslik.focus(); return; }
+      if (tekrar.value && (!bitis.value || bitis.value <= iso)) { alert('Tekrar eden etkinlik için "Ne zamana kadar" tarihini seçin.'); bitis.focus(); return; }
       kaydet.disabled = true;
       const ek = '&islem=takvimEkle&tarih=' + iso + '&saat=' + encodeURIComponent(saat.value) + '&bitis=' + encodeURIComponent(bitis.value) +
         '&tur=' + encodeURIComponent(tur.value) + '&kimler=' + encodeURIComponent(kimler.value) + '&baslik=' + encodeURIComponent(baslik.value.trim()) +
-        '&yer=' + encodeURIComponent(yer.value.trim()) + '&zorunlu=' + (zorunlu.checked ? '1' : '0');
+        '&yer=' + encodeURIComponent(yer.value.trim()) + '&zorunlu=' + (zorunlu.checked ? '1' : '0') + '&tekrar=' + encodeURIComponent(tekrar.value);
       takvimIslemYap(ek);
     };
-    [baslik, el('div', { sinif: 'iki' }, [saat, bitis]), el('div', { sinif: 'iki' }, [tur, kimler]), yer,
-     el('label', { sinif: 'onay' }, [zorunlu, document.createTextNode('Zorunlu')]), el('div', { sinif: 'dugmeler' }, [vazgec, kaydet])]
+    [baslik, el('div', { sinif: 'iki' }, [alan('Saat', saat), alan('Tekrar', tekrar)]), alan(bitisEtiket, bitis),
+     el('div', { sinif: 'iki' }, [alan('Tür', tur), alan('Kimler', kimler)]), yer,
+     el('label', { sinif: 'onay' }, [zorunlu, document.createTextNode('Zorunlu')]),
+     el('p', { sinif: 'not', metin: 'Saat boşsa tüm gün. Tekrar edenler her gün / hafta / ay ayrı görünür (en fazla 1 yıl); silince hepsi silinir.' }),
+     el('div', { sinif: 'dugmeler' }, [vazgec, kaydet])]
       .forEach(function (x) { f.appendChild(x); });
     setTimeout(function () { baslik.focus(); }, 50);
     return f;
@@ -1387,7 +1400,7 @@
     alan.innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
     let y;
     try { y = DEMO ? { ok: true, mentorlar: ['Ahmet Yılmaz', 'Mehmet Kaya', 'Yusuf Demir', 'Ali Şahin', 'Ömer Çelik'], durum: { 'Ahmet Yılmaz': 'Geldi' } }
-                   : await islem('&islem=yoklamaGetir&satir=' + o.satir); }
+                   : await islem('&islem=yoklamaGetir&satir=' + o.satir + '&tarih=' + (o.tarih || o.bas.slice(0, 10))); }
     catch (e) { alan.textContent = 'Bağlantı kurulamadı.'; return; }
     alan.textContent = '';
     if (!y.ok) { alan.appendChild(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[y.hata] || 'Bir sorun oluştu.' })); return; }
@@ -1420,7 +1433,7 @@
         kaydet.disabled = true;
         if (DEMO) { alert('Demo: kaydedilmedi.'); kaydet.disabled = false; return; }
         try {
-          const r = await islem('&islem=yoklamaKaydet&satir=' + o.satir + '&veri=' + encodeURIComponent(JSON.stringify(durum)));
+          const r = await islem('&islem=yoklamaKaydet&satir=' + o.satir + '&tarih=' + (o.tarih || o.bas.slice(0, 10)) + '&veri=' + encodeURIComponent(JSON.stringify(durum)));
           if (!r.ok) { alert(HATA_METNI[r.hata] || 'Bir sorun oluştu.'); kaydet.disabled = false; return; }
           takvimZamani = 0; takvimCiz(await takvimGetir());   // özet ("Yoklama 12/15") yenilensin
         } catch (e) { alert('Bağlantı kurulamadı. Tekrar deneyin.'); kaydet.disabled = false; }
@@ -1493,7 +1506,7 @@
       else if (gunGorunumu === 'saat' && gol.length) gunListe.appendChild(saatGorunumu(gol, takvimSecili));
       else gol.forEach(function (o) {
         const sil = s.ekleyebilir && o.satir ? el('button', { sinif: 'kucuk', type: 'button', metin: 'Sil' }) : null;
-        if (sil) sil.onclick = function () { if (confirm('"' + o.baslik + '" takvimden silinsin mi?')) takvimIslemYap('&islem=takvimSil&satir=' + o.satir + '&baslik=' + encodeURIComponent(o.baslik)); };
+        if (sil) sil.onclick = function () { if (confirm('"' + o.baslik + '" takvimden silinsin mi?' + (o.tekrar ? ' (' + o.tekrar.toLocaleLowerCase('tr') + ' tekrar eden etkinliğin TÜM günleri silinir)' : ''))) takvimIslemYap('&islem=takvimSil&satir=' + o.satir + '&baslik=' + encodeURIComponent(o.baslik)); };
         const yk = o.yoklama !== undefined && o.satir ? el('button', { sinif: 'kucuk' + (o.yoklama === 'yok' ? ' sicak' : ''), type: 'button',
           metin: o.yoklama === 'yok' ? 'Yoklama' : 'Yoklama ' + o.yoklama }) : null;
         const ykAlan = el('div');
