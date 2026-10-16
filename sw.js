@@ -1,6 +1,6 @@
 // Uygulama kabuğunu önbellekte tutar (hızlı açılış); veri her zaman ağdan gelir.
-const KABUK = 'rehberlik-v4';
-const DOSYALAR = ['./', 'index.html', 'manifest.webmanifest', 'ikon-192.png', 'ikon-512.png', 'ikon-180.png', 'at.png'];
+const KABUK = 'rehberlik-v5';
+const DOSYALAR = ['./', 'index.html', 'manifest.webmanifest', 'ikon-192.png', 'ikon-512.png', 'ikon-180.png', 'at.png', 'tesbihat.json'];
 
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(KABUK).then(function (c) { return c.addAll(DOSYALAR); }));
