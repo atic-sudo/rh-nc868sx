@@ -319,6 +319,10 @@
     .veli-form { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 16px; padding: 12px 14px; margin: -2px 0 10px; }
     .veli-form .not { margin: 0; }
     .ogr .dogum { margin-top: 4px; font-size: 14px; color: var(--soluk); }
+    .ogr .okuma { margin-top: 6px; font-size: 14px; display: grid; gap: 2px; justify-items: start; }
+    .okuma-ust { color: var(--yazi); } .okuma-alt { color: var(--soluk); font-size: 13px; }
+    .okuma-form { width: 100%; margin-top: 6px; }
+    .okuma-ozet { margin: -4px 0 10px; font-size: 14px; color: var(--ana-etiket); font-weight: 600; }
     .ogr .dogum .baglanti-kucuk { font-size: 14px; }
     .dogum-form { display: flex; gap: 6px; align-items: center; margin-top: 6px; flex-wrap: wrap; }
     .ogr .dogum-form select { width: auto; min-width: 0; margin: 0; font: inherit; font-size: 15px; padding: 7px 8px; border: 1px solid var(--cizgi); border-radius: 10px; background: var(--bg); color: var(--yazi); }
@@ -1141,6 +1145,15 @@
       { satir: 3, cuma: '2026-10-16', seans: 'Cuma 17:00 → Cmt 13:00', daire: 'Daire 6', grup: 'E11', durum: 'Talep', sohbet: '', hoca: '' },
       { satir: 4, cuma: '2026-10-16', seans: 'Cmt 17:00 → Paz 13:00', daire: 'Daire 5', grup: '', durum: '', sohbet: '', hoca: '' },
       { satir: 5, cuma: '2026-11-06', seans: 'Cuma 17:00 → Cmt 13:00', daire: 'Daire 5', grup: 'E10', durum: 'Talep', sohbet: '', hoca: '', serbest: true }] };
+    if (DEMO && /islem=ogrenciOkuma/.test(ek)) {
+      const q = new URLSearchParams(ek.slice(1)), ad = { 2: 'Ahmet', 3: 'Mehmet', 4: 'Yusuf', 5: 'Ali' }[q.get('satir')];
+      const x = DEMO_OKUMA.ogr[ad] || (DEMO_OKUMA.ogr[ad] = { kitap: '', sayfa: '', toplam: '', biten: [], aySayfa: 0, ayDk: 0 });
+      const yeni = +q.get('sayfa') || (q.get('bitti') ? +q.get('toplam') || +x.toplam : 0), okunan = Math.max(0, yeni - (x.kitap === q.get('kitap') ? +x.sayfa || 0 : 0));
+      x.aySayfa += okunan; x.ayDk += +q.get('dk') || 0; DEMO_OKUMA.ay.sayfa += okunan; DEMO_OKUMA.ay.dk += +q.get('dk') || 0;
+      if (q.get('bitti')) { x.biten.push(q.get('kitap')); x.kitap = ''; x.sayfa = ''; x.toplam = ''; DEMO_OKUMA.ay.biten++; }
+      else { x.kitap = q.get('kitap'); x.sayfa = yeni; x.toplam = +q.get('toplam') || x.toplam; }
+      ek = '&islem=grubum';
+    }
     if (DEMO && /islem=ogrenciDogum/.test(ek)) {
       const q = new URLSearchParams(ek.slice(1)); DEMO_DOGUM[q.get('satir')] = q.get('gun') ? ('0' + q.get('gun')).slice(-2) + '.' + ('0' + q.get('ay')).slice(-2) : '';
       ek = '&islem=grubum';
@@ -1148,7 +1161,7 @@
     if (DEMO && /islem=grubum$/.test(ek)) return { ok: true, grup: 'E10', kapasite: 10, url: '#', ogrenciler: [
       { satir: 2, ad: 'Ahmet', oran: '%100', durum: 'Aktif', dogum: DEMO_DOGUM[2] }, { satir: 3, ad: 'Mehmet', oran: '%75', durum: 'Aktif' },
       { satir: 4, ad: 'Yusuf', oran: '%100', durum: 'Aktif', dogum: DEMO_DOGUM[4] }, { satir: 5, ad: 'Ali', oran: '%50', durum: 'Aktif' },
-      { satir: 6, ad: 'Ömer', oran: '%25', durum: 'Ayrıldı' }],
+      { satir: 6, ad: 'Ömer', oran: '%25', durum: 'Ayrıldı' }], okuma: DEMO_OKUMA,
       veli: { Ahmet: { Anne: { ad: true, eposta: true, tel: true, epostaIzin: true, waIzin: true }, Baba: { ad: true, eposta: false, tel: true, epostaIzin: false, waIzin: true } },
               Mehmet: { Anne: { ad: true, eposta: true, tel: false, epostaIzin: true, waIzin: false } } } };
     if (DEMO && /islem=yatili$/.test(ek)) return { ok: true, grup: 'E10', gruplar: ['E10', 'E11', 'E12'], rehber: true, url: '#', slotlar: [
@@ -1710,6 +1723,9 @@
     ic.textContent = '';
     const aktif = s.ogrenciler.filter(function (o) { return o.durum !== 'Ayrıldı'; }).length;
     ic.appendChild(el('div', { sinif: 'hs-baslik', metin: aktif + ' aktif öğrenci · kapasite ' + s.kapasite }));
+    const oa = s.okuma && s.okuma.ay;
+    if (oa && (oa.sayfa || oa.dk || oa.biten))
+      ic.appendChild(el('div', { sinif: 'okuma-ozet', metin: '📖 Bu ay: ' + oa.sayfa.toLocaleString('tr') + ' sayfa · ' + sureMetni(oa.dk) + (oa.biten ? ' · ' + oa.biten + ' kitap bitti' : '') }));
     s.ogrenciler.forEach(function (o) {
       const ayrildi = o.durum === 'Ayrıldı';
       const islemDugme = el('button', { sinif: ayrildi ? 'geri-al' : '', type: 'button', metin: ayrildi ? 'Geri al' : 'Ayrıldı' });
@@ -1726,6 +1742,7 @@
           veliDugme, o.oran ? el('span', { sinif: 'oran', metin: o.oran }) : null]),
       ]);
       on.appendChild(dogumSatiri(o, ayrildi));
+      on.appendChild(okumaSatiri(o, ayrildi, s));
       const notlar = [['Hedefler', o.hedefler], ['Ders durumu', o.ders], ['Davranış / gözlem', o.davranis], ['Notlar', o.notlar]]
         .filter(function (n) { return n[1]; });
       if (notlar.length) {
@@ -1834,6 +1851,53 @@
                       veliTablo: 'Veli tablosu henüz kurulmamış; rehberinize haber verin.', satir: 'Öğrenci bulunamadı; sayfayı yenileyin.' };
 
   const DEMO_DOGUM = { 2: '', 4: '21.10' };
+  const DEMO_OKUMA = { liste: [{ kitap: 'Çağ ve Nesil', yazar: 'M. Fethullah Gülen', sayfa: 220 }, { kitap: 'Küçük Prens', yazar: 'Saint-Exupéry', sayfa: 112 }],
+    ay: { sayfa: 340, dk: 410, biten: 1 }, ogr: { Ahmet: { kitap: 'Çağ ve Nesil', sayfa: 120, toplam: 220, biten: ['Küçük Prens'], aySayfa: 180, ayDk: 240 },
+                                                Mehmet: { kitap: 'Küçük Prens', sayfa: 40, toplam: 112, biten: [], aySayfa: 40, ayDk: 60 } } };
+  function sureMetni(dk) { dk = +dk || 0; return dk < 60 ? dk + ' dk' : Math.floor(dk / 60) + ' sa' + (dk % 60 ? ' ' + dk % 60 + ' dk' : ''); }
+
+  /** Öğrenci kartında okuma: şu anki kitap + sayfa, bitirdikleri, bu ay; "Okuma gir" formu (mentor öğrenciye sorup girer). */
+  function okumaSatiri(o, ayrildi, s) {
+    const x = (s.okuma && s.okuma.ogr || {})[o.ad] || { kitap: '', sayfa: '', toplam: '', biten: [], aySayfa: 0, ayDk: 0 };
+    const kutu = el('div', { sinif: 'okuma' });
+    const ust = x.kitap ? '📖 ' + x.kitap + (x.sayfa !== '' ? ' · ' + x.sayfa + (x.toplam ? '/' + x.toplam : '') + ' s' : '') : '📖 Şu an okuduğu kitap yok';
+    const alt = [x.biten.length ? x.biten.length + ' kitap bitirdi' : '', x.aySayfa || x.ayDk ? 'bu ay ' + x.aySayfa + ' s · ' + sureMetni(x.ayDk) : ''].filter(String).join(' · ');
+    kutu.appendChild(el('div', { sinif: 'okuma-ust', metin: ust }));
+    if (alt) kutu.appendChild(el('div', { sinif: 'okuma-alt', metin: alt, title: x.biten.join(', ') }));
+    if (ayrildi || saltOkunur()) return kutu;
+    const ac = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Okuma gir' });
+    kutu.appendChild(ac);
+    ac.onclick = function (e) {
+      e.stopPropagation();
+      ac.hidden = true;
+      const listeId = 'okListe' + o.satir, liste = el('datalist', { id: listeId });
+      (s.okuma && s.okuma.liste || []).forEach(function (b) { liste.appendChild(el('option', { value: b.kitap, label: (b.yazar ? b.yazar + ' · ' : '') + (b.sayfa ? b.sayfa + ' s' : '') })); });
+      const kitap = el('input', { list: listeId, placeholder: 'Kitap adı', maxlength: '100', autocomplete: 'off' }); kitap.value = x.kitap || '';
+      const toplam = el('input', { type: 'number', inputmode: 'numeric', min: '1' }); toplam.value = x.toplam || '';
+      const sayfa = el('input', { type: 'number', inputmode: 'numeric', min: '0' });
+      const dk = el('input', { type: 'number', inputmode: 'numeric', min: '0' });
+      const alan = function (etiket, girdi) { return el('label', { sinif: 'alan' }, [el('span', { metin: etiket }), girdi]); };
+      const bitti = el('input', { type: 'checkbox' });
+      kitap.oninput = function () {   // listeden seçilen kitabın sayfa sayısı
+        const b = (s.okuma && s.okuma.liste || []).filter(function (y) { return y.kitap === kitap.value; })[0];
+        if (b && b.sayfa) toplam.value = b.sayfa; else if (kitap.value === x.kitap) toplam.value = x.toplam || '';
+      };
+      const kaydet = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Kaydet' }), vazgec = el('button', { sinif: 'kucuk', type: 'button', metin: 'Vazgeç' });
+      kaydet.onclick = function () {
+        if (!kitap.value.trim()) { kitap.focus(); return; }
+        if (!sayfa.value && !dk.value && !bitti.checked) { alert('Sayfa, dakika ya da "Bitirdi" girin.'); return; }
+        grubumYukle('&islem=ogrenciOkuma&satir=' + o.satir + '&kitap=' + encodeURIComponent(kitap.value.trim()) + '&toplam=' + encodeURIComponent(toplam.value) +
+          '&sayfa=' + encodeURIComponent(sayfa.value) + '&dk=' + encodeURIComponent(dk.value) + (bitti.checked ? '&bitti=1' : ''));
+      };
+      vazgec.onclick = function () { form.remove(); ac.hidden = false; };
+      const form = el('div', { sinif: 'ekle-form okuma-form' }, [liste, alan('Kitap', kitap), el('div', { sinif: 'iki' }, [alan('Şu anki sayfa', sayfa), alan('Toplam sayfa', toplam)]),
+        alan('Bu sefer kaç dakika okudu?', dk),
+        el('label', { sinif: 'onay' }, [bitti, el('span', { metin: 'Kitabı bitirdi' })]), el('div', { sinif: 'dugmeler' }, [vazgec, kaydet])]);
+      kutu.appendChild(form);
+      setTimeout(function () { (x.kitap ? sayfa : kitap).focus(); }, 30);
+    };
+    return kutu;
+  }
   const AY_ADI = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 
   /** Öğrenci kartında doğum günü: yalnız gün + ay (yıl tutulmaz). Takvime ve o sabah mentora e-postaya gider. */
