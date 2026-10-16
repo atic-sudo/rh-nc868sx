@@ -183,6 +183,15 @@
     .okuma ul, .okuma ol { padding-left: 1.3em; margin: 0 0 12px; }
     .okuma li { margin-bottom: 6px; }
     .tesbihat { margin-bottom: 8px; }
+    .temizlik-kart { display: flex; gap: 12px; align-items: flex-start; background: var(--kart); border: 1px solid var(--cizgi); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; font-size: 16px; line-height: 1.4; }
+    .temizlik-kart .tik { flex: none; width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--ana-cizgi); background: var(--kart); color: var(--bg); font: inherit; font-size: 18px; font-weight: 700; cursor: pointer; }
+    .temizlik-kart.tamam .tik { background: var(--ana); border-color: var(--ana); }
+    .temizlik-kart.tamam .temizlik-ad { text-decoration: line-through; color: var(--soluk); }
+    .temizlik-govde { flex: 1; min-width: 0; display: grid; gap: 2px; }
+    .temizlik-ad { font-weight: 650; } .temizlik-kim { font-size: 14px; color: var(--soluk); } .temizlik-saat { font-size: 12.5px; color: var(--ana-etiket); }
+    .temizlik-sec { margin-top: 6px; }
+    .temizlik-gelmeyen { margin: 4px 0 12px; } .temizlik-gelmeyen .tesbihat-secim { margin: 6px 0 0; }
+    .tesbihat-secim.gelmeyen button[aria-pressed="true"] { background: var(--rapor-zemin); border-color: var(--rapor-cizgi); color: var(--rapor-baslik); }
     .tesbihat h2:first-child, .kisa-dersler h2:first-child { margin-top: 0; }
     .kisa-dersler { border-top: 1px solid var(--cizgi); padding-top: 18px; margin-top: 18px; }
     .tesbihat-secim { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 14px; }
@@ -2053,7 +2062,8 @@
       if (senin) adSatiri.appendChild(el('span', { sinif: 'rozet-sonra', metin: 'SİZİN BÖLÜMÜNÜZ' }));
       const a = el('div', { sinif: 'adim' + (x.tur === 'namaz' ? ' namaz' : '') + (senin ? ' senin' : '') + (anlik ? ' simdi' : gecti ? ' gecti' : '') }, [
         el('div', { sinif: 'sol' }, [el('div', { sinif: 'saat', metin: saat }), adSatiri, x.ek ? el('div', { sinif: 'ek', metin: x.ek }) : null,
-          s.namazDersi && !MISAFIR && (s.tip === 'gunubirlik' ? x.anahtar === 'kisa_ders' : x.tur === 'namaz') ? kisaDersDugme(s.tip === 'gunubirlik' ? 'Tesbihat / kitap / dua' : '', vakitBul(x.ad)) : null]),
+          s.namazDersi && !MISAFIR && (s.tip === 'gunubirlik' ? x.anahtar === 'kisa_ders' : x.tur === 'namaz') ? kisaDersDugme(s.tip === 'gunubirlik' ? 'Tesbihat / kitap / dua' : '', vakitBul(x.ad)) : null,
+          !MISAFIR && s.tip !== 'gunubirlik' && s.satir && /^temizlik/i.test(x.ad) ? temizlikDugme(s) : null]),
         x.misafir !== undefined && x.misafir !== null ? misafirHucre(x, saat) : null,
       ]);
       if (anlik) simdiEl = a;
@@ -2104,6 +2114,101 @@
       if (vakit) vakitGoster(vakit);
     } catch (e) { kutu.appendChild(el('p', { sinif: 'bos', metin: 'Tesbihat yüklenemedi.' })); }
     return kutu;
+  }
+
+  // ---------- Yatılı temizliği: kontrol listesi + sıra (her yatılıda bir kaydırılır) + ✓ ----------
+  function temizlikDugme(s) {
+    const d = el('button', { sinif: 'kisa-ders', type: 'button', metin: 'Temizlik listesi' });
+    d.onclick = function () { temizlikAc(s); };
+    return d;
+  }
+  let demoTemizlik = null;
+  function DEMO_TEMIZLIK(ek) {
+    if (!demoTemizlik) demoTemizlik = { ok: true, grup: 'E10', daire: 'Daire 5', tarih: '2026-10-16', ogrenciler: ['Ahmet', 'Mehmet', 'Yusuf', 'Ali', 'Ömer'], maddeler: [
+      { ad: 'Bulaşıklar', ogrenciler: ['Ali', 'Ömer'], tamam: true, saat: '12:51', kim: 'Örnek Mentor' }, { ad: 'Çöpler', ogrenciler: ['Ahmet'], tamam: false },
+      { ad: 'Yerleri süpürme', ogrenciler: ['Mehmet'], tamam: false }, { ad: 'Banyo ve lavabo', ogrenciler: ['Yusuf'], tamam: false },
+      { ad: 'Kontrol (mentor)', ogrenciler: ['Mentor'], tamam: false, mentor: true }] };
+    const q = new URLSearchParams(ek || ''), m = demoTemizlik.maddeler.filter(function (x) { return x.ad === q.get('madde'); })[0];
+    if (m && q.has('tamam')) { m.tamam = q.get('tamam') === '1'; m.saat = m.tamam ? '12:58' : ''; }
+    if (m && q.has('ogrenciler')) m.ogrenciler = q.get('ogrenciler').split(',').filter(String);
+    if (q.has('gelmeyen')) demoTemizlik.gelmeyen = q.get('gelmeyen').split(',').filter(String);
+    const t = JSON.parse(JSON.stringify(demoTemizlik)), gel = t.gelmeyen || [], ogr = t.maddeler.filter(function (x) { return !x.mentor; });
+    ogr.forEach(function (x) { x.bugun = x.ogrenciler.filter(function (o) { return gel.indexOf(o) < 0; }); x.ek = []; });
+    ogr.forEach(function (x) {
+      if (x.bugun.length) return;
+      const v = ogr.filter(function (y) { return y !== x && y.bugun.length; }).sort(function (a, b) { return b.bugun.length - a.bugun.length; })[0];
+      if (!v) return;
+      if (v.bugun.length > 1) x.bugun.push(v.bugun.pop()); else x.ek.push(v.bugun[0]);
+    });
+    return t;
+  }
+  function temizlikAc(s) {
+    $('okumaBaslik').textContent = 'Temizlik · ' + (s.daire || '');
+    $('dilSec').querySelectorAll('button').forEach(function (b) { b.hidden = true; });
+    $('okumaDocs').hidden = true;
+    okumaDonus = 'program';
+    history.pushState({ okuma: true }, ''); goster('okuma');
+    $('okumaIcerik').innerHTML = '<p class="yukleniyor">Yükleniyor…</p>';
+    temizlikYukle(s.satir, '');
+  }
+  async function temizlikYukle(satir, ek) {
+    const ic = $('okumaIcerik');
+    let t;
+    try { t = DEMO ? DEMO_TEMIZLIK(ek) : await islem('&islem=' + (ek ? 'yatiliTemizlikKaydet' : 'yatiliTemizlik') + '&satir=' + satir + (ek ? '&' + ek : '')); }
+    catch (e) { ic.textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; return; }
+    if (!t.ok) { ic.textContent = ''; ic.appendChild(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[t.hata] || 'Bir sorun oluştu.' })); return; }
+    ic.textContent = '';
+    const salt = saltOkunur(), biten = t.maddeler.filter(function (m) { return m.tamam; }).length;
+    const hepsi = biten === t.maddeler.length;
+    const kontrol = t.maddeler.filter(function (m) { return m.mentor; })[0];
+    ic.appendChild(el('div', { sinif: 'bilgi' + (hepsi ? '' : ' uyari') }, [document.createTextNode(hepsi
+      ? 'Temizlik tamamlandı' + (kontrol && kontrol.saat ? ' · ' + kontrol.saat : '') + '. Teşekkürler!'
+      : biten + ' / ' + t.maddeler.length + ' tamam · iş bitince ✓')]));
+    // Bugün gelmeyen: adına dokun → işi o gün başkasına geçer, sıradaki yeri korunur
+    const gelmeyen = t.gelmeyen || [];
+    const cipler = el('div', { sinif: 'tesbihat-secim gelmeyen' });
+    t.ogrenciler.forEach(function (o) {
+      const yok = gelmeyen.indexOf(o) >= 0;
+      const b = el('button', { type: 'button', 'aria-pressed': String(yok), 'aria-selected': String(yok), metin: (yok ? '✕ ' : '') + o });
+      if (salt) b.disabled = true;
+      else b.onclick = function () {
+        const yeni = yok ? gelmeyen.filter(function (x) { return x !== o; }) : gelmeyen.concat([o]);
+        temizlikYukle(satir, 'gelmeyen=' + encodeURIComponent(yeni.join(',')));
+      };
+      cipler.appendChild(b);
+    });
+    ic.appendChild(el('div', { sinif: 'temizlik-gelmeyen' }, [el('div', { sinif: 'temizlik-kim', metin: 'Bugün gelmeyen var mı? Adına dokun; işi o gün başkasına geçer.' }), cipler]));
+    t.maddeler.forEach(function (m) {
+      const kart = el('div', { sinif: 'temizlik-kart' + (m.tamam ? ' tamam' : '') });
+      const tik = el('button', { sinif: 'tik', type: 'button', 'aria-pressed': String(m.tamam), 'aria-label': m.ad + (m.tamam ? ' tamam' : ' yapılmadı'), metin: m.tamam ? '✓' : '' });
+      if (salt) tik.disabled = true;
+      else tik.onclick = function () { tik.disabled = true; temizlikYukle(satir, 'madde=' + encodeURIComponent(m.ad) + '&tamam=' + (m.tamam ? '0' : '1')); };
+      const bugun = (m.bugun || m.ogrenciler).concat((m.ek || []).map(function (o) { return o + ' (ek görev)'; }));
+      const kimler = el('div', { sinif: 'temizlik-kim', metin: m.mentor ? 'Mentor: pencereler, ışıklar, kapı' : (bugun.join(', ') || 'Kimse yok') });
+      const govde = el('div', { sinif: 'temizlik-govde' }, [el('div', { sinif: 'temizlik-ad', metin: m.ad }), kimler,
+        m.tamam && m.saat ? el('div', { sinif: 'temizlik-saat', metin: m.saat + (m.kim ? ' · ' + m.kim : '') }) : null]);
+      kart.appendChild(tik); kart.appendChild(govde);
+      if (!salt && !m.mentor) {
+        const degis = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Değiştir' });
+        degis.onclick = function () {
+          if (govde.querySelector('.temizlik-sec')) return;
+          const kutular = t.ogrenciler.map(function (o) {
+            const i = el('input', { type: 'checkbox', value: o }); i.checked = m.ogrenciler.indexOf(o) >= 0;
+            return el('label', { sinif: 'onay' }, [i, el('span', { metin: o })]);
+          });
+          const kaydet = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Kaydet' });
+          kaydet.onclick = function () {
+            const sec = kutular.map(function (l) { return l.querySelector('input'); }).filter(function (i) { return i.checked; }).map(function (i) { return i.value; });
+            temizlikYukle(satir, 'madde=' + encodeURIComponent(m.ad) + '&ogrenciler=' + encodeURIComponent(sec.join(',')));
+          };
+          govde.appendChild(el('div', { sinif: 'ekle-form temizlik-sec' }, kutular.concat([el('div', { sinif: 'dugmeler' }, [kaydet])])));
+          degis.hidden = true;
+        };
+        govde.appendChild(degis);
+      }
+      ic.appendChild(kart);
+    });
+    ic.appendChild(el('p', { sinif: 'not', metin: 'Görevler her yatılıda bir kayar; herkes sırayla farklı iş yapar. Değiştirmek için "Değiştir".' }));
   }
 
   let okumaDonus = null;
