@@ -21,7 +21,7 @@
       --ikon-zemin: #f0f4f2; --ikon: #5f6d69;
       --at-renk: #e2956b;
       --r-e-gun: #4f8fd0; --r-e-yat: #1f4e9c; --r-k-gun: #e27aae; --r-k-yat: #b0306e; --r-ortak: #ee8434;
-      --r-rehberlik: #1e6b3e; --r-mentor-top: #5fb468; --r-seminer: #8a5cc7; --r-kamp: #d9a521; --r-diger: #9aa3a0;
+      --r-rehberlik: #1e6b3e; --r-mentor-top: #5fb468; --r-seminer: #8a5cc7; --r-kamp: #d9a521; --r-diger: #9aa3a0; --r-dogum: #1fa5a0;
       --r-zorunlu: #d23b2f; --r-secili: #2b3331;
       --ana: #2c5a51; --ana-etiket: #3e6c62; --ana-zemin: #eef6f3; --ana-cizgi: #d7e7e1; --rozet: #e3f1ec; --rozet-yazi: #2f6d60;
       --rapor-zemin: #fcefe6; --rapor-cizgi: #f6dccb; --rapor-baslik: #8a4a2c; --rapor-alt: #8c5537;
@@ -36,7 +36,7 @@
       :root {
         --at-renk: #fdeee4;
         --r-e-gun: #7fb6ea; --r-e-yat: #6e97e0; --r-k-gun: #f29ac4; --r-k-yat: #e06aa3; --r-ortak: #f5a05e;
-        --r-rehberlik: #4fae74; --r-mentor-top: #8fd694; --r-seminer: #b08de8; --r-kamp: #f0c75a; --r-diger: #8c9692;
+        --r-rehberlik: #4fae74; --r-mentor-top: #8fd694; --r-seminer: #b08de8; --r-kamp: #f0c75a; --r-diger: #8c9692; --r-dogum: #5fd0c8;
         --r-zorunlu: #ff6b5e; --r-secili: #e7eeeb;
         --bg: #1c2321; --kart: #252d2b; --cizgi: #34403c; --yazi: #e7eeeb; --soluk: #a3b0ac; --ok: #7f8c88;
         --ikon-zemin: #313b38; --ikon: #b9c6c2;
@@ -182,6 +182,16 @@
     .okuma p { margin: 0 0 12px; }
     .okuma ul, .okuma ol { padding-left: 1.3em; margin: 0 0 12px; }
     .okuma li { margin-bottom: 6px; }
+    .tesbihat { margin-bottom: 8px; }
+    .tesbihat h2:first-child, .kisa-dersler h2:first-child { margin-top: 0; }
+    .kisa-dersler { border-top: 1px solid var(--cizgi); padding-top: 18px; margin-top: 18px; }
+    .tesbihat-secim { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 14px; }
+    .tesbihat-secim button { font: inherit; font-size: 14px; font-weight: 650; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+      border: 1px solid var(--ana-cizgi); background: var(--kart); color: var(--ana); }
+    .tesbihat-secim button[aria-selected="true"] { background: var(--ana); border-color: var(--ana); color: var(--bg); }
+    .tesbihat-metin p { margin: 0 0 10px; }
+    .tesbihat-metin .tb { color: var(--soluk); font-style: italic; font-size: .92em; }
+    .tesbihat-metin .orta { text-align: center; }
     .okuma a { color: var(--ana); }
     .okuma img { max-width: 100%; height: auto; border-radius: 10px; margin: 8px 0; }
     .okuma .tablo { overflow-x: auto; margin: 0 0 12px; }
@@ -225,7 +235,7 @@
     .r-e-gun { background: var(--r-e-gun); } .r-e-yat { background: var(--r-e-yat); } .r-k-gun { background: var(--r-k-gun); }
     .r-k-yat { background: var(--r-k-yat); } .r-ortak { background: var(--r-ortak); } .r-rehberlik { background: var(--r-rehberlik); }
     .r-mentor-top { background: var(--r-mentor-top); } .r-seminer { background: var(--r-seminer); } .r-kamp { background: var(--r-kamp); }
-    .r-diger, .r-tatil { background: var(--r-diger); }
+    .r-diger, .r-tatil { background: var(--r-diger); } .r-dogum { background: var(--r-dogum); }
     .zorunlu-halka { box-shadow: 0 0 0 1.5px var(--kart), 0 0 0 3px var(--r-zorunlu); }
     .ay-gunliste { border-top: 1px solid var(--cizgi); margin-top: 8px; padding: 10px 4px 6px; }
     .ay-gunbas { font-size: 13px; font-weight: 700; color: var(--soluk); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
@@ -290,6 +300,11 @@
     button.veli-rozet.tamam { border-color: var(--ana-cizgi); background: var(--ana-zemin); color: var(--ana); }
     .veli-form { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 16px; padding: 12px 14px; margin: -2px 0 10px; }
     .veli-form .not { margin: 0; }
+    .ogr .dogum { margin-top: 4px; font-size: 14px; color: var(--soluk); }
+    .ogr .dogum .baglanti-kucuk { font-size: 14px; }
+    .dogum-form { display: flex; gap: 6px; align-items: center; margin-top: 6px; flex-wrap: wrap; }
+    .ogr .dogum-form select { width: auto; min-width: 0; margin: 0; font: inherit; font-size: 15px; padding: 7px 8px; border: 1px solid var(--cizgi); border-radius: 10px; background: var(--bg); color: var(--yazi); }
+    .ogr .dogum-form select:first-child { flex: 0 0 76px; } .ogr .dogum-form select:nth-child(2) { flex: 1 1 110px; }
     .veli-blok { display: grid; gap: 8px; }
     .veli-blok + .veli-blok { padding-top: 12px; border-top: 1px solid var(--cizgi); }
     .veli-baslik { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 15px; font-weight: 700; color: var(--ana-etiket); }
@@ -580,7 +595,7 @@
         <li><b>Talep:</b> Yatılı → boş slotta <b>Talep et</b>. Rehberin onaylayınca kilitlenir.</li>
         <li><b>İptal:</b> Onaydan önce ve yatılıya bir haftadan fazla varken <b>Vazgeç</b>. Sonrasında <b>İptal iste</b> → sebep yaz; rehberin onaylayınca slot boşalır.</li>
         <li><b>Kırmızı sayı:</b> Bakman gereken şey var demek (rapor gönderilmedi, yatılı durumu değişti; rehberde onay bekleyen talepler). Telefon ikonunda da görmek için aşağıdaki düğme.</li>
-        <li><b>Program:</b> Yatılı kutusundaki <b>Program</b> düğmesi o günün saat saat akışını açar; şu anki etkinlik vurgulu. Saatler namaz vakitlerine göre hesaplanır. Namaz satırlarındaki <b>Kısa ders</b> namazdan sonra okunacak 5–10 dakikalık dersleri açar.</li>
+        <li><b>Program:</b> Yatılı kutusundaki <b>Program</b> düğmesi o günün saat saat akışını açar; şu anki etkinlik vurgulu. Saatler namaz vakitlerine göre hesaplanır. Namaz satırlarındaki <b>Tesbihat · kısa ders</b> o vaktin tesbihatını (Türkçe okunuş) ve namazdan sonra okunacak 5–10 dakikalık dersleri açar.</li>
         <li>Yatılı günü ana ekranın en üstünde <b>Bugün yatılı</b> kartı çıkar.</li>
       </ul>
       <h3>Grubum</h3>
@@ -590,7 +605,7 @@
       </ul>
       <h3>Kurallar</h3>
       <ul>
-        <li>Doğum tarihi, adres ve sağlık bilgisi <b>yazılmaz</b>. Veli e-posta ve telefonu yalnız Grubum'daki <b>Veli</b> formuna yazılır; notlara yazılmaz.</li>
+        <li>Doğum yılı, adres ve sağlık bilgisi <b>yazılmaz</b>; doğum günü yalnız gün + ay olarak Grubum'dan girilir. Veli e-posta ve telefonu yalnız Grubum'daki <b>Veli</b> formuna yazılır; notlara yazılmaz.</li>
         <li>Kişisel kodun sana özel, paylaşma. Telefon değiştirirsen aynı kodla girersin.</li>
       </ul>
       <div id="yardimRehber" hidden>
@@ -1089,9 +1104,13 @@
       { satir: 3, cuma: '2026-10-16', seans: 'Cuma 17:00 → Cmt 13:00', daire: 'Daire 6', grup: 'E11', durum: 'Talep', sohbet: '', hoca: '' },
       { satir: 4, cuma: '2026-10-16', seans: 'Cmt 17:00 → Paz 13:00', daire: 'Daire 5', grup: '', durum: '', sohbet: '', hoca: '' },
       { satir: 5, cuma: '2026-11-06', seans: 'Cuma 17:00 → Cmt 13:00', daire: 'Daire 5', grup: 'E10', durum: 'Talep', sohbet: '', hoca: '', serbest: true }] };
+    if (DEMO && /islem=ogrenciDogum/.test(ek)) {
+      const q = new URLSearchParams(ek.slice(1)); DEMO_DOGUM[q.get('satir')] = q.get('gun') ? ('0' + q.get('gun')).slice(-2) + '.' + ('0' + q.get('ay')).slice(-2) : '';
+      ek = '&islem=grubum';
+    }
     if (DEMO && /islem=grubum$/.test(ek)) return { ok: true, grup: 'E10', kapasite: 10, url: '#', ogrenciler: [
-      { satir: 2, ad: 'Ahmet', oran: '%100', durum: 'Aktif' }, { satir: 3, ad: 'Mehmet', oran: '%75', durum: 'Aktif' },
-      { satir: 4, ad: 'Yusuf', oran: '%100', durum: 'Aktif' }, { satir: 5, ad: 'Ali', oran: '%50', durum: 'Aktif' },
+      { satir: 2, ad: 'Ahmet', oran: '%100', durum: 'Aktif', dogum: DEMO_DOGUM[2] }, { satir: 3, ad: 'Mehmet', oran: '%75', durum: 'Aktif' },
+      { satir: 4, ad: 'Yusuf', oran: '%100', durum: 'Aktif', dogum: DEMO_DOGUM[4] }, { satir: 5, ad: 'Ali', oran: '%50', durum: 'Aktif' },
       { satir: 6, ad: 'Ömer', oran: '%25', durum: 'Ayrıldı' }],
       veli: { Ahmet: { Anne: { ad: true, eposta: true, tel: true, epostaIzin: true, waIzin: true }, Baba: { ad: true, eposta: false, tel: true, epostaIzin: false, waIzin: true } },
               Mehmet: { Anne: { ad: true, eposta: true, tel: false, epostaIzin: true, waIzin: false } } } };
@@ -1502,6 +1521,7 @@
       o('Günübirlik', 'k-gun', 'Günübirlik · K7', '2026-10-17T14:00', '2026-10-17T17:00', false, 'Evde'),
       o('Yatılı', 'k-yat', 'Yatılı · K9', '2026-10-17T17:00', '2026-10-18T13:00', false, 'Daire 3'),
       o('Ortak etkinlik', 'ortak', 'Aile pikniği', '2026-10-18T12:00', '2026-10-18T16:00', false, 'Fish Creek Park', false, '', 3),
+      o('Doğum günü', 'dogum', '🎂 Yusuf (E10)', '2026-10-21', '2026-10-21', true),
       o('Toplantı', 'mentor-top', 'E Lise mentor toplantısı', '2026-10-19T18:30', '2026-10-19T20:00', false),
       o('Yatılı', 'e-yat', 'Yatılı · E10', '2026-10-23T17:00', '2026-10-24T13:00', false, 'Daire 5'),
       o('Okul tatili', 'tatil', 'Kış tatili', '2026-12-21', '2027-01-03', true),
@@ -1659,6 +1679,7 @@
         el('div', { sinif: 'ust2' }, [el('span', { sinif: 'ad', metin: o.ad + (ayrildi ? ' (ayrıldı)' : '') }),
           veliDugme, o.oran ? el('span', { sinif: 'oran', metin: o.oran }) : null]),
       ]);
+      on.appendChild(dogumSatiri(o, ayrildi));
       const notlar = [['Hedefler', o.hedefler], ['Ders durumu', o.ders], ['Davranış / gözlem', o.davranis], ['Notlar', o.notlar]]
         .filter(function (n) { return n[1]; });
       if (notlar.length) {
@@ -1765,6 +1786,38 @@
   }
   const VELI_HATA = { eposta: 'E-posta adresi geçerli görünmüyor.', tel: 'Telefon numarası geçerli görünmüyor (ör. 403 555 1234).',
                       veliTablo: 'Veli tablosu henüz kurulmamış; rehberinize haber verin.', satir: 'Öğrenci bulunamadı; sayfayı yenileyin.' };
+
+  const DEMO_DOGUM = { 2: '', 4: '21.10' };
+  const AY_ADI = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+
+  /** Öğrenci kartında doğum günü: yalnız gün + ay (yıl tutulmaz). Takvime ve o sabah mentora e-postaya gider. */
+  function dogumSatiri(o, ayrildi) {
+    const m = String(o.dogum || '').match(/^(\d{1,2})\.(\d{1,2})$/);
+    const metin = m ? '🎂 ' + (+m[1]) + ' ' + AY_ADI[+m[2] - 1] : '';
+    const kutu = el('div', { sinif: 'dogum' });
+    if (ayrildi || saltOkunur()) { if (metin) kutu.appendChild(el('span', { metin: metin })); return kutu; }
+    const ac = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: metin ? metin + ' · değiştir' : '+ Doğum günü' });
+    kutu.appendChild(ac);
+    ac.onclick = function (e) {
+      e.stopPropagation();
+      if (kutu.querySelector('.dogum-form')) return;
+      const gun = el('select', { 'aria-label': 'Gün' }), ay = el('select', { 'aria-label': 'Ay' });
+      gun.appendChild(el('option', { value: '', metin: 'Gün' })); ay.appendChild(el('option', { value: '', metin: 'Ay' }));
+      for (let i = 1; i <= 31; i++) gun.appendChild(el('option', { value: String(i), metin: String(i) }));
+      AY_ADI.forEach(function (a, i) { ay.appendChild(el('option', { value: String(i + 1), metin: a })); });
+      if (m) { gun.value = String(+m[1]); ay.value = String(+m[2]); }
+      const kaydet = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Kaydet' });
+      kaydet.onclick = function () {
+        if (!gun.value || !ay.value) { alert('Gün ve ayı seçin.'); return; }
+        grubumYukle('&islem=ogrenciDogum&satir=' + o.satir + '&gun=' + gun.value + '&ay=' + ay.value);
+      };
+      const sil = m ? el('button', { sinif: 'kucuk', type: 'button', metin: 'Sil' }) : null;
+      if (sil) sil.onclick = function () { grubumYukle('&islem=ogrenciDogum&satir=' + o.satir + '&gun=&ay=', o.ad + ' için doğum günü silinsin mi?'); };
+      kutu.appendChild(el('div', { sinif: 'dogum-form' }, [gun, ay, sil, kaydet]));
+      ac.hidden = true;
+    };
+    return kutu;
+  }
 
   /** Kartı sola kaydırınca arkadaki düğme (104 px) açılır; bir kart açılınca diğerleri kapanır. */
   const ACIK = -104;
@@ -1916,7 +1969,7 @@
       if (senin) adSatiri.appendChild(el('span', { sinif: 'rozet-sonra', metin: 'SİZİN BÖLÜMÜNÜZ' }));
       const a = el('div', { sinif: 'adim' + (x.tur === 'namaz' ? ' namaz' : '') + (senin ? ' senin' : '') + (anlik ? ' simdi' : gecti ? ' gecti' : '') }, [
         el('div', { sinif: 'sol' }, [el('div', { sinif: 'saat', metin: saat }), adSatiri, x.ek ? el('div', { sinif: 'ek', metin: x.ek }) : null,
-          s.namazDersi && !MISAFIR && (s.tip === 'gunubirlik' ? x.anahtar === 'kisa_ders' : x.tur === 'namaz') ? kisaDersDugme(s.tip === 'gunubirlik' ? 'Kitap / dua seç' : '') : null]),
+          s.namazDersi && !MISAFIR && (s.tip === 'gunubirlik' ? x.anahtar === 'kisa_ders' : x.tur === 'namaz') ? kisaDersDugme(s.tip === 'gunubirlik' ? 'Tesbihat / kitap / dua' : '', vakitBul(x.ad)) : null]),
         x.misafir !== undefined && x.misafir !== null ? misafirHucre(x, saat) : null,
       ]);
       if (anlik) simdiEl = a;
@@ -1927,26 +1980,70 @@
   }
 
   // Namazlardan sonra okunacak 5–10 dk'lık kısa dersler (01 Genel → "Namaz Sonrası Kısa Dersler"), uygulama içinde
-  function kisaDersDugme(metin) {
-    const d = el('button', { sinif: 'kisa-ders', type: 'button', metin: metin || 'Kısa ders' });
-    d.onclick = kisaDersAc;
+  function kisaDersDugme(metin, vakit) {
+    const d = el('button', { sinif: 'kisa-ders', type: 'button', metin: metin || 'Tesbihat · kısa ders' });
+    d.onclick = function () { kisaDersAc(vakit); };
     return d;
   }
+  /** Program satırının adından vakit: "Akşam namazı + tesbihat" → aksam. */
+  function vakitBul(ad) {
+    const s = String(ad || '').toLocaleLowerCase('tr');
+    return /sabah/.test(s) ? 'sabah' : /öğle/.test(s) ? 'ogle' : /ikindi/.test(s) ? 'ikindi' : /akşam/.test(s) ? 'aksam' : /yatsı/.test(s) ? 'yatsi' : '';
+  }
+
+  // Tesbihat: Türkçe okunuş (herkul.org/tesbihat, izinle), tesbihat.json — kabukla birlikte önbellekte, internetsiz de açılır
+  let tesbihatVeri = null;
+  async function tesbihatYukle() {
+    if (!tesbihatVeri) tesbihatVeri = await (await fetch('tesbihat.json')).json();
+    return tesbihatVeri;
+  }
+  async function tesbihatBolumu(vakit) {
+    const kutu = el('section', { sinif: 'tesbihat' });
+    try {
+      const v = (await tesbihatYukle()).vakitler;
+      const metin = el('div', { sinif: 'tesbihat-metin' });
+      const secim = el('div', { sinif: 'tesbihat-secim', role: 'tablist' });
+      const vakitGoster = function (id) {
+        const x = v.filter(function (y) { return y.id === id; })[0];
+        secim.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.id === id)); });
+        metin.innerHTML = x ? x.html : '';   // tesbihat.json uygulamayla gelir; derlenirken etiketler temizlendi (p, br, span.tb)
+      };
+      v.forEach(function (x) {
+        const b = el('button', { type: 'button', role: 'tab', 'data-id': x.id, 'aria-selected': 'false', metin: x.id === 'sunnet' ? 'Sünnet–farz arası' : x.ad });
+        b.onclick = function () { vakitGoster(x.id); };
+        secim.appendChild(b);
+      });
+      kutu.appendChild(el('h2', { metin: 'Tesbihat' }));
+      kutu.appendChild(el('p', { sinif: 'not', metin: 'Türkçe okunuş. Vakti seçin; programdaki namazdan açtıysanız o vakit açık gelir.' }));
+      kutu.appendChild(secim);
+      kutu.appendChild(metin);
+      if (vakit) vakitGoster(vakit);
+    } catch (e) { kutu.appendChild(el('p', { sinif: 'bos', metin: 'Tesbihat yüklenemedi.' })); }
+    return kutu;
+  }
+
   let okumaDonus = null;
-  async function kisaDersAc() {
-    $('okumaBaslik').textContent = 'Namaz sonrası kısa dersler';
+  async function kisaDersAc(vakit) {
+    $('okumaBaslik').textContent = 'Tesbihat ve kısa dersler';
     $('dilSec').querySelectorAll('button').forEach(function (b) { b.hidden = true; });
     $('okumaDocs').href = programVeri && programVeri.namazDersi || '#';
     $('okumaDocs').hidden = !(programVeri && programVeri.namazDersi);
     okumaDonus = 'program';
     history.pushState({ okuma: true }, ''); goster('okuma');
-    if (DEMO) { $('okumaIcerik').innerHTML = '<h3>Namazın huzuru</h3><p>Örnek kısa ders. Gerçek uygulamada rehberlerin hazırladığı dersler burada görünür.</p><h3>Sabrın meyvesi</h3><p>Örnek metin.</p>'; return; }
-    $('okumaIcerik').innerHTML = '<p class="yukleniyor">Yükleniyor…</p>';
+    const ic = $('okumaIcerik');
+    ic.innerHTML = '';
+    ic.appendChild(await tesbihatBolumu(typeof vakit === 'string' ? vakit : ''));
+    const dersler = el('section', { sinif: 'kisa-dersler' }, [el('h2', { metin: 'Kısa ders: kitap / dua' })]);
+    const govde = el('div', {});
+    dersler.appendChild(govde);
+    ic.appendChild(dersler);
+    if (DEMO) { govde.innerHTML = '<h3>Namazın huzuru</h3><p>Örnek kısa ders. Gerçek uygulamada rehberlerin hazırladığı dersler burada görünür.</p>'; return; }
+    govde.innerHTML = '<p class="yukleniyor">Yükleniyor…</p>';
     try {
       const s = await veriCek(depo.al('grup') || '', depo.al('kod'), '&islem=kisaDers');
-      $('okumaIcerik').innerHTML = s.ok && s.html ? s.html   // HTML sunucuda kaçırılarak üretiliyor (metinHtml_)
+      govde.innerHTML = s.ok && s.html ? s.html   // HTML sunucuda kaçırılarak üretiliyor (metinHtml_)
         : '<p class="bos">Kısa dersler uygulamada gösterilemiyor. Aşağıdan Google Docs\'ta açabilirsiniz.</p>';
-    } catch (e) { $('okumaIcerik').innerHTML = '<p class="bos">Bağlantı kurulamadı. Tekrar deneyin.</p>'; }
+    } catch (e) { govde.innerHTML = '<p class="bos">Bağlantı kurulamadı. Tekrar deneyin.</p>'; }
   }
 
   function DEMO_PROGRAM() {
