@@ -232,6 +232,7 @@
     .medya { position: relative; width: 100%; border-radius: 16px; overflow: hidden; background: #000; }
     .medya.video { aspect-ratio: 16 / 9; }
     .medya.slayt { height: calc(100vh - 190px); min-height: 320px; background: var(--kart); border: 1px solid var(--cizgi); }
+    .medya.sayfa { height: calc(100vh - 170px); min-height: 360px; background: #fff; border: 1px solid var(--cizgi); }
     .medya iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
     /* Yatılı / Grubum */
     .hs-baslik { font-size: 13px; font-weight: 600; letter-spacing: .06em; color: var(--soluk); text-transform: uppercase; margin: 22px 4px 8px; }
@@ -1116,6 +1117,18 @@
     return null;
   }
 
+  /** Dış sayfayı (Herkul) uygulamanın içinde açar; Geri kısa derslere döner. */
+  function sayfaAc(baslik, url) {
+    $('medyaBaslik').textContent = baslik;
+    $('medyaDis').href = url;
+    const kutu = $('medyaKutu');
+    kutu.className = 'medya sayfa';
+    kutu.textContent = '';
+    kutu.appendChild(el('iframe', { src: url, referrerpolicy: 'strict-origin-when-cross-origin', title: baslik }));
+    history.pushState({ medya: true }, '');
+    goster('medya');
+  }
+
   function medyaAc(tur, url) {
     $('medyaBaslik').textContent = (tur === 'video' ? 'Video · ' : 'Slayt · ') + ((sonVeri && sonVeri.konu && sonVeri.konu.ad) || '');
     $('medyaDis').href = url;
@@ -1133,6 +1146,7 @@
     b.addEventListener('click', function () { history.back(); });
   });
   window.addEventListener('popstate', function () {
+    if (!$('medya').hidden && $('medyaKutu').classList.contains('sayfa')) { $('medyaKutu').textContent = ''; goster('okuma'); return; }   // Herkul sayfasından kısa derslere
     if (okumaDonus && !$('okuma').hidden) { goster(okumaDonus); okumaDonus = null; return; }   // kısa dersten programa dön
     okumaDonus = null;
     if ($('pano').hidden && $('kurulum').hidden) { goster('pano'); yenile(); }
@@ -2199,8 +2213,12 @@
     const out = [], anahtar = 'sonKisa_' + tur, son = depo.al(anahtar) || '';
     let sonEl = null;
     const ac = function (a, metin) {
-      const x = el('a', { href: a.getAttribute('href'), target: '_blank', rel: 'noopener' });
-      x.addEventListener('click', function () { depo.yaz(anahtar, metin); });
+      const url = a.getAttribute('href'), x = el('a', { href: url, target: '_blank', rel: 'noopener' });
+      x.addEventListener('click', function (ev) {
+        depo.yaz(anahtar, metin);
+        // herkul.org uygulama içinde açılsın (dış bağlantı iPhone'da Herkul uygulamasını açıyor); başka siteler dışarıda
+        if (/^https:\/\/(www\.)?herkul\.org\//.test(url)) { ev.preventDefault(); sayfaAc(metin, url); }
+      });
       return x;
     };
     parca.forEach(function (n) {
