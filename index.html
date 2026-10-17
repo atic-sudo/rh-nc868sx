@@ -186,6 +186,19 @@
     .sekmeler { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 6px 0; margin: 0 0 12px; }
     .kisa-panel h2:first-child { margin-top: 0; }
     .baska-vakit { border-top: 1px solid var(--cizgi); margin-top: 18px; padding-top: 12px; }
+    .kd-kitap { font-size: 17px; margin: 6px 0 10px; }
+    .kd-liste { display: grid; gap: 8px; margin-bottom: 16px; }
+    a.kd-satir { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border: 1px solid var(--cizgi); border-radius: 14px;
+      background: var(--kart); color: var(--yazi); text-decoration: none; font-size: 16px; font-weight: 600; line-height: 1.3; }
+    a.kd-satir svg { width: 18px; height: 18px; color: var(--soluk); flex: none; margin-left: auto; }
+    .kd-sira { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700;
+      background: var(--ana-zemin); color: var(--ana); }
+    .kd-ad { min-width: 0; }
+    .kd-izgara { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 8px; margin-bottom: 16px; }
+    a.kd-no { display: grid; place-items: center; height: 46px; border: 1px solid var(--cizgi); border-radius: 12px; background: var(--kart);
+      color: var(--ana); text-decoration: none; font-size: 16px; font-weight: 700; }
+    a.kd-satir.son, a.kd-no.son { border-color: var(--ana); box-shadow: 0 0 0 2px var(--ana-zemin); }
+    a.kd-no.son { background: var(--ana); color: var(--bg); }
     .dil-secim { display: inline-flex; border: 1px solid var(--ana-cizgi); border-radius: 999px; padding: 2px; margin: 0 0 14px; }
     .dil-secim button { font: inherit; font-size: 13.5px; font-weight: 650; padding: 5px 12px; border: 0; border-radius: 999px; background: none; color: var(--ana); cursor: pointer; }
     .dil-secim button[aria-selected="true"] { background: var(--ana); color: var(--bg); }
@@ -2178,6 +2191,46 @@
     return out;
   }
 
+  /**
+   * Belgedeki bağlantı listelerini dokunulabilir öğelere çevirir: kitap bölümleri → numaralı satırlar,
+   * yalnız numaralı dualar ("12. Dua") → numara ızgarası. Son açılan işaretlenir ("Kaldığınız yer").
+   */
+  function kisaDersListe(parca, tur) {
+    const out = [], anahtar = 'sonKisa_' + tur, son = depo.al(anahtar) || '';
+    let sonEl = null;
+    const ac = function (a, metin) {
+      const x = el('a', { href: a.getAttribute('href'), target: '_blank', rel: 'noopener' });
+      x.addEventListener('click', function () { depo.yaz(anahtar, metin); });
+      return x;
+    };
+    parca.forEach(function (n) {
+      const linkler = n.querySelectorAll ? n.querySelectorAll('li a[href]') : [];
+      if (/^(OL|UL)$/.test(n.tagName) && linkler.length) {
+        const metinler = Array.prototype.map.call(linkler, function (a) { return a.textContent.trim(); });
+        const sadeceNo = metinler.every(function (t) { return /^\d+\.?\s*dua$/i.test(t); });
+        const kap = el('div', { sinif: sadeceNo ? 'kd-izgara' : 'kd-liste' });
+        Array.prototype.forEach.call(linkler, function (a, i) {
+          const t = metinler[i], x = ac(a, t);
+          if (sadeceNo) { x.className = 'kd-no'; x.textContent = t.replace(/\D/g, ''); x.setAttribute('aria-label', t); }
+          else {
+            x.className = 'kd-satir';
+            x.appendChild(el('span', { sinif: 'kd-sira', metin: String(i + 1) }));
+            x.appendChild(el('span', { sinif: 'kd-ad', metin: t }));
+            x.appendChild(ikon('sag'));
+          }
+          if (t === son) { x.classList.add('son'); sonEl = x; }
+          kap.appendChild(x);
+        });
+        out.push(kap);
+      } else if (n.tagName === 'H4') out.push(el('h3', { sinif: 'kd-kitap', metin: n.textContent }));
+      else out.push(n);
+    });
+    out.unshift(el('p', { sinif: 'not', metin: son ? 'Kaldığınız yer: ' + son + ' (işaretli). Dokununca kaynağında açılır.'
+      : (tur === 'dua' ? 'Bir dua seçin; kaynağında açılır.' : 'Bir bölüm seçin; kaynağında açılır. 5–10 dakika.') }));
+    if (sonEl) setTimeout(function () { sonEl.scrollIntoView({ block: 'center' }); }, 60);
+    return out;
+  }
+
   let okumaDonus = null, kisaDersBelge = null;
   /** Tesbihat · Kısa ders · Dua. Namaz satırından açılınca o vaktin tesbihatı; günübirlikten açılınca Kısa ders sekmesi. */
   async function kisaDersAc(vakit) {
@@ -2228,8 +2281,11 @@
     };
     const belgeCiz = async function (tur) {
       if (DEMO) {
-        panel.innerHTML = tur === 'dua' ? '<ul><li><a href="#">1. Dua</a></li><li><a href="#">2. Dua</a></li></ul>'
-                                        : '<h4>Çağ ve Nesil 1</h4><ol><li><a href="#">Ümit</a></li><li><a href="#">Susadığımız Soluklar</a></li></ol>';
+        const ornek = tur === 'dua' ? '<h3>Dualar</h3><h4>Bir Kırık Dilekçe</h4><ul>' + Array.from({ length: 124 }, function (_, i) { return '<li><a href="https://herkul.org/bir-kirik-dilekce/' + (i + 1) + '">' + (i + 1) + '. Dua</a></li>'; }).join('') + '</ul>'
+          : '<h3>Kitap bölümleri</h3><h4>Çağ ve Nesil 1</h4><ol>' + ['Ümit', 'Susadığımız Soluklar', 'Nerdesin', 'Neslin Beklediği Kurtarıcı El', 'Hasretini Çektiğimiz İnsan', 'Geleceğin Mimarları']
+              .map(function (t) { return '<li><a href="https://herkul.org/article/x">' + t + '</a></li>'; }).join('') + '</ol>';
+        panel.textContent = '';
+        kisaDersListe(kisaDersBol(ornek)[tur], tur).forEach(function (n) { panel.appendChild(n); });
         return;
       }
       if (!kisaDersBelge) {
@@ -2243,8 +2299,7 @@
       panel.textContent = '';
       const parca = kisaDersBelge ? kisaDersBol(kisaDersBelge)[tur] : [];
       if (!parca.length) { panel.appendChild(el('p', { sinif: 'bos', metin: 'Bu bölüm uygulamada gösterilemiyor. Aşağıdan Google Docs\'ta açabilirsiniz.' })); return; }
-      panel.appendChild(el('p', { sinif: 'not', metin: tur === 'dua' ? 'Bir dua seçin; kaynağında açılır.' : 'Bir bölüm seçin; kaynağında açılır. 5–10 dakika.' }));
-      parca.forEach(function (n) { panel.appendChild(n); });
+      kisaDersListe(parca, tur).forEach(function (n) { panel.appendChild(n); });
     };
     const ciz = function () {
       sekmeler.textContent = '';
