@@ -183,6 +183,10 @@
     .okuma ul, .okuma ol { padding-left: 1.3em; margin: 0 0 12px; }
     .okuma li { margin-bottom: 6px; }
     .tesbihat { margin-bottom: 8px; }
+    .sekmeler { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 6px 0; margin: 0 0 12px; }
+    .kisa-panel h2:first-child { margin-top: 0; }
+    .baska-vakit { border-top: 1px solid var(--cizgi); margin-top: 18px; padding-top: 12px; }
+    .baska-vakit .tesbihat-secim { margin: 6px 0 0; }
     .temizlik-kart { display: flex; gap: 12px; align-items: flex-start; background: var(--kart); border: 1px solid var(--cizgi); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; font-size: 16px; line-height: 1.4; }
     .temizlik-kart .tik { flex: none; width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--ana-cizgi); background: var(--kart); color: var(--bg); font: inherit; font-size: 18px; font-weight: 700; cursor: pointer; }
     .temizlik-kart.tamam .tik { background: var(--ana); border-color: var(--ana); }
@@ -2155,29 +2159,90 @@
     if (!tesbihatVeri) tesbihatVeri = await (await fetch('tesbihat.json')).json();
     return tesbihatVeri;
   }
-  async function tesbihatBolumu(vakit) {
-    const kutu = el('section', { sinif: 'tesbihat' });
-    try {
-      const v = (await tesbihatYukle()).vakitler;
-      const metin = el('div', { sinif: 'tesbihat-metin' });
-      const secim = el('div', { sinif: 'tesbihat-secim', role: 'tablist' });
-      const vakitGoster = function (id) {
-        const x = v.filter(function (y) { return y.id === id; })[0];
-        secim.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.id === id)); });
-        metin.innerHTML = x ? x.html : '';   // tesbihat.json uygulamayla gelir; derlenirken etiketler temizlendi (p, br, span.tb)
-      };
-      v.forEach(function (x) {
-        const b = el('button', { type: 'button', role: 'tab', 'data-id': x.id, 'aria-selected': 'false', metin: x.id === 'sunnet' ? 'Sünnet–farz arası' : x.ad });
-        b.onclick = function () { vakitGoster(x.id); };
-        secim.appendChild(b);
+  /** Kısa dersler belgesini (metinHtml_) sekmelere böler: "Kitap bölümleri" → ders, "Dualar" → dua (h3 başlıklarına göre). */
+  function kisaDersBol(html) {
+    const kap = document.createElement('div'), out = { ders: [], dua: [] };
+    kap.innerHTML = html;   // HTML sunucuda kaçırılarak üretiliyor (metinHtml_)
+    let hedef = 'ders';
+    Array.prototype.slice.call(kap.children).forEach(function (c) {
+      if (c.tagName === 'H2') return;   // belge başlığı
+      if (c.tagName === 'H3') { hedef = /dua/i.test(c.textContent) ? 'dua' : 'ders'; return; }
+      if (c.tagName === 'P' && /^Yatılıda namazlardan sonra/.test(c.textContent.trim())) return;   // belgedeki açıklama notu
+      out[hedef].push(c);
+    });
+    return out;
+  }
+
+  let okumaDonus = null, kisaDersBelge = null;
+  /** Tesbihat · Kısa ders · Dua. Namaz satırından açılınca o vaktin tesbihatı; günübirlikten açılınca Kısa ders sekmesi. */
+  async function kisaDersAc(vakit) {
+    vakit = typeof vakit === 'string' ? vakit : '';
+    $('okumaBaslik').textContent = vakit ? 'Namazdan sonra' : 'Kısa ders';
+    $('dilSec').querySelectorAll('button').forEach(function (b) { b.hidden = true; });
+    $('okumaDocs').href = programVeri && programVeri.namazDersi || '#';
+    $('okumaDocs').hidden = !(programVeri && programVeri.namazDersi);
+    okumaDonus = 'program';
+    history.pushState({ okuma: true }, ''); goster('okuma');
+    const ic = $('okumaIcerik');
+    ic.innerHTML = '';
+    const sekmeler = el('div', { sinif: 'tesbihat-secim sekmeler', role: 'tablist' }), panel = el('div', { sinif: 'kisa-panel' });
+    ic.appendChild(sekmeler); ic.appendChild(panel);
+    const SEKME = [['tesbihat', 'Tesbihat'], ['ders', 'Kısa ders'], ['dua', 'Dua']];
+    let secili = vakit ? 'tesbihat' : 'ders', seciliVakit = vakit;
+
+    const tesbihatCiz = async function () {
+      let v;
+      try { v = (await tesbihatYukle()).vakitler; } catch (e) { panel.appendChild(el('p', { sinif: 'bos', metin: 'Tesbihat yüklenemedi.' })); return; }
+      const x = v.filter(function (y) { return y.id === seciliVakit; })[0];
+      const diger = el('div', { sinif: 'tesbihat-secim' });
+      v.forEach(function (y) {
+        if (y.id === seciliVakit) return;
+        const b = el('button', { type: 'button', metin: y.id === 'sunnet' ? 'Sabah: sünnet–farz arası' : y.ad });
+        b.onclick = function () { seciliVakit = y.id; ciz(); window.scrollTo(0, 0); };
+        diger.appendChild(b);
       });
-      kutu.appendChild(el('h2', { metin: 'Tesbihat' }));
-      kutu.appendChild(el('p', { sinif: 'not', metin: 'Türkçe okunuş. Vakti seçin; programdaki namazdan açtıysanız o vakit açık gelir.' }));
-      kutu.appendChild(secim);
-      kutu.appendChild(metin);
-      if (vakit) vakitGoster(vakit);
-    } catch (e) { kutu.appendChild(el('p', { sinif: 'bos', metin: 'Tesbihat yüklenemedi.' })); }
-    return kutu;
+      if (x) {
+        panel.appendChild(el('h2', { metin: x.id === 'sunnet' ? 'Sabah namazı: sünnet ile farz arası' : x.ad + ' tesbihatı' }));
+        panel.appendChild(el('p', { sinif: 'not', metin: 'Türkçe okunuş' }));
+        const m = el('div', { sinif: 'tesbihat-metin' }); m.innerHTML = x.html;   // tesbihat.json uygulamayla gelir; etiketleri temizlenmiş (p, br, span.tb)
+        panel.appendChild(m);
+        panel.appendChild(el('div', { sinif: 'baska-vakit' }, [el('div', { sinif: 'not', metin: 'Başka vakit' }), diger]));
+      } else {
+        panel.appendChild(el('p', { sinif: 'not', metin: 'Vakti seçin:' }));
+        panel.appendChild(diger);
+      }
+    };
+    const belgeCiz = async function (tur) {
+      if (DEMO) {
+        panel.innerHTML = tur === 'dua' ? '<ul><li><a href="#">1. Dua</a></li><li><a href="#">2. Dua</a></li></ul>'
+                                        : '<h4>Çağ ve Nesil 1</h4><ol><li><a href="#">Ümit</a></li><li><a href="#">Susadığımız Soluklar</a></li></ol>';
+        return;
+      }
+      if (!kisaDersBelge) {
+        panel.innerHTML = '<p class="yukleniyor">Yükleniyor…</p>';
+        try {
+          const s = await veriCek(depo.al('grup') || '', depo.al('kod'), '&islem=kisaDers');
+          kisaDersBelge = s.ok && s.html ? s.html : '';
+        } catch (e) { panel.innerHTML = '<p class="bos">Bağlantı kurulamadı. Tekrar deneyin.</p>'; return; }
+        if (secili !== tur) return;   // bu arada sekme değişti
+      }
+      panel.textContent = '';
+      const parca = kisaDersBelge ? kisaDersBol(kisaDersBelge)[tur] : [];
+      if (!parca.length) { panel.appendChild(el('p', { sinif: 'bos', metin: 'Bu bölüm uygulamada gösterilemiyor. Aşağıdan Google Docs\'ta açabilirsiniz.' })); return; }
+      panel.appendChild(el('p', { sinif: 'not', metin: tur === 'dua' ? 'Bir dua seçin; kaynağında açılır.' : 'Bir bölüm seçin; kaynağında açılır. 5–10 dakika.' }));
+      parca.forEach(function (n) { panel.appendChild(n); });
+    };
+    const ciz = function () {
+      sekmeler.textContent = '';
+      SEKME.forEach(function (x) {
+        const b = el('button', { type: 'button', role: 'tab', 'aria-selected': String(x[0] === secili), metin: x[1] });
+        b.onclick = function () { secili = x[0]; ciz(); };
+        sekmeler.appendChild(b);
+      });
+      panel.textContent = '';
+      if (secili === 'tesbihat') tesbihatCiz(); else belgeCiz(secili);
+    };
+    ciz();
   }
 
   // ---------- Yatılı temizliği: kontrol listesi + sıra (her yatılıda bir kaydırılır) + ✓ ----------
@@ -2275,29 +2340,7 @@
     ic.appendChild(el('p', { sinif: 'not', metin: 'Görevler her yatılıda bir kayar; herkes sırayla farklı iş yapar. Değiştirmek için "Değiştir".' }));
   }
 
-  let okumaDonus = null;
-  async function kisaDersAc(vakit) {
-    $('okumaBaslik').textContent = 'Tesbihat ve kısa dersler';
-    $('dilSec').querySelectorAll('button').forEach(function (b) { b.hidden = true; });
-    $('okumaDocs').href = programVeri && programVeri.namazDersi || '#';
-    $('okumaDocs').hidden = !(programVeri && programVeri.namazDersi);
-    okumaDonus = 'program';
-    history.pushState({ okuma: true }, ''); goster('okuma');
-    const ic = $('okumaIcerik');
-    ic.innerHTML = '';
-    ic.appendChild(await tesbihatBolumu(typeof vakit === 'string' ? vakit : ''));
-    const dersler = el('section', { sinif: 'kisa-dersler' }, [el('h2', { metin: 'Kısa ders: kitap / dua' })]);
-    const govde = el('div', {});
-    dersler.appendChild(govde);
-    ic.appendChild(dersler);
-    if (DEMO) { govde.innerHTML = '<h3>Namazın huzuru</h3><p>Örnek kısa ders. Gerçek uygulamada rehberlerin hazırladığı dersler burada görünür.</p>'; return; }
-    govde.innerHTML = '<p class="yukleniyor">Yükleniyor…</p>';
-    try {
-      const s = await veriCek(depo.al('grup') || '', depo.al('kod'), '&islem=kisaDers');
-      govde.innerHTML = s.ok && s.html ? s.html   // HTML sunucuda kaçırılarak üretiliyor (metinHtml_)
-        : '<p class="bos">Kısa dersler uygulamada gösterilemiyor. Aşağıdan Google Docs\'ta açabilirsiniz.</p>';
-    } catch (e) { govde.innerHTML = '<p class="bos">Bağlantı kurulamadı. Tekrar deneyin.</p>'; }
-  }
+
 
   function DEMO_PROGRAM() {
     const a = [[1,'17:00','17:00','Geliş','sabit',''],[1,'17:10','17:45',"Kur'an dersi",'sabit-sure','','kuran','Örnek Hoca'],[1,'17:45','18:41','Oyun / serbest','esnek',''],
