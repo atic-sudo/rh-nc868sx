@@ -1,5 +1,5 @@
 // Uygulama kabuğunu önbellekte tutar (hızlı açılış); veri her zaman ağdan gelir.
-const KABUK = 'rehberlik-v6';
+const KABUK = 'rehberlik-v7';
 const DOSYALAR = ['./', 'index.html', 'manifest.webmanifest', 'ikon-192.png', 'ikon-512.png', 'ikon-180.png', 'at.png', 'tesbihat.json'];
 
 self.addEventListener('install', function (e) {
