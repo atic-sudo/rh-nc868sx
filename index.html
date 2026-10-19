@@ -912,7 +912,7 @@
     if (['rehber', 'org', 'test', 'akademik'].indexOf(kisiRolu()) >= 0)
       ic.appendChild(satir({ k: 'gorev', ikon: 'onay', baslik: 'Görevlerim', alt: 'Rehberlik toplantısından · bitince ✓', url: '#', tikla: gorevlerAc }));
     ic.appendChild(satir({ k: 'ders', ikon: 'kitap', baslik: 'Ders desteği', url: '#', tikla: dersAc,
-      alt: kisiRolu() === 'akademik' ? 'Talepler · koç ataması · onay' : 'Zorlanan öğrenciye ders koçu · süreci takip et' }));
+      alt: dersRehberiMi() ? 'Talepler · koç ataması · onay' : kisiRolu() === 'akademik' ? 'Tüm talepler · süreç takibi' : 'Zorlanan öğrenciye ders koçu · süreci takip et' }));
 
     sayacGuncelle(v);
     const alt = $('altBilgi');
@@ -3080,11 +3080,11 @@
     ic.textContent = '';
     if (s.bilgi) ic.appendChild(el('div', { sinif: 'bilgi', metin: s.bilgi }));
     if (s.yetki.koc) { kocCiz(s, ic); return; }
-    $('derslerBaslik').textContent = 'Ders desteği' + (s.grup && !s.yetki.yonet ? ' · ' + s.grup : '');
+    $('derslerBaslik').textContent = 'Ders desteği' + (s.grup && !s.yetki.yonet && s.rol !== 'akademik' ? ' · ' + s.grup : '');
     const aktif = s.talepler.filter(function (t) { return DERS_AKTIF.indexOf(t.durum) >= 0; });
     const biten = s.talepler.filter(function (t) { return DERS_AKTIF.indexOf(t.durum) < 0; });
     if (s.yetki.ac && s.ogrenciler && s.ogrenciler.length && !saltOkunurDers(s)) {
-      const ac = el('button', { sinif: 'kucuk sicak', type: 'button', metin: '+ Yeni talep' + (s.yetki.yonet ? ' (' + s.grup + ')' : '') });
+      const ac = el('button', { sinif: 'kucuk sicak', type: 'button', metin: '+ Yeni talep' + (s.yetki.yonet || s.rol === 'akademik' ? ' (' + s.grup + ')' : '') });
       const kap = el('div', { sinif: 'ders-yeni' }, [ac]);
       ac.onclick = function () { kap.replaceChildren(talepFormu(s, function () { dersCiz(); })); };
       ic.appendChild(kap);
@@ -3099,6 +3099,19 @@
       if (!bekleyen.length) ic.appendChild(el('p', { sinif: 'not ders-bos', metin: 'Şu an onayınızı ya da atamanızı bekleyen talep yok.' }));
       bekleyen.forEach(function (t) { ic.appendChild(talepKarti(t, s)); });
       if (diger.length) { ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Süreçte' })); diger.forEach(function (t) { ic.appendChild(talepKarti(t, s)); }); }
+    } else if (s.rol === 'akademik' || s.rol === 'musahit') {
+      // Akademik mesul: bütün gruplar tek bakışta (onay / atama yok)
+      const takilan = aktif.filter(function (t) { return t.bekleyen && t.saat >= 48; });
+      const ayBasi = new Date(); ayBasi.setDate(1); ayBasi.setHours(0, 0, 0, 0);
+      const aySaat = (Date.now() - ayBasi.getTime()) / 3600000;
+      const kutu = function (n, m) { return el('div', {}, [el('b', { metin: String(n) }), el('span', { metin: m })]); };
+      ic.appendChild(el('div', { sinif: 'ders-ozet' }, [kutu(aktif.length, 'açık talep'), kutu(takilan.length, '48 saati geçen'),
+        kutu(biten.filter(function (t) { return t.durum === 'Tamamlandı' && t.saat <= aySaat; }).length, 'bu ay biten')]));
+      if (takilan.length) { ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Takılanlar · 48 saat+' })); takilan.forEach(function (t) { ic.appendChild(talepKarti(t, s)); }); }
+      const diger = aktif.filter(function (t) { return takilan.indexOf(t) < 0; });
+      ic.appendChild(el('div', { sinif: 'hs-baslik', metin: takilan.length ? 'Diğer açık talepler' : 'Açık talepler' }));
+      if (!diger.length) ic.appendChild(el('p', { sinif: 'not ders-bos', metin: takilan.length ? 'Başka açık talep yok.' : 'Şu an açık talep yok.' }));
+      diger.forEach(function (t) { ic.appendChild(talepKarti(t, s)); });
     } else {
       ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Açık talepler' }));
       if (!aktif.length) ic.appendChild(el('p', { sinif: 'not ders-bos', metin: 'Açık talep yok. Bir öğrenci bir derste zorlanıyorsa onunla birlikte talep açın.' }));
@@ -3111,10 +3124,12 @@
     }
     if (s.koclar) ic.appendChild(koclarBolumu(s));
     ic.appendChild(el('p', { sinif: 'not', metin: s.yetki.yonet
-      ? 'Akademik mesul bu listeyi görür ve her adımda e-posta alır; onay sizde. 24 saat cevap gelmezse sistem hatırlatır, 48 saatte mentora haber verir.'
+      ? 'Akademik mesul bu listeyi görür; koç ataması ve onay sizde. 24 saat cevap gelmezse sistem hatırlatır, 48 saatte mentora haber verir.'
+      : s.rol === 'akademik' ? 'Bütün grupların talepleri. Koç ataması ve son onay ekibin Ders Koçu Rehberinde; yeni talep, onaylanan görüşme (takvim daveti) ve raporlar size e-postayla da gelir.'
       : 'Saat seçimi veliye (ilk talepte izinle birlikte) ya da öğrenciye e-postayla gider. 2 gün cevap gelmezse size haber verilir; linki WhatsApp\'tan da iletebilirsiniz.' }));
   }
   function saltOkunurDers(s) { return s.rol === 'musahit'; }
+  function dersRehberiMi() { try { return !!(JSON.parse(depo.al('kisi') || 'null') || {}).dkr; } catch (e) { return false; } }
 
   function talepKarti(t, s) {
     const rol = s.rol, yonet = s.yetki.yonet, aktif = DERS_AKTIF.indexOf(t.durum) >= 0;
@@ -3481,7 +3496,7 @@
     const koc = DEMO_KOC, mentor = DEMO_MENTOR;
     const liste = koc ? demoDers.filter(function (t) { return t.kocNo === '1'; }) : mentor ? demoDers.filter(function (t) { return t.grup === 'E10'; }) : demoDers;
     return { ok: true, rol: koc ? 'koc' : mentor ? 'mentor' : 'akademik', talepler: liste, bilgi: '', grup: 'E10',
-      yetki: { ac: !koc, yonet: !koc && !mentor, koc: koc }, yerler: ['Online', 'KM Daire 5', 'KM Daire 6'], sureler: [60, 90, 120],
+      yetki: { ac: !koc, yonet: !koc && !mentor && !/rol=mesul/.test(location.search), koc: koc }, yerler: ['Online', 'KM Daire 5', 'KM Daire 6'], sureler: [60, 90, 120],
       seviyeler: ['Hiç anlamadı', 'Kısmen', 'Pratik lazım', 'İleri seviye'], zamanlar: ['Bu hafta', '2 hafta içinde', 'Sınavdan önce'],
       ogrenciler: koc ? undefined : ['Ahmet', 'Mehmet', 'Yusuf', 'Ali'],
       eposta: { Ahmet: { veli: true, ogrenci: true, izin: true }, Mehmet: { veli: false, ogrenci: false, izin: false }, Yusuf: { veli: true, ogrenci: false, izin: true }, Ali: { veli: true, ogrenci: true, izin: true } },
