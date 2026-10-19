@@ -355,6 +355,8 @@
     .ders-bilgi { margin: 0; } .ders-bilgi dt { font-size: 12.5px; color: var(--soluk); font-weight: 600; } .ders-bilgi dd { margin: 0 0 8px; font-size: 16px; }
     .ders-alt-secim { margin-top: 14px; text-align: center; } .ders-red { color: var(--kirmizi) !important; }
     .ders-ben { margin-bottom: 4px; }
+    .ders-test { display: grid; grid-template-columns: 64px minmax(0, 1fr) minmax(0, 1fr) 44px; gap: 6px; align-items: center; }
+    .ders-puan { font-weight: 700; color: var(--ana); text-align: right; }
     .gorev-alt { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 4px; font-size: 13px; color: var(--soluk); }
     .gorev-kart.gecikti .gorev-tarih { color: var(--r-zorunlu); font-weight: 650; } .gorev-kart.yakin .gorev-tarih { color: var(--rapor-baslik); font-weight: 650; }
     .gorev-kart .dugmeler { display: flex; justify-content: flex-end; margin-top: 8px; }
@@ -3017,12 +3019,12 @@
     dersKurulum: 'Ders Desteği tablosu henüz kurulmadı (sistem sorumlusu: dersDestegiKur).', dersYok: 'Talep bulunamadı; liste yenilendi.',
     dersDurum: 'Talebin durumu değişmiş; liste yenilendi.', dersEksik: 'Ders ve konuyu seçin.', dersAyni: 'Bu öğrenci için bu konuda açık bir talep zaten var.',
     dersKoc: 'Koç bulunamadı ya da aktif değil (Koçlar sekmesi).', dersKocEposta: 'Koçun e-postası Koçlar sekmesinde eksik.',
-    dersSecenek: 'Saatleri eksiksiz girin (tarih, saat, süre, yer; en fazla 3).', dersTarih: 'Saat en az 2 saat sonrası ve en geç 60 gün içinde olmalı.',
+    dersSecenek: 'Üç saat seçeneğinin hepsini eksiksiz girin (tarih, saat, süre, yer).', dersAyniSaat: 'Üç seçenek birbirinden farklı olmalı.', dersTarih: 'Saat en az 2 saat sonrası ve en geç 60 gün içinde olmalı.',
     ders22: 'Görüşme en geç 22:00\'de bitmeli.', dersCakisma: 'Bu saatte koçun başka bir görüşmesi var', dersDolu: 'Bu saat az önce doldu; başka bir saat seçin.',
     dersIzin: 'Bu öğrenci için henüz veli izni yok; saati veli e-postadaki linkten seçmeli.', dersGecmis: 'Seçilen saat geçmiş; koçtan yeni saat isteyin.',
     dersTakvim: 'Takvim daveti oluşturulamadı; sistem sorumlusuna haber verin.', dersLinkBicim: 'Link https:// ile başlamalı.',
     dersErken: 'Rapor görüşme başladıktan sonra girilebilir.', dersRaporNot: 'Kısa bir not yazın (en az 10 karakter).',
-    dersYuzde: 'Test sonuçları 0–100 arası olmalı.', dersKapali: 'Bu talep için seçim kapanmış.', link: 'Bu link artık geçerli değil.',
+    dersYuzde: 'Testte soru sayısını ve doğru sayısını birlikte girin; doğru, soru sayısından fazla olamaz.', dersKapali: 'Bu talep için seçim kapanmış.', link: 'Bu link artık geçerli değil.',
     eposta: 'E-posta adresi geçerli görünmüyor.',
   };
   const DERS_LINK = location.search.match(/[?&]d=(D-\d+)\.([vo])\.([\w-]+)/);
@@ -3141,7 +3143,7 @@
     ic.appendChild(el('p', { sinif: 'not', metin: s.yetki.yonet
       ? 'Akademik mesul bu listeyi görür; koç ataması ve onay sizde. 24 saat cevap gelmezse sistem hatırlatır, 48 saatte mentora haber verir.'
       : s.rol === 'akademik' ? 'Bütün grupların talepleri. Koç ataması ve son onay ekibin Ders Koçu Rehberinde; yeni talep, onaylanan görüşme (takvim daveti) ve raporlar size e-postayla da gelir.'
-      : 'Saat seçimi veliye (ilk talepte izinle birlikte) ya da öğrenciye e-postayla gider. 2 gün cevap gelmezse size haber verilir; linki WhatsApp\'tan da iletebilirsiniz.' }));
+      : 'Saat seçimi veliye (yılın ilk görüşmesinde ya da koç değişince, izinle birlikte) ya da öğrenciye e-postayla gider. 2 gün cevap gelmezse size haber verilir; linki WhatsApp\'tan da iletebilirsiniz.' }));
   }
   function saltOkunurDers(s) { return s.rol === 'musahit'; }
   function dersRehberiMi() { try { return !!(JSON.parse(depo.al('kisi') || 'null') || {}).dkr; } catch (e) { return false; } }
@@ -3190,7 +3192,7 @@
     if (t.durum === 'Saat seçimi' && t.link) {
       const p = el('button', { sinif: 'kucuk', type: 'button', metin: 'Linki paylaş' });
       p.onclick = function () {
-        paylas((t.izin ? t.ogr + ', ders koçunun önerdiği saatlerden sana uyanı seç: ' : t.ogr + ' için ders desteği: lütfen size uyan saati seçin (ilk talepte bu seçim izniniz yerine geçer): ') + t.link);
+        paylas((t.izin ? t.ogr + ', ders koçunun önerdiği saatlerden sana uyanı seç: ' : t.ogr + ' için ders desteği: lütfen size uyan saati seçin (bu seçim, bu ders koçuyla görüşmeye izniniz yerine geçer): ') + t.link);
       };
       dug.appendChild(p);
     }
@@ -3292,7 +3294,7 @@
     const eposta = el('p', { sinif: 'not ders-eposta' });
     const epostaYaz = function () {
       const e = (s.eposta || {})[ogr.value] || {};
-      eposta.textContent = (e.izin ? 'Veli izni var · saat seçimi öğrenciye gider. ' : 'İlk talep · saat seçimi ve izin veliye gider. ') +
+      eposta.textContent = (e.izin ? 'Bu yıl veli izni var · aynı ders koçu atanırsa saat seçimi öğrenciye, yeni koçsa veliye gider. ' : 'Bu yıl ilk talep · saat seçimi ve izin veliye gider. ') +
         'Veli e-postası ' + (e.veli ? '✓' : '✗') + ' · öğrenci e-postası ' + (e.ogrenci ? '✓' : '✗') +
         (!e.veli && !e.izin ? ' — Grubum → Veli formundan girin; girilmezse link size gelir, WhatsApp\'tan iletirsiniz.' : '');
     };
@@ -3373,36 +3375,32 @@
 
   function saatFormu(t, s) {
     const f = el('div', { sinif: 'ekle-form ders-saat-form' }), satirlar = [], liste = el('div', { sinif: 'ders-secenekler' });
-    const ekle = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: '+ Seçenek ekle' });
     const ekleSatir = function () {
-      if (satirlar.length >= 3) return;
       const tarih = el('input', { type: 'date', min: bugunISO() }), saat = el('input', { type: 'time', step: '900' });
       const sure = el('select', {}); s.sureler.forEach(function (d) { sure.appendChild(el('option', { value: String(d), metin: d + ' dk' })); });
       const yer = el('select', {}); s.yerler.concat(['Başka yer']).forEach(function (y) { yer.appendChild(el('option', { value: y, metin: y })); });
       const yerYaz = el('input', { type: 'text', placeholder: 'Yer (ör. okul kütüphanesi)', maxlength: '60', hidden: '' });
       yer.onchange = function () { yerYaz.hidden = yer.value !== 'Başka yer'; if (!yerYaz.hidden) yerYaz.focus(); };
-      const sil = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Kaldır' });
-      const kutu = el('div', { sinif: 'ders-secenek' }, [el('div', { sinif: 'iki' }, [alanEl('Tarih', tarih), alanEl('Başlangıç', saat)]),
-        el('div', { sinif: 'iki' }, [alanEl('Süre', sure), alanEl('Yer', yer)]), yerYaz, satirlar.length ? sil : null]);
-      const o = { tarih: tarih, saat: saat, sure: sure, yer: yer, yerYaz: yerYaz };
-      sil.onclick = function () { satirlar.splice(satirlar.indexOf(o), 1); kutu.remove(); ekle.hidden = false; };
-      satirlar.push(o); liste.appendChild(kutu); ekle.hidden = satirlar.length >= 3;
+      const kutu = el('div', { sinif: 'ders-secenek' }, [el('span', { sinif: 'ders-etiket', metin: (satirlar.length + 1) + '. seçenek' }),
+        el('div', { sinif: 'iki' }, [alanEl('Tarih', tarih), alanEl('Başlangıç', saat)]),
+        el('div', { sinif: 'iki' }, [alanEl('Süre', sure), alanEl('Yer', yer)]), yerYaz]);
+      satirlar.push({ tarih: tarih, saat: saat, sure: sure, yer: yer, yerYaz: yerYaz }); liste.appendChild(kutu);
     };
-    ekle.onclick = ekleSatir;
-    ekleSatir();
+    ekleSatir(); ekleSatir(); ekleSatir();   // tam 3 seçenek
     const gonder = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Gönder' });
     gonder.onclick = function () {
       const sec = [];
       for (const o of satirlar) {
         const yerV = o.yer.value === 'Başka yer' ? o.yerYaz.value.trim() : o.yer.value;
-        if (!o.tarih.value || !o.saat.value || !yerV) { alert('Her seçenekte tarih, saat ve yeri doldurun.'); return; }
+        if (!o.tarih.value || !o.saat.value || !yerV) { alert('Üç seçeneğin hepsinde tarih, saat ve yeri doldurun.'); return; }
         const p = o.saat.value.split(':').map(Number);
         if (p[0] * 60 + p[1] + (+o.sure.value) > 22 * 60) { alert('Görüşme en geç 22:00\'de bitmeli.'); return; }
         sec.push({ tarih: o.tarih.value, saat: o.saat.value.slice(0, 5), sure: +o.sure.value, yer: yerV });
       }
+      if (sec.some(function (x, i) { return sec.some(function (y, j) { return j < i && y.tarih === x.tarih && y.saat === x.saat; }); })) { alert(DERS_HATA.dersAyniSaat); return; }
       dersGonder({ islem: 'dersSaat', id: t.id, secenekler: sec }, gonder);
     };
-    [el('span', { sinif: 'ders-etiket', metin: '1–3 uygun saat önerin' }), liste, ekle,
+    [el('span', { sinif: 'ders-etiket', metin: '3 farklı uygun saat önerin' }), liste,
      el('p', { sinif: 'not', metin: '60 / 90 / 120 dk · en geç 22:00. Online seçerseniz Meet linki kendiliğinden oluşur.' }),
      el('div', { sinif: 'dugmeler' }, [gonder])].forEach(function (x) { f.appendChild(x); });
     return f;
@@ -3410,15 +3408,24 @@
 
   function raporFormu(t) {
     const f = el('div', { sinif: 'ekle-form' });
-    const on = el('input', { type: 'number', inputmode: 'numeric', min: '0', max: '100', placeholder: '—' });
-    const son = el('input', { type: 'number', inputmode: 'numeric', min: '0', max: '100', placeholder: '—' });
+    const sayi = function (ph) { return el('input', { type: 'number', inputmode: 'numeric', min: '0', max: '200', placeholder: ph }); };
+    const onT = sayi('Soru'), onD = sayi('Doğru'), sonT = sayi('Soru'), sonD = sayi('Doğru');
+    const onY = el('span', { sinif: 'ders-puan' }), sonY = el('span', { sinif: 'ders-puan' });
+    const hesap = function (T, D, out) { const t = +T.value, d = +D.value; out.textContent = T.value && D.value && t > 0 && d <= t ? '%' + Math.round(d / t * 100) : ''; };
+    [onT, onD].forEach(function (x) { x.oninput = function () { hesap(onT, onD, onY); }; });
+    [sonT, sonD].forEach(function (x) { x.oninput = function () { hesap(sonT, sonD, sonY); }; });
+    const testNot = el('input', { type: 'text', placeholder: 'Test hakkında kısa not (isteğe bağlı)', maxlength: '300' });
     const not = el('textarea', { placeholder: 'Neler çalışıldı, nerede zorlanıyor, sonraki adım?', maxlength: '1500' });
+    const testSatir = function (ad, T, D, Y) { return el('div', { sinif: 'ders-test' }, [el('span', { sinif: 'ders-etiket', metin: ad }), T, D, Y]); };
     const gonder = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Raporu gönder' });
     gonder.onclick = function () {
       if (not.value.trim().length < 10) { not.focus(); alert(DERS_HATA.dersRaporNot); return; }
-      dersGonder({ islem: 'dersRapor', id: t.id, on: on.value, son: son.value, not: not.value.trim() }, gonder);
+      const eksik = function (T, D) { return !!T.value !== !!D.value || (T.value && (+D.value > +T.value || +T.value < 1)); };
+      if (eksik(onT, onD) || eksik(sonT, sonD)) { alert(DERS_HATA.dersYuzde); return; }
+      dersGonder({ islem: 'dersRapor', id: t.id, onT: onT.value, onD: onD.value, sonT: sonT.value, sonD: sonD.value, testNot: testNot.value.trim(), not: not.value.trim() }, gonder);
     };
-    [el('div', { sinif: 'iki' }, [alanEl('Ön test % (isteğe bağlı)', on), alanEl('Son test % (isteğe bağlı)', son)]), alanEl('Not (zorunlu)', not),
+    [el('span', { sinif: 'ders-etiket', metin: 'Test (isteğe bağlı · ikisi de aynı konuyu, benzer zorlukta ölçmeli)' }),
+     testSatir('Ön test', onT, onD, onY), testSatir('Son test', sonT, sonD, sonY), testNot, alanEl('Not (zorunlu)', not),
      el('p', { sinif: 'not', metin: 'Rapor öğrenciye, veliye, mentora, Ders Koçu Rehberine ve akademik mesule gider.' }),
      el('div', { sinif: 'dugmeler' }, [gonder])].forEach(function (x) { f.appendChild(x); });
     return f;
@@ -3479,7 +3486,7 @@
     ciz();
     onayla.onclick = function () { if (secili !== null) secimGonder(secili, '', onayla); };
     ic.appendChild(onayla);
-    if (s.ilk) ic.appendChild(el('p', { sinif: 'not', metin: 'Bu, ' + s.ogr + ' için bu öğretim yılındaki ilk ders desteği talebi. Saati onaylamanız, bu yıl verilecek ders desteğine izniniz yerine geçer (velilerden birinin onaylaması yeterli). Sonraki taleplerde saati ' + s.ogr + ' seçer, size bilgi gelir.' }));
+    if (s.ilk) ic.appendChild(el('p', { sinif: 'not', metin: 'Bu, ' + s.ogr + ' için bu öğretim yılında ' + s.koc + ' ile ilk görüşme. Saati onaylamanız, bu yıl bu ders koçuyla yapılacak görüşmelere izniniz yerine geçer (velilerden birinin onaylaması yeterli). Sonraki görüşmelerde saati ' + s.ogr + ' seçer; size takvim daveti ve rapor gelir. Ders koçu değişirse izniniz yeniden istenir.' }));
     const baska = el('div', { sinif: 'ekle-form', hidden: '' });
     const not = el('textarea', { placeholder: 'Hangi günler / saatler uyar? (isteğe bağlı)', maxlength: '300' });
     const baskaGonder = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Gönder' });
