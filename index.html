@@ -3090,7 +3090,7 @@
       ic.appendChild(kap);
     }
     if (s.yetki.yonet) {
-      const bekleyen = aktif.filter(function (t) { return t.durum === 'Koç ataması' || t.durum === 'Son onay'; });
+      const bekleyen = aktif.filter(function (t) { return t.yonet && (t.durum === 'Koç ataması' || t.durum === 'Son onay'); });
       const diger = aktif.filter(function (t) { return bekleyen.indexOf(t) < 0; });
       const kutu = function (n, m) { return el('div', {}, [el('b', { metin: String(n) }), el('span', { metin: m })]); };
       ic.appendChild(el('div', { sinif: 'ders-ozet' }, [kutu(bekleyen.length, 'sizi bekliyor'), kutu(diger.length, 'süreçte'),
@@ -3132,7 +3132,7 @@
   function dersRehberiMi() { try { return !!(JSON.parse(depo.al('kisi') || 'null') || {}).dkr; } catch (e) { return false; } }
 
   function talepKarti(t, s) {
-    const rol = s.rol, yonet = s.yetki.yonet, aktif = DERS_AKTIF.indexOf(t.durum) >= 0;
+    const rol = s.rol, yonet = !!t.yonet, aktif = DERS_AKTIF.indexOf(t.durum) >= 0;   // yönetim (atama/onay) talebin ekibine göre
     const kart = el('div', { sinif: 'gorev-kart ders-kart' + (aktif && t.bekleyen && t.saat >= 48 ? ' gecikti' : aktif && t.bekleyen && t.saat >= 24 ? ' yakin' : '') });
     kart.appendChild(el('div', { sinif: 'ders-ust' }, [el('span', { sinif: 'gorev-metin', metin: t.ogr + ' · ' + dersAdi(t) }),
       el('span', { sinif: 'durum' + (t.durum === 'Tamamlandı' ? '' : t.durum === 'İptal' ? ' kapali' : ' bekliyor'), metin: t.durum })]));
@@ -3495,6 +3495,8 @@
       { id: 'D-0001', grup: 'E10', ogr: 'Ömer', sinif: '9', ders: 'English Language Arts', kurs: 'ELA 10-1', konu: 'Essay Writing', seviye: '', zaman: '', not: '', acan: 'Örnek Mentor', mentor: 'Örnek Mentor', durum: 'Tamamlandı', kocNo: '2', koc: 'Meryem', secenekler: [], secilen: { metin: 'Cumartesi 11 Ekim · 11:00 · 90 dk · KM Daire 6', gecti: true }, meet: '', izin: true, bekleyen: '', saat: 120, acildi: '6 Eki', on: 40, son: 75, rapor: 'Paragraf yapısı oturdu; tez cümlesinde pratik lazım.' }];
     const koc = DEMO_KOC, mentor = DEMO_MENTOR;
     const liste = koc ? demoDers.filter(function (t) { return t.kocNo === '1'; }) : mentor ? demoDers.filter(function (t) { return t.grup === 'E10'; }) : demoDers;
+    const yon = !koc && !mentor && !/rol=mesul/.test(location.search);
+    liste.forEach(function (t) { t.yonet = yon; });
     return { ok: true, rol: koc ? 'koc' : mentor ? 'mentor' : 'akademik', talepler: liste, bilgi: '', grup: 'E10',
       yetki: { ac: !koc, yonet: !koc && !mentor && !/rol=mesul/.test(location.search), koc: koc }, yerler: ['Online', 'KM Daire 5', 'KM Daire 6'], sureler: [60, 90, 120],
       seviyeler: ['Hiç anlamadı', 'Kısmen', 'Pratik lazım', 'İleri seviye'], zamanlar: ['Bu hafta', '2 hafta içinde', 'Sınavdan önce'],
