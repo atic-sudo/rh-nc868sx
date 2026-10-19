@@ -876,6 +876,19 @@
     }
     ic.appendChild(kart);
 
+    // Akademik mesul / Ders Koçu Rehberi: yalnız kendi işleri (konu, rapor, toplantı, günübirlik, Grubum mentorların)
+    if (v.akademik || (DEMO && /rol=mesul/.test(location.search))) {
+      ic.textContent = '';
+      takvimOzet();
+      ic.appendChild(satir({ k: 'ders', ikon: 'kitap', baslik: 'Ders desteği', url: '#', tikla: dersAc,
+        alt: dersRehberiMi() ? 'Talepler · koç ataması · onay' : 'Tüm talepler · süreç takibi' }));
+      ic.appendChild(satir({ k: 'yatili', ikon: 'misafir', baslik: 'Yatılı · etüt koçu', alt: 'Yatılı programlarına ders koçu ata', url: '#', tikla: misafirlerAc }));
+      ic.appendChild(satir({ k: 'gorev', ikon: 'onay', baslik: 'Görevlerim', alt: 'Rehberlik toplantısından · bitince ✓', url: '#', tikla: gorevlerAc }));
+      sayacGuncelle(v);
+      $('altBilgi').textContent = '';
+      return;
+    }
+
     // Satırlar
     ic.appendChild(v.raporGonderildi
       ? satir({ k: 'rapor', ikon: 'kalem', baslik: 'Haftalık rapor', alt: (v.raporGonderildi === 'gecen' ? 'Geçen haftanınki gönderildi' : 'Bu hafta gönderildi') + ' · düzeltmek için dokun', url: '#', durum: 'Gönderildi', tikla: raporAc })
@@ -995,8 +1008,8 @@
     try { kisi = JSON.parse(depo.al('kisi') || 'null'); } catch (e) {}
     if (DEMO) kisi = DEMO_MENTOR ? { ad: 'Örnek Mentor', rol: 'mentor', gruplar: ['E10'] } : { ad: 'Örnek Rehber', rol: 'rehber', gruplar: ['E10', 'E11', 'E12'] };
     const gruplar = (kisi && kisi.gruplar) || [];
-    const etiket = el('span', { sinif: 'grup', metin: v.grup + ' · ' + v.ekip });
-    if (gruplar.length < 2) { alan.appendChild(etiket); }
+    const etiket = el('span', { sinif: 'grup', metin: v.akademik ? 'Akademik' : v.grup + ' · ' + v.ekip });
+    if (gruplar.length < 2 || v.akademik) { alan.appendChild(etiket); }
     else {
       const sec = el('select', { 'aria-label': 'Grup seç' });
       gruplar.forEach(function (g) { const o = el('option', { value: g, metin: g }); if (g === v.grup) o.selected = true; sec.appendChild(o); });
@@ -3084,7 +3097,7 @@
     const aktif = s.talepler.filter(function (t) { return DERS_AKTIF.indexOf(t.durum) >= 0; });
     const biten = s.talepler.filter(function (t) { return DERS_AKTIF.indexOf(t.durum) < 0; });
     if (s.yetki.ac && s.ogrenciler && s.ogrenciler.length && !saltOkunurDers(s)) {
-      const ac = el('button', { sinif: 'kucuk sicak', type: 'button', metin: '+ Yeni talep' + (s.yetki.yonet || s.rol === 'akademik' ? ' (' + s.grup + ')' : '') });
+      const ac = el('button', { sinif: 'kucuk sicak', type: 'button', metin: '+ Yeni talep' });
       const kap = el('div', { sinif: 'ders-yeni' }, [ac]);
       ac.onclick = function () { kap.replaceChildren(talepFormu(s, function () { dersCiz(); })); };
       ic.appendChild(kap);
@@ -3238,6 +3251,19 @@
     const v = { ders: 'Mathematics', kurs: '', konu: '', seviye: '', zaman: '' };
     const ogr = el('select', { 'aria-label': 'Öğrenci' });
     s.ogrenciler.forEach(function (o) { ogr.appendChild(el('option', { value: o, metin: o })); });
+    let kisiG = [];
+    try { kisiG = (JSON.parse(depo.al('kisi') || 'null') || {}).gruplar || []; } catch (e) {}
+    const grupSec = kisiG.length > 1 ? el('select', { 'aria-label': 'Grup' }) : null;
+    if (grupSec) {
+      kisiG.forEach(function (g) { const o = el('option', { value: g, metin: g }); if (g === s.grup) o.selected = true; grupSec.appendChild(o); });
+      grupSec.onchange = async function () {   // o grubun öğrencileri gelsin
+        depo.yaz('grup', grupSec.value); grupSec.disabled = true;
+        try {
+          const y = DEMO ? Object.assign(DEMO_DERS(), { grup: grupSec.value }) : await islem('&islem=dersListe');
+          if (y && y.ok) { dersVeri = y; f.replaceWith(talepFormu(y, vazgecFn)); }
+        } catch (e) {} finally { grupSec.disabled = false; }
+      };
+    }
     const sinif = el('select', { 'aria-label': 'Sınıf' });
     ['', '6', '7', '8', '9', '10', '11', '12'].forEach(function (x) { sinif.appendChild(el('option', { value: x, metin: x ? x + '. sınıf' : '—' })); });
     const ders = el('select', { 'aria-label': 'Ders' });
@@ -3282,11 +3308,12 @@
                    seviye: v.seviye, zaman: v.zaman, not: not.value.trim() }, gonder);
     };
     [el('div', { sinif: 'veli-baslik' }, [el('span', { metin: 'Yeni ders desteği talebi' })]),
+     grupSec ? alanEl('Grup', grupSec) : null,
      el('div', { sinif: 'iki' }, [alanEl('Öğrenci', ogr), alanEl('Sınıf', sinif)]), alanEl('Ders', ders), dersYaz,
      el('div', { sinif: 'iki' }, [alanEl('Kurs', kurs), alanEl('Konu', konu)]), kursYaz, konuYaz,
      el('span', { sinif: 'ders-etiket', metin: 'Ne durumda?' }), secimGrubu(dersVeri.seviyeler, false, function () { return v.seviye; }, function (x) { v.seviye = x; }),
      el('span', { sinif: 'ders-etiket', metin: 'Ne zamana?' }), secimGrubu(dersVeri.zamanlar, false, function () { return v.zaman; }, function (x) { v.zaman = x; }),
-     alanEl('Not', not), eposta, el('div', { sinif: 'dugmeler' }, [vazgec, gonder])].forEach(function (x) { f.appendChild(x); });
+     alanEl('Not', not), eposta, el('div', { sinif: 'dugmeler' }, [vazgec, gonder])].forEach(function (x) { if (x) f.appendChild(x); });
     return f;
   }
 
