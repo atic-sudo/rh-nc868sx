@@ -1008,7 +1008,9 @@
     try { kisi = JSON.parse(depo.al('kisi') || 'null'); } catch (e) {}
     if (DEMO) kisi = DEMO_MENTOR ? { ad: 'Örnek Mentor', rol: 'mentor', gruplar: ['E10'] } : { ad: 'Örnek Rehber', rol: 'rehber', gruplar: ['E10', 'E11', 'E12'] };
     const gruplar = (kisi && kisi.gruplar) || [];
-    const etiket = el('span', { sinif: 'grup', metin: v.akademik ? 'Akademik' : v.grup + ' · ' + v.ekip });
+    // Akademik: hangi ekiplerin Ders Koçu Rehberi olduğu görünsün (ör. "Akademik · E ders koçu rehberi")
+    const dg = (kisi && kisi.dkrGruplar) || [], dEkip = ['E', 'K'].filter(function (h) { return dg.some(function (g) { return g.charAt(0) === h; }); }).join(' + ');
+    const etiket = el('span', { sinif: 'grup', metin: v.akademik ? 'Akademik' + (dEkip ? ' · ' + dEkip + ' ders koçu rehberi' : '') : v.grup + ' · ' + v.ekip });
     if (gruplar.length < 2 || v.akademik) { alan.appendChild(etiket); }
     else {
       const sec = el('select', { 'aria-label': 'Grup seç' });
