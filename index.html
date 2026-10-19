@@ -3013,7 +3013,7 @@
   };
   const DERS_TR = { 'Mathematics': 'Matematik', 'Physics': 'Fizik', 'Chemistry': 'Kimya', 'Biology': 'Biyoloji', 'Science': 'Fen',
                     'English Language Arts': 'İngilizce (ELA)', 'Social Studies': 'Sosyal bilgiler' };
-  const DERS_AKTIF = ['Koç ataması', 'Saat önerisi', 'Saat seçimi', 'Son onay', 'Planlandı'];
+  const DERS_AKTIF = ['Koç ataması', 'Saat önerisi', 'Saat seçimi', 'Veli onayı', 'Son onay', 'Planlandı'];
   const DIGER = 'Diğer (yazın)';
   const DERS_HATA = {
     dersKurulum: 'Ders Desteği tablosu henüz kurulmadı (sistem sorumlusu: dersDestegiKur).', dersYok: 'Talep bulunamadı; liste yenilendi.',
@@ -3156,7 +3156,7 @@
     kart.appendChild(el('div', { sinif: 'gorev-alt', metin: [s.yetki.koc ? '' : t.grup, t.konu, t.koc && !s.yetki.koc ? 'Koç: ' + t.koc : '',
       t.mentor ? 'Mentor: ' + t.mentor : '', t.acildi ? 'açıldı ' + t.acildi : ''].filter(String).join(' · ') }));
     if (aktif && t.bekleyen) kart.appendChild(el('div', { sinif: 'ders-bekleyen', metin: 'Bekleyen: ' + t.bekleyen + ' · ' + sureSaat(t.saat) }));
-    if (t.secilen) kart.appendChild(el('div', { sinif: 'ders-saat', metin: (t.durum === 'Son onay' ? 'Seçilen: ' : '') + t.secilen.metin }));
+    if (t.secilen) kart.appendChild(el('div', { sinif: 'ders-saat', metin: (t.durum === 'Son onay' || t.durum === 'Veli onayı' ? 'Seçilen: ' : '') + t.secilen.metin }));
     if (t.durum === 'Saat seçimi' && t.secenekler.length)
       kart.appendChild(el('div', { sinif: 'gorev-alt', metin: 'Önerilen: ' + t.secenekler.map(function (x) { return x.metin; }).join(' / ') }));
     if (t.meet && t.durum === 'Planlandı') kart.appendChild(el('a', { sinif: 'ders-meet', href: t.meet, target: '_blank', rel: 'noopener', metin: 'Görüşmeye katıl' }));
@@ -3192,11 +3192,18 @@
     if (t.durum === 'Saat seçimi' && t.link) {
       const p = el('button', { sinif: 'kucuk', type: 'button', metin: 'Linki paylaş' });
       p.onclick = function () {
-        paylas((t.izin ? t.ogr + ', ders koçunun önerdiği saatlerden sana uyanı seç: ' : t.ogr + ' için ders desteği: lütfen size uyan saati seçin (bu seçim, bu ders koçuyla görüşmeye izniniz yerine geçer): ') + t.link);
+        paylas(t.ogr + ', ders koçunuzun önerdiği saatlerden size uyanı seçin: ' + t.link);
       };
       dug.appendChild(p);
     }
-    if (t.durum === 'Saat seçimi' && t.izin && ['mentor', 'rehber', 'org', 'test'].indexOf(rol) >= 0 && t.secenekler.length) {
+    if (t.durum === 'Veli onayı' && t.veliLink) {
+      const p = el('button', { sinif: 'kucuk', type: 'button', metin: 'Veliye onay linki' });
+      p.onclick = function () {
+        paylas('Merhaba, ' + t.ogr + ' ders desteği için ' + (t.secilen ? t.secilen.metin : '') + ' saatini seçti. Onayınızı rica ederiz: ' + t.veliLink);
+      };
+      dug.appendChild(p);
+    }
+    if (t.durum === 'Saat seçimi' && ['mentor', 'rehber', 'org', 'test'].indexOf(rol) >= 0 && t.secenekler.length) {
       const b = el('button', { sinif: 'kucuk', type: 'button', metin: 'Öğrenciyle seç' });
       b.onclick = function () {
         const liste = el('div', { sinif: 'ders-sec-liste' });
@@ -3205,7 +3212,7 @@
           sb.onclick = function () { if (confirm(t.ogr + ' için ' + x.metin + ' seçilsin mi?')) dersGonder({ islem: 'dersMentorSecim', id: t.id, secim: i }, sb); };
           liste.appendChild(sb);
         });
-        panel.replaceChildren(el('p', { sinif: 'not', metin: 'Veli izni var; öğrenciyle birlikte seçebilirsiniz:' }), liste);
+        panel.replaceChildren(el('p', { sinif: 'not', metin: 'Öğrenciyle birlikte seçin' + (t.izin ? ':' : ' (ardından veliye onay e-postası gider):') }), liste);
       };
       dug.appendChild(b);
     }
@@ -3294,9 +3301,9 @@
     const eposta = el('p', { sinif: 'not ders-eposta' });
     const epostaYaz = function () {
       const e = (s.eposta || {})[ogr.value] || {};
-      eposta.textContent = (e.izin ? 'Bu yıl veli izni var · aynı ders koçu atanırsa saat seçimi öğrenciye, yeni koçsa veliye gider. ' : 'Bu yıl ilk talep · saat seçimi ve izin veliye gider. ') +
-        'Veli e-postası ' + (e.veli ? '✓' : '✗') + ' · öğrenci e-postası ' + (e.ogrenci ? '✓' : '✗') +
-        (!e.veli && !e.izin ? ' — Grubum → Veli formundan girin; girilmezse link size gelir, WhatsApp\'tan iletirsiniz.' : '');
+      eposta.textContent = 'Saati öğrenci seçer' + (e.izin ? '; aynı ders koçu atanırsa veli onayı gerekmez (bu yıl izin var). ' : ', ardından veli onaylar. ') +
+        'Öğrenci e-postası ' + (e.ogrenci ? '✓' : '✗') + ' · veli e-postası ' + (e.veli ? '✓' : '✗') +
+        (!e.ogrenci || (!e.veli && !e.izin) ? ' — Grubum → Veli formundan girin; girilmezse link size gelir, WhatsApp\'tan iletirsiniz.' : '');
     };
     ogr.onchange = epostaYaz; epostaYaz();
     const gonder = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Ders Koçu Rehberine gönder' });
@@ -3351,7 +3358,7 @@
     const saat = t0.filter(function (t) { return t.durum === 'Saat önerisi'; });
     const rapor = t0.filter(function (t) { return t.durum === 'Planlandı' && gecti(t); });
     const plan = t0.filter(function (t) { return t.durum === 'Planlandı' && !gecti(t); });
-    const bek = t0.filter(function (t) { return t.durum === 'Saat seçimi' || t.durum === 'Son onay'; });
+    const bek = t0.filter(function (t) { return t.durum === 'Saat seçimi' || t.durum === 'Veli onayı' || t.durum === 'Son onay'; });
     const biten = t0.filter(function (t) { return DERS_AKTIF.indexOf(t.durum) < 0; });
     if (!saat.length && !rapor.length && !plan.length && !bek.length)
       ic.appendChild(el('p', { sinif: 'not ders-bos', metin: 'Şu an size atanmış açık talep yok. Yeni talep atanınca e-posta gelir.' }));
@@ -3370,7 +3377,7 @@
       biten.forEach(function (t) { d.appendChild(talepKarti(t, s)); });
       ic.appendChild(d);
     }
-    ic.appendChild(el('p', { sinif: 'not', metin: 'Önerdiğiniz saatlerden birini veli ya da öğrenci seçer, Ders Koçu Rehberi onaylar; takvim daveti (Online ise Meet linki) size de gelir. Sorunuz olursa Ders Koçu Rehberine yazın.' }));
+    ic.appendChild(el('p', { sinif: 'not', metin: 'Önerdiğiniz saatlerden birini öğrenci seçer (ilk görüşmede veli de onaylar), Ders Koçu Rehberi onaylar; takvim daveti (Online ise Meet linki) size de gelir. Sorunuz olursa Ders Koçu Rehberine yazın.' }));
   }
 
   function saatFormu(t, s) {
@@ -3466,11 +3473,14 @@
     ic.appendChild(el('div', { sinif: 'kart' }, [dl]));
     if (!s.acik) {
       ic.appendChild(el('div', { sinif: 'bilgi', metin: s.durum === 'Planlandı' ? 'Görüşme planlandı: ' + s.secilen + '. Takvim daveti e-postanızda.'
-        : s.secilen ? 'Saat seçildi: ' + s.secilen + '. Ders Koçu Rehberi onaylayınca takvim daveti gelecek.' : 'Bu talep için seçim kapandı (' + s.durum + ').' }));
+        : s.durum === 'Veli onayı' ? 'Saat seçildi: ' + s.secilen + '. Veli onayı bekleniyor.'
+        : s.durum === 'Son onay' ? 'Saat seçildi' + (s.rol === 'v' ? ' ve bir veli tarafından onaylandı' : '') + ': ' + s.secilen + '. Ders Koçu Rehberi onaylayınca takvim daveti gelecek. Bir sorun varsa mentorunuzla görüşün.'
+        : 'Bu talep için seçim kapandı (' + s.durum + ').' }));
       return;
     }
+    if (s.rol === 'v') { veliOnaySayfasi(s); return; }
     let secili = on != null && on !== 'baska' && s.secenekler[+on] ? +on : null;
-    ic.appendChild(el('div', { sinif: 'hs-baslik', metin: s.rol === 'o' ? 'Sana uyan saat' : 'Size uyan saat' }));
+    ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Size uyan saat' }));
     const liste = el('div', { sinif: 'ders-sec-liste' });
     const onayla = el('button', { sinif: 'ana', type: 'button', metin: 'Bu saati onaylıyorum' });
     const ciz = function () {
@@ -3486,7 +3496,7 @@
     ciz();
     onayla.onclick = function () { if (secili !== null) secimGonder(secili, '', onayla); };
     ic.appendChild(onayla);
-    if (s.ilk) ic.appendChild(el('p', { sinif: 'not', metin: 'Bu, ' + s.ogr + ' için bu öğretim yılında ' + s.koc + ' ile ilk görüşme. Saati onaylamanız, bu yıl bu ders koçuyla yapılacak görüşmelere izniniz yerine geçer (velilerden birinin onaylaması yeterli). Sonraki görüşmelerde saati ' + s.ogr + ' seçer; size takvim daveti ve rapor gelir. Ders koçu değişirse izniniz yeniden istenir.' }));
+    if (s.veliOnay) ic.appendChild(el('p', { sinif: 'not', metin: 'Seçiminizden sonra velinize onay için bir e-posta gider; ardından Ders Koçu Rehberi onaylar ve takvim daveti gelir.' }));
     const baska = el('div', { sinif: 'ekle-form', hidden: '' });
     const not = el('textarea', { placeholder: 'Hangi günler / saatler uyar? (isteğe bağlı)', maxlength: '300' });
     const baskaGonder = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Gönder' });
@@ -3496,15 +3506,24 @@
     baskaAc.onclick = function () { baska.hidden = false; not.focus(); };
     ic.appendChild(el('div', { sinif: 'ders-alt-secim' }, [baskaAc]));
     ic.appendChild(baska);
-    if (s.rol === 'v') {
-      const red = el('button', { sinif: 'baglanti-kucuk ders-red', type: 'button', metin: 'Bu desteği istemiyoruz' });
-      red.onclick = function () {
-        const n = prompt('Talep kapatılsın mı? İsterseniz kısa bir not yazın:', '');
-        if (n !== null) secimGonder('red', n.trim(), red);
-      };
-      ic.appendChild(el('div', { sinif: 'ders-alt-secim' }, [red]));
-    }
     if (on === 'baska') { baska.hidden = false; }
+  }
+  // Veli: öğrencinin seçtiği saati onaylar ya da desteği istemez (ilk cevap geçerli). Onay için sayfada dokunmak gerekir:
+  // e-posta tarayıcıları linkleri kendiliğinden açabildiği için link tek başına onay sayılmaz.
+  function veliOnaySayfasi(s) {
+    const ic = $('derslerIcerik');
+    ic.appendChild(el('div', { sinif: 'hs-baslik', metin: s.ogr + ' şu saati seçti' }));
+    ic.appendChild(el('div', { sinif: 'ders-saat', metin: s.secilen }));
+    const onayla = el('button', { sinif: 'ana', type: 'button', metin: 'Onaylıyorum' });
+    onayla.onclick = function () { secimGonder('onay', '', onayla); };
+    ic.appendChild(onayla);
+    ic.appendChild(el('p', { sinif: 'not', metin: 'Bu, ' + s.ogr + ' için bu öğretim yılında ' + s.koc + ' ile ilk görüşme. Onayınız bu yıl bu ders koçuyla yapılacak görüşmeler için geçerlidir; velilerden birinin onaylaması yeterlidir. Sonraki görüşmelerde size takvim daveti ve rapor gelir. Ders koçu değişirse onayınız yeniden istenir.' }));
+    const red = el('button', { sinif: 'baglanti-kucuk ders-red', type: 'button', metin: 'Bu desteği istemiyoruz' });
+    red.onclick = function () {
+      const n = prompt('Talep kapatılsın mı? İsterseniz kısa bir not yazın:', '');
+      if (n !== null) secimGonder('red', n.trim(), red);
+    };
+    ic.appendChild(el('div', { sinif: 'ders-alt-secim' }, [red]));
   }
   async function secimGonder(secim, not, dugme) {
     dugme.disabled = true;
@@ -3546,7 +3565,7 @@
   function DEMO_DERS_ISLEM(g) {
     const t = (demoDers || []).filter(function (x) { return x.id === g.id; })[0], s = DEMO_DERS();
     const bilgi = { dersTalep: 'Talep açıldı; Ders Koçu Rehberine bildirildi.', dersAta: 'Koç atandı; e-postayla haber verildi.', dersOnay: 'Onaylandı. Takvim daveti 6 kişiye gitti.',
-                    dersSaat: 'Saatler gönderildi: veliye e-posta.', dersRapor: 'Rapor kaydedildi ve herkese gönderildi.', dersIptal: 'Talep iptal edildi.',
+                    dersSaat: 'Saatler gönderildi: öğrenciye e-posta.', dersRapor: 'Rapor kaydedildi ve herkese gönderildi.', dersIptal: 'Talep iptal edildi.',
                     dersDavet: 'Kişisel link e-postayla gönderildi.', dersMentorSecim: 'Seçildi. Ders Koçu Rehberi onaylayınca takvim daveti gelecek.',
                     dersGeriSaat: 'Ders koçundan yeni saat istendi.', dersLink: 'Link kaydedildi; davet güncellendi.' }[g.islem];
     const yeni = { dersAta: 'Saat önerisi', dersOnay: 'Planlandı', dersSaat: 'Saat seçimi', dersRapor: 'Tamamlandı', dersIptal: 'İptal', dersMentorSecim: 'Son onay', dersGeriSaat: 'Saat önerisi' }[g.islem];
@@ -3558,8 +3577,8 @@
   }
   function DEMO_SECIM() {
     return { ok: true, rol: DERS_LINK[2], ogr: 'Mehmet', ders: 'Physics 20 · Kinematics', koc: 'Meryem', kocTur: 'Üniversiteli', mentor: 'Örnek Mentor',
-             acik: true, durum: 'Saat seçimi', ilk: DERS_LINK[2] === 'v',
-             secenekler: [{ metin: 'Perşembe 23 Ekim · 19:30 · 60 dk · KM Daire 5' }, { metin: 'Cumartesi 25 Ekim · 11:00 · 60 dk · Online' }], secilen: '' };
+             acik: true, durum: DERS_LINK[2] === 'v' ? 'Veli onayı' : 'Saat seçimi', veliOnay: DERS_LINK[2] !== 'v',
+             secenekler: [{ metin: 'Perşembe 23 Ekim · 19:30 · 60 dk · KM Daire 5' }, { metin: 'Cumartesi 25 Ekim · 11:00 · 60 dk · Online' }], secilen: 'Cumartesi 25 Ekim · 11:00 · 60 dk · Online' };
   }
 
   if (!DEMO && 'serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});
