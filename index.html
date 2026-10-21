@@ -363,6 +363,30 @@
     .gorev-kart .dugmeler input { flex: 1; min-width: 0; } .gorev-kart.kapali { opacity: .65; } .gorev-kart.karar { border-left-color: var(--cizgi); }
     .gorev-kart details .gorev-alt { align-items: center; } .gorev-kime { display: flex; flex-direction: column; gap: 4px; max-height: 260px; overflow-y: auto; }
     .onay-kutu { font-size: 13px; }
+    /* Rehber ana sayfası */
+    .rp-isler { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .rp-is { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; text-align: left; font: inherit; font-size: 15px;
+      background: var(--kart); color: inherit; border: 1px solid var(--cizgi); border-left: 4px solid var(--rapor-cizgi); border-radius: 12px; padding: 11px 14px; }
+    button.rp-is { cursor: pointer; } .rp-is.kirmizi { border-left-color: var(--r-zorunlu); } .rp-is .i { width: 18px; height: 18px; flex: none; opacity: .6; }
+    .rp-bos { margin: 0 0 14px; }
+    .rp-toplanti { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 14px; padding: 14px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 4px; }
+    .rp-toplanti.bugun { border-color: var(--ana); background: var(--ana-zemin); }
+    .rp-t-ust { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--soluk); }
+    .rp-t-ad { font-size: 17px; font-weight: 650; } .rp-t-alt { font-size: 14px; color: var(--soluk); }
+    .rp-toplanti .dugmeler { display: flex; justify-content: flex-end; }
+    .rp-grup { display: flex; flex-direction: column; gap: 6px; width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer;
+      background: var(--kart); border: 1px solid var(--cizgi); border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; }
+    .rp-g-ust { display: flex; align-items: center; gap: 10px; } .rp-g-ust b { font-size: 16px; } .rp-g-ust span { flex: 1; min-width: 0; color: var(--soluk); font-size: 14px; }
+    .rp-g-ust .i { width: 18px; height: 18px; opacity: .5; }
+    .rp-cipler { display: flex; flex-wrap: wrap; gap: 5px; }
+    .rp-cip { font-size: 12.5px; padding: 2px 8px; border-radius: 99px; border: 1px solid var(--cizgi); color: var(--soluk); white-space: nowrap; }
+    .rp-cip.iyi { color: var(--rozet-yazi); background: var(--rozet); border-color: transparent; } .rp-cip.uyari { color: var(--rapor-baslik); border-color: var(--rapor-cizgi); }
+    .rp-cip.kirmizi { color: var(--r-zorunlu); border-color: var(--r-zorunlu); font-weight: 600; }
+    .rp-saat { text-align: center; margin-top: 10px; }
+    .rp-don { display: flex; align-items: center; gap: 8px; width: 100%; font: inherit; font-size: 15px; font-weight: 600; color: var(--ana); cursor: pointer;
+      background: var(--ana-zemin); border: 1px dashed var(--ana); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; }
+    .rp-don .i { width: 18px; height: 18px; } .rp-don-alt { margin-left: auto; font-weight: 400; font-size: 13px; color: var(--soluk); }
+    .rp-tur summary { cursor: pointer; font-weight: 600; font-size: 14px; } .rp-tur dl { margin: 8px 0 0; }
     .ogr { position: relative; background: var(--kart); border: 1px solid var(--cizgi); border-radius: 16px; padding: 12px 14px;
            touch-action: pan-y; transition: transform .2s ease; user-select: none; -webkit-user-select: none; }
     .ogr.surukleniyor { transition: none; }
@@ -628,7 +652,7 @@
   <!-- Görevlerim: rehberlik toplantısında bu kişiye verilen görevler (Rehberlik Defteri) -->
   <section id="gorevler" hidden>
     <div class="gezinti"><button class="geri" id="gorevlerGeri" type="button"></button></div>
-    <h1 class="okuma-baslik">Görevlerim</h1>
+    <h1 class="okuma-baslik" id="gorevlerBaslik">Görevlerim</h1>
     <div id="gorevlerIcerik"></div>
     <a class="docs" id="gorevlerDefter" target="_blank" rel="noopener" hidden>Rehberlik Defteri'ni aç</a>
   </section>
@@ -827,6 +851,7 @@
 
   function ciz(v) {
     sonVeri = v;
+    if (rehberEvi(v)) { rehberCiz(v); return; }   // rehber / org: kendi ana sayfası
     grupAlaniCiz(v);
     const rozet = $('dersRozet');
     rozet.hidden = !(v.konu && v.konu.ders);
@@ -835,6 +860,11 @@
 
     const ic = $('icerik');
     ic.textContent = '';
+    if (mentorGozu) {   // rehber bir grubun mentor ekranında
+      const d = el('button', { sinif: 'rp-don', type: 'button' }, [ikon('sol'), el('span', { metin: 'Rehber ana sayfası' }), el('span', { sinif: 'rp-don-alt', metin: v.grup + ' · mentor gözüyle' })]);
+      d.onclick = rehberDon;
+      ic.appendChild(d);
+    }
 
     // Bugün yatılı
     if (v.yatiliBugun) {
@@ -1013,6 +1043,134 @@
     });
     yaz();
   })();
+
+  // ---------- Rehber / org ana sayfası ----------
+  // Rehber uygulamayı açınca: Senden bekleyenler · Bugünün toplantısı · Ekibim (grup başına tek satır) · kısayollar.
+  // Gruba dokununca o grubun mentor ekranı ("mentor gözüyle"); üstte "← Rehber ana sayfası". Sunucu: RehberPano.gs (5 dk önbellek).
+  let mentorGozu = false, rehberSon = null;
+  function rehberEvi(v) { return !v.akademik && (['rehber', 'org'].indexOf(kisiRolu()) >= 0) && !mentorGozu; }
+  function DEMO_REHBER() {
+    return { ok: true, ekipler: ['E Lise'], secili: 'hepsi', saat: '15:40',
+      bekleyen: { yatili: 1, misafir: 0, ders: 1, geciken: 1, raporEksik: ['E11'], raporGec: true },
+      toplanti: { baslik: 'E Lise mentor toplantısı', metin: 'Bugün · 18:30 · KM', bugun: true, secenek: 'm:E Lise' },
+      ekibim: [
+        { grup: 'E10', ekip: 'E Lise', mentor: 'Örnek Mentor', rapor: 'bu', katilim: '8/10', raporTarih: '19 Eki', yatili: '7 Kas', gorev: 2, okuma: { sayfa: 140, dk: 300, biten: 1 }, ders: 1 },
+        { grup: 'E11', ekip: 'E Lise', mentor: 'Örnek Mentor 2', rapor: 'yok', katilim: '', raporTarih: '', yatili: '14 Kas · onay bekliyor', gorev: 1, okuma: { sayfa: 0, dk: 0, biten: 0 }, ders: 0 },
+        { grup: 'E12', ekip: 'E Lise', mentor: 'Örnek Mentor 3', rapor: 'gecen', katilim: '6/9', raporTarih: '12 Eki', yatili: '', gorev: 0, okuma: { sayfa: 60, dk: 90, biten: 0 }, ders: 2 }] };
+  }
+  function rehberCiz(v, s) {
+    const ic = $('icerik');
+    grupAlaniCiz(v);
+    $('dersRozet').hidden = true;
+    $('tarih').textContent = v.hafta.replace(/\s*–\s*/, '–') + ' ' + new Date().getFullYear();
+    $('altBilgi').textContent = '';
+    if (!s) {
+      let c = null;
+      try { c = JSON.parse(depo.al('rehberPano_' + (depo.al('rehberEkip') || 'hepsi')) || 'null'); } catch (e) {}
+      if (c) rehberCiz(v, c); else ic.innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+      rehberYukle(v, false);
+      return;
+    }
+    rehberSon = s;
+    // Üst: ekip seçici (birden çok ekip varsa)
+    const alan = $('grupAlan');
+    alan.textContent = '';
+    const ad = s.secili === 'hepsi' ? (s.ekipler.length === 1 ? s.ekipler[0] : 'Bütün ekipler') : s.secili;
+    const etiket = el('span', { sinif: 'grup', metin: ad + ' · ' + (kisiRolu() === 'org' ? 'Org' : 'Rehber') });
+    if (s.ekipler.length < 2) alan.appendChild(etiket);
+    else {
+      const sec = el('select', { 'aria-label': 'Ekip seç', id: 'rehberEkipSec' });
+      [['hepsi', 'Bütün ekipler']].concat(s.ekipler.map(function (e) { return [e, e]; })).forEach(function (x) {
+        const o = el('option', { value: x[0], metin: x[1] }); if (x[0] === s.secili) o.selected = true; sec.appendChild(o);
+      });
+      sec.addEventListener('change', function () { depo.yaz('rehberEkip', sec.value); ic.innerHTML = '<div class="yukleniyor">Yükleniyor…</div>'; rehberYukle(v, false); });
+      alan.appendChild(el('label', { sinif: 'grup-sec' }, [etiket, ikon('asagi'), sec]));
+    }
+    ic.textContent = '';
+    takvimOzet();
+
+    // 1. Senden bekleyenler
+    const b = s.bekleyen || {}, isler = [];
+    if (b.yatili) isler.push({ metin: b.yatili + ' yatılı talebi onay bekliyor', tikla: yatiliAc });
+    if (b.misafir) isler.push({ metin: b.misafir + ' yatılıya misafir atanmadı', tikla: misafirlerAc });
+    if (b.ders) isler.push({ metin: b.ders + ' ders desteği talebi sizi bekliyor', tikla: dersAc });
+    if (b.geciken) isler.push({ metin: b.geciken + ' görevin son tarihi geçti', tikla: function () { gorevlerAc(); } });
+    if (b.raporEksik && b.raporEksik.length) isler.push({ metin: 'Raporu gelmeyen: ' + b.raporEksik.join(', '), kirmizi: b.raporGec });
+    ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Sizden bekleyenler' }));
+    if (!isler.length) ic.appendChild(el('p', { sinif: 'not rp-bos', metin: 'Bekleyen işiniz yok.' }));
+    else {
+      const liste = el('div', { sinif: 'rp-isler' });
+      isler.forEach(function (x) {
+        const d = el(x.tikla ? 'button' : 'div', { sinif: 'rp-is' + (x.kirmizi ? ' kirmizi' : ''), type: x.tikla ? 'button' : null },
+          [el('span', { metin: x.metin }), x.tikla ? ikon('sag') : null]);
+        if (!x.tikla) d.removeAttribute('type');
+        if (x.tikla) d.onclick = x.tikla;
+        liste.appendChild(d);
+      });
+      ic.appendChild(liste);
+    }
+
+    // 2. Bugünün / sıradaki toplantı
+    if (s.toplanti) {
+      const t = s.toplanti;
+      const kart = el('div', { sinif: 'rp-toplanti' + (t.bugun ? ' bugun' : '') }, [
+        el('div', { sinif: 'rp-t-ust', metin: t.bugun ? 'Bugünün toplantısı' : 'Sıradaki toplantı' }),
+        el('div', { sinif: 'rp-t-ad', metin: t.baslik }), el('div', { sinif: 'rp-t-alt', metin: t.metin })]);
+      if (t.secenek) {
+        const a = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Toplantıyı aç' });
+        a.onclick = function () { gorevlerAc({ ozet: t.secenek }); };
+        kart.appendChild(el('div', { sinif: 'dugmeler' }, [a]));
+      }
+      ic.appendChild(kart);
+    }
+
+    // 3. Ekibim
+    ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Ekibim' }));
+    (s.ekibim || []).forEach(function (g) {
+      const cipler = [];
+      const cip = function (metin, tur) { cipler.push(el('span', { sinif: 'rp-cip' + (tur ? ' ' + tur : ''), metin: metin })); };
+      cip(g.rapor === 'bu' ? 'Rapor ✓' : g.rapor === 'gecen' ? 'Rapor ✓ geçen hafta' : 'Rapor yok', g.rapor === 'yok' ? (b.raporGec ? 'kirmizi' : 'uyari') : 'iyi');
+      if (g.katilim) cip('Katılım ' + g.katilim);
+      cip(g.yatili ? 'Yatılı ' + g.yatili : 'Yatılı yok', /onay bekliyor|iptal/.test(g.yatili) ? 'uyari' : '');
+      if (g.gorev) cip(g.gorev + ' açık görev');
+      if (g.okuma && (g.okuma.sayfa || g.okuma.biten)) cip('Okuma ' + g.okuma.sayfa + ' sf' + (g.okuma.biten ? ' · ' + g.okuma.biten + ' kitap bitti' : ''));
+      if (g.ders) cip(g.ders + ' ders desteği');
+      const satirEl = el('button', { sinif: 'rp-grup', type: 'button' }, [
+        el('div', { sinif: 'rp-g-ust' }, [el('b', { metin: g.grup }), el('span', { metin: g.mentor || 'mentor yok' }), ikon('sag')]),
+        el('div', { sinif: 'rp-cipler' }, cipler)]);
+      satirEl.onclick = function () { mentorGozuAc(g.grup); };
+      ic.appendChild(satirEl);
+    });
+
+    // 4. Kısayollar
+    ic.appendChild(satir({ k: 'gorev', ikon: 'onay', baslik: 'Görevlerim', alt: 'Size verilenler · ekip görevleri · görev / karar ekle', url: '#', tikla: function () { gorevlerAc(); } }));
+    ic.appendChild(satir({ k: 'ders', ikon: 'kitap', baslik: 'Ders desteği', url: '#', tikla: dersAc,
+      alt: dersRehberiMi() ? 'Talepler · koç ataması · onay' : 'Ekibin talepleri · süreç takibi' }));
+    if (v.konu) ic.appendChild(satir({ ikon: 'belge', baslik: 'Haftanın konusu', alt: v.konu.ad, url: '#', tikla: function () { okuyucuAc('tr'); } }));
+    const yen = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Yenile' });
+    yen.onclick = function () { yen.disabled = true; rehberYukle(v, true); };
+    ic.appendChild(el('p', { sinif: 'not rp-saat' }, [document.createTextNode('Özet ' + (s.saat || '') + ' itibarıyla (birkaç dakikada bir tazelenir). '), yen]));
+    sayacGuncelle(v);
+  }
+  async function rehberYukle(v, yenileMi) {
+    const ekip = depo.al('rehberEkip') || 'hepsi';
+    let s;
+    try { s = DEMO ? DEMO_REHBER() : await islem('&islem=rehberPano&ekip=' + encodeURIComponent(ekip) + (yenileMi ? '&yenile=1' : '')); }
+    catch (e) { if (!rehberSon) $('icerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; return; }
+    if (!s || !s.ok) { $('icerik').prepend(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s && s.hata] || 'Özet yüklenemedi.' })); return; }
+    depo.yaz('rehberPano_' + ekip, JSON.stringify(s));
+    if (sonVeri === v && !mentorGozu && !$('pano').hidden) rehberCiz(v, s);
+  }
+  /** Ekibim → o grubun mentor ekranı */
+  function mentorGozuAc(grup) {
+    mentorGozu = true;
+    depo.yaz('grup', grup);
+    $('icerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    window.scrollTo(0, 0);
+    if (DEMO) { const d = DEMO_VERI(); d.grup = grup; ciz(d); return; }
+    yenile();
+  }
+  function rehberDon() { mentorGozu = false; window.scrollTo(0, 0); if (sonVeri) ciz(sonVeri); }
 
   /** Mentor: düz etiket. Rehber / org: ekibinin grupları arasında geçiş menüsü (en üstte). */
   function grupAlaniCiz(v) {
@@ -2065,14 +2223,18 @@
         kisiler: [{ id: 'a@x', ad: 'Örnek Mentor', alt: 'E10 mentoru' }, { id: 'b@x', ad: 'Örnek Mentor 2', alt: 'E11 mentoru' }], toplu: [{ id: 'grup:E Lise', ad: 'E Lise mentorları (hepsi)' }] },
         { id: 'r', ad: 'Rehberlik toplantısı', kaynak: 'Rehberlik', ekip: '', kisiler: [{ id: 'c@x', ad: 'Örnek Rehber', alt: 'Rehber · E Lise' }], toplu: [] }] };
   }
-  function gorevlerAc() {
+  let toplantiModu = null;   // "Toplantıyı aç": seçenek id (ör. "m:K Lise") → grup turu + o günün kayıtları + hazır form
+  function gorevlerAc(o) {
+    toplantiModu = o && o.ozet ? o.ozet : null;
     history.pushState({ alt: 'gorevler' }, ''); goster('gorevler');
+    $('gorevlerBaslik').textContent = toplantiModu ? 'Toplantı' : 'Görevlerim';
     $('gorevlerIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
     gorevlerYukle('&islem=gorevlerim');
   }
   async function gorevlerYukle(ek, bilgiEl) {
     let s;
-    try { s = DEMO ? DEMO_GOREVLER() : await islem(ek); }
+    if (toplantiModu && ek) ek += '&ozet=' + encodeURIComponent(toplantiModu);
+    try { s = DEMO ? Object.assign({}, DEMO_GOREVLER(), { toplanti: toplantiModu ? DEMO_TOPLANTI_OZET() : null }) : await islem(ek); }
     catch (e) { $('gorevlerIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; return; }
     const ic = $('gorevlerIcerik');
     if (!s.ok) { ic.prepend(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s.hata] || 'Bir sorun oluştu.' })); window.scrollTo(0, 0); return; }
@@ -2083,7 +2245,8 @@
     gorevSayac = kisiRolu() === 'mentor' ? s.gorevler.length : s.gorevler.filter(function (g) { return g.yakin; }).length;
     rozetKoy('gorev', gorevSayac);
 
-    if (s.secenekler && s.secenekler.length) ic.appendChild(gorevEkleFormu(s));
+    if (s.toplanti) toplantiBolumu(ic, s);
+    else if (s.secenekler && s.secenekler.length) ic.appendChild(gorevEkleFormu(s));
 
     ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Size verilen görevler' }));
     if (!s.gorevler.length) ic.appendChild(el('p', { sinif: 'bos', metin: 'Açık göreviniz yok.' }));
@@ -2168,8 +2331,42 @@
     k.appendChild(e); k.appendChild(h);
     return k;
   }
-  /** Rehber / org: Görev / Karar ekle (geçici basit form; 3. aşamada toplantı ekranına taşınacak) */
-  function gorevEkleFormu(s) {
+  function DEMO_TOPLANTI_OZET() {
+    return { id: 'm:E Lise', ad: 'E Lise mentor toplantısı',
+      bugun: [{ tur: 'Karar', metin: 'Buluşmalarda telefonlar girişte toplanacak', kime: [] },
+              { tur: 'Görev', metin: 'Kasım kampı kayıt listesini gönderin', kime: ['Örnek Mentor', 'Örnek Mentor 2'] }],
+      tur: [{ grup: 'E10', mentor: 'Örnek Mentor', tarih: '19 Eki', katilim: '8/10', verim: 'İyi', iyi: 'Sohbet çok ilgi gördü', rehbere: 'Kamp için araç lazım', dikkat: '' },
+            { grup: 'E11', mentor: 'Örnek Mentor 2', tarih: '', katilim: '', verim: '', iyi: '', rehbere: '', dikkat: '' }] };
+  }
+  /** Toplantı ekranı: hazır açılmış Görev / Karar formu · bugün girilenler · grup turu (mentorların son raporlarından) */
+  function toplantiBolumu(ic, s) {
+    const t = s.toplanti;
+    $('gorevlerBaslik').textContent = t.ad;
+    ic.appendChild(el('p', { sinif: 'not', metin: 'Toplantıda kararları ve görevleri buradan girin. Görevler hemen sorumlusunun Görevlerim ekranına düşer; mentor toplantısı kararlarını mentorlar da görür.' }));
+    ic.appendChild(gorevEkleFormu(s, t.id));
+    ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Bu toplantıda bugün girilenler' }));
+    if (!t.bugun.length) ic.appendChild(el('p', { sinif: 'bos', metin: 'Henüz kayıt yok.' }));
+    t.bugun.forEach(function (x) {
+      ic.appendChild(el('div', { sinif: 'gorev-kart' + (x.tur === 'Karar' ? ' karar' : '') }, [
+        el('div', { sinif: 'gorev-metin', metin: x.metin }),
+        el('div', { sinif: 'gorev-alt' }, [el('span', { sinif: 'rp-cip', metin: x.tur }), x.kime.length ? el('span', { metin: x.kime.join(', ') }) : null])]));
+    });
+    if (t.tur.length) {
+      ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Grup turu · mentorların son raporlarından' }));
+      t.tur.forEach(function (g) {
+        const ozet = [g.grup, g.mentor, g.tarih ? g.tarih + ' raporu' : 'rapor yok', g.katilim ? 'katılım ' + g.katilim : '', g.verim].filter(String).join(' · ');
+        const d = el('details', { sinif: 'gorev-kart rp-tur' }, [el('summary', { metin: ozet })]);
+        const dl = el('dl');
+        [['İyi giden', g.iyi], ['Rehbere not', g.rehbere], ['Dikkat isteyen', g.dikkat]].forEach(function (x) {
+          if (x[1]) { dl.appendChild(el('dt', { metin: x[0] })); dl.appendChild(el('dd', { metin: x[1] })); }
+        });
+        d.appendChild(dl.firstChild ? dl : el('p', { sinif: 'not', metin: g.tarih ? 'Raporda not yok.' : 'Bu grubun son iki haftada raporu yok.' }));
+        ic.appendChild(d);
+      });
+    }
+  }
+  /** Rehber / org: Görev / Karar ekle. hazir = toplantı seçeneği id'si → form açık ve o toplantı seçili gelir */
+  function gorevEkleFormu(s, hazir) {
     const kap = el('div', {});
     const ac = el('button', { sinif: 'kucuk sicak', type: 'button', metin: '+ Görev / Karar ekle' });
     kap.appendChild(el('div', { sinif: 'dugmeler' }, [ac]));
@@ -2178,6 +2375,7 @@
       const f = el('div', { sinif: 'ekle-form' });
       const toplanti = el('select', { id: 'gorevToplanti', 'aria-label': 'Toplantı' });
       s.secenekler.forEach(function (x) { toplanti.appendChild(el('option', { value: x.id, metin: x.ad })); });
+      if (hazir && s.secenekler.some(function (x) { return x.id === hazir; })) toplanti.value = hazir;
       const metin = el('textarea', { id: 'gorevMetin', placeholder: 'Ne yapılacak? / Ne kararlaştırıldı?', maxlength: '500' });
       const tarih = el('input', { id: 'gorevTarih', type: 'date' });
       const kimeKap = el('div', { sinif: 'gorev-kime' });
@@ -2213,8 +2411,9 @@
        alanEl('Metin', metin), kimeAlan, tarihAlan, mesaj, el('div', { sinif: 'dugmeler' }, [vazgec, gonder])].forEach(function (x) { f.appendChild(x); });
       kimeCiz(); turCiz();
       kap.replaceWith(f);
-      metin.focus();
+      if (!hazir) metin.focus();
     };
+    if (hazir) setTimeout(function () { if (kap.isConnected) ac.onclick(); }, 0);   // toplantı ekranında form açık gelir
     return kap;
   }
 
