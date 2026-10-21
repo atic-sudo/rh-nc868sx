@@ -1263,8 +1263,8 @@
       { satir: 2, ad: 'Ahmet', oran: '%100', durum: 'Aktif', dogum: DEMO_DOGUM[2] }, { satir: 3, ad: 'Mehmet', oran: '%75', durum: 'Aktif' },
       { satir: 4, ad: 'Yusuf', oran: '%100', durum: 'Aktif', dogum: DEMO_DOGUM[4] }, { satir: 5, ad: 'Ali', oran: '%50', durum: 'Aktif' },
       { satir: 6, ad: 'Ömer', oran: '%25', durum: 'Ayrıldı' }], okuma: DEMO_OKUMA,
-      veli: { Ahmet: { Anne: { ad: true, eposta: true, tel: true, epostaIzin: true, waIzin: true }, Baba: { ad: true, eposta: false, tel: true, epostaIzin: false, waIzin: true } },
-              Mehmet: { Anne: { ad: true, eposta: true, tel: false, epostaIzin: true, waIzin: false } } } };
+      veli: { Ahmet: { veli: { yakin: 'Anne', ad: true, eposta: true, tel: true, epostaIzin: true, waIzin: true }, fazla: 0 },
+              Mehmet: { veli: { yakin: 'Baba', ad: true, eposta: true, tel: false, epostaIzin: true, waIzin: false }, fazla: 1 } } };
     if (DEMO && /islem=yatili$/.test(ek)) return { ok: true, grup: 'E10', gruplar: ['E10', 'E11', 'E12'], rehber: true, url: '#', slotlar: [
       { satir: 2, cuma: '2026-10-16', seans: 'Cuma 17:00 → Cmt 13:00', daire: 'Daire 5', grup: 'E10', durum: 'Onaylandı', sohbet: 'Örnek Konuk', hoca: '' },
       { satir: 3, cuma: '2026-10-16', seans: 'Cuma 17:00 → Cmt 13:00', daire: 'Daire 6', grup: 'E11', durum: 'İptal talebi', sohbet: '', hoca: '', iptal: { kim: 'Örnek Mentor', sebep: 'Öğrencilerin çoğu sınav haftasında' } },
@@ -1835,7 +1835,7 @@
           ayrildi ? o.ad + ' tekrar aktif yapılsın mı?' : o.ad + ' "Ayrıldı" olarak işaretlensin mi? Formdan çıkar, geçmiş yoklaması korunur.');
       };
       const vd = (s.veli || {})[o.ad] || {};
-      const kayitli = vd.diger || ['Anne', 'Baba'].some(function (y) { return vd[y] && (vd[y].eposta || vd[y].tel); });
+      const kayitli = !!(vd.veli && (vd.veli.eposta || vd.veli.tel));
       const veliDugme = ayrildi ? null : el('button', { sinif: 'veli-rozet' + (kayitli ? ' tamam' : ''), type: 'button',
         metin: kayitli ? 'Veli ✓' : 'Veli +', 'aria-expanded': 'false' });
       const on = el('div', { sinif: 'ogr' + (ayrildi ? ' ayrildi' : '') }, [
@@ -1877,37 +1877,37 @@
   }
 
   /**
-   * Veli formu (anne + baba ayrı): yalnız KAYDEDER. Kayıtlı bilgi gizlilik için geri gösterilmez (yalnız var/yok + izin).
-   * Boş bırakılan alan değişmez. Gönderim POST ile (e-posta/telefon URL'ye ve tarayıcı geçmişine girmesin).
+   * Veli formu (öğrenci başına TEK iletişim velisi; aile seçer): yalnız KAYDEDER. Kayıtlı bilgi gizlilik için geri gösterilmez
+   * (yalnız var/yok + izin). Boş bırakılan alan değişmez. Gönderim POST ile (e-posta/telefon URL'ye ve tarayıcı geçmişine girmesin).
    */
   function veliFormu(ad, vd, s) {
     const isaret = function (x) { return x ? '✓' : '—'; };
-    const durumMetni = function (y) { const d = vd[y] || {}; return 'kayıtlı: e-posta ' + isaret(d.eposta) + ' · telefon ' + isaret(d.tel); };
-    const baslik = function (y) { return el('div', { sinif: 'veli-baslik' }, [el('span', { metin: y }), el('span', { sinif: 'veli-durum', metin: durumMetni(y) })]); };
-    const diger = vd.diger ? el('p', { sinif: 'not', metin: 'Tabloda ' + vd.diger + ' başka veli kaydı var (rehber girmiş).' }) : null;
-    if (saltOkunur()) return el('div', { sinif: 'ekle-form veli-form' }, [baslik('Anne'), baslik('Baba'), diger]);
+    const d = vd.veli || {};
+    const durumMetni = 'kayıtlı: e-posta ' + isaret(d.eposta) + ' · telefon ' + isaret(d.tel);
+    const baslik = el('div', { sinif: 'veli-baslik' }, [el('span', { metin: 'İletişim velisi' + (d.yakin ? ' (' + d.yakin.toLocaleLowerCase('tr') + ')' : '') }),
+      el('span', { sinif: 'veli-durum', metin: durumMetni })]);
+    const fazla = vd.fazla ? el('p', { sinif: 'not uyari', metin: 'Tabloda bu öğrenci için eski düzenden kalan ikinci bir veli kaydı var. Aileye hangi veliyle iletişim kurulacağını sorup kaydedin; kaydedince yalnız bu veli kalır.' }) : null;
+    if (saltOkunur()) return el('div', { sinif: 'ekle-form veli-form' }, [baslik, fazla]);
     const kutu = function (metin, acik) {
       const i = el('input', { type: 'checkbox' }); i.checked = !!acik;
       return [i, el('label', { sinif: 'onay' }, [i, el('span', { metin: metin })])];
     };
-    const blok = function (y) {
-      const d = vd[y] || {}, k = ' · kayıtlı';
-      const b = {
-        y: y, d: d,
-        ad: el('input', { placeholder: y + ' adı' + (d.ad ? k : ''), maxlength: '60', autocomplete: 'off' }),
-        eposta: el('input', { type: 'email', inputmode: 'email', placeholder: 'E-posta' + (d.eposta ? k : ''), maxlength: '120', autocomplete: 'off' }),
-        tel: el('input', { type: 'tel', inputmode: 'tel', placeholder: 'Telefon' + (d.tel ? k : ' (403 555 1234)'), maxlength: '20', autocomplete: 'off' }),
-        ei: kutu('E-posta almayı kabul etti', d.epostaIzin), wi: kutu('WhatsApp mesajı almayı kabul etti', d.waIzin), sil: false
-      };
-      b.kutu = el('div', { sinif: 'veli-blok' }, [baslik(y), b.ad, b.eposta, b.tel, b.ei[1], b.wi[1]]);
-      if (d.ad || d.eposta || d.tel) {
-        const sil = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: y + ' bilgilerini sil' });
-        sil.onclick = function () { if (confirm(ad + ' — ' + y.toLowerCase() + ' adı, e-posta ve telefonu silinsin mi?')) { b.sil = true; gonder(); } };
-        b.kutu.appendChild(sil);
-      }
-      return b;
-    };
-    const bloklar = [blok('Anne'), blok('Baba')];
+    const k = ' · kayıtlı';
+    const yakin = el('select', {}, [el('option', { value: '', metin: 'Yakınlık seçin' })].concat(['Anne', 'Baba', 'Diğer'].map(function (y) {
+      const o = el('option', { value: y, metin: y }); if (d.yakin === y) o.selected = true; return o;
+    })));
+    const vAd = el('input', { placeholder: 'Veli adı' + (d.ad ? k : ''), maxlength: '60', autocomplete: 'off' });
+    const vE = el('input', { type: 'email', inputmode: 'email', placeholder: 'E-posta' + (d.eposta ? k : ''), maxlength: '120', autocomplete: 'off' });
+    const vT = el('input', { type: 'tel', inputmode: 'tel', placeholder: 'Telefon' + (d.tel ? k : ' (403 555 1234)'), maxlength: '20', autocomplete: 'off' });
+    const ei = kutu('E-posta almayı kabul etti', d.epostaIzin), wi = kutu('WhatsApp mesajı almayı kabul etti', d.waIzin);
+    let sil = false;
+    const veliBlok = el('div', { sinif: 'veli-blok' }, [baslik, yakin, vAd, vE, vT, ei[1], wi[1],
+      el('p', { sinif: 'not', metin: 'Aileye hangi veliyle iletişim kurulacağını sorun. Bütün e-postalar (hatırlatmalar, ders desteği) yalnız bu veliye gider.' })]);
+    if (d.ad || d.eposta || d.tel) {
+      const silD = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Veli bilgilerini sil' });
+      silD.onclick = function () { if (confirm(ad + ' — veli adı, e-posta ve telefonu silinsin mi?')) { sil = true; gonder(); } };
+      veliBlok.appendChild(silD);
+    }
     // Öğrencinin kendi e-postası: yalnız ders desteği (saat seçimi, takvim daveti, rapor). Veli hatırlatmalarına girmez.
     const ogrKayitli = !!(vd.Ogrenci && vd.Ogrenci.eposta);
     const ogrE = el('input', { type: 'email', inputmode: 'email', placeholder: 'Öğrencinin e-postası' + (ogrKayitli ? ' · kayıtlı' : ''), maxlength: '120', autocomplete: 'off' });
@@ -1916,49 +1916,43 @@
     const kaydet = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Kaydet' });
     const mesaj = el('p', { sinif: 'not', metin: '' });
     const gonder = async function () {
-      for (const b of bloklar) {
-        if (b.sil) continue;
-        const e = b.eposta.value.trim(), t = b.tel.value.replace(/\D/g, '');
-        if (e && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) { mesaj.textContent = b.y + ': ' + VELI_HATA.eposta; return; }
-        if (b.tel.value.trim() && (t.length < 10 || t.length > 15)) { mesaj.textContent = b.y + ': ' + VELI_HATA.tel; return; }
+      const e = vE.value.trim(), t = vT.value.replace(/\D/g, ''), oe = ogrE.value.trim();
+      if (!sil) {
+        if (e && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) { mesaj.textContent = 'Veli: ' + VELI_HATA.eposta; return; }
+        if (vT.value.trim() && (t.length < 10 || t.length > 15)) { mesaj.textContent = 'Veli: ' + VELI_HATA.tel; return; }
+        if ((vAd.value.trim() || e || vT.value.trim()) && !yakin.value && !d.yakin) { mesaj.textContent = 'Velinin yakınlığını seçin (anne / baba / diğer).'; return; }
       }
-      const oe = ogrE.value.trim();
       if (oe && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(oe)) { mesaj.textContent = 'Öğrenci: ' + VELI_HATA.eposta; return; }
+      if (vd.fazla && !confirm('Bu öğrencinin tablodaki diğer veli kaydı silinecek; yalnız bu veli kalacak. Devam edilsin mi?')) return;
       kaydet.disabled = true; mesaj.textContent = 'Kaydediliyor…';
-      const g = { kod: depo.al('kod'), grup: s.grup, islem: 'veliKaydet', ogrenci: ad };
+      const g = { kod: depo.al('kod'), grup: s.grup, islem: 'veliKaydet', ogrenci: ad,
+                  veli: { sil: sil, yakin: yakin.value, ad: vAd.value.trim(), eposta: e, tel: vT.value.trim(), epostaIzin: ei[0].checked, waIzin: wi[0].checked } };
       if (oe) g.ogrenciE = { eposta: oe };
-      bloklar.forEach(function (b) {
-        g[b.y.toLowerCase()] = { sil: b.sil, ad: b.ad.value.trim(), eposta: b.eposta.value.trim(), tel: b.tel.value.trim(),
-                                 epostaIzin: b.ei[0].checked, waIzin: b.wi[0].checked };
-      });
       try {
         let r;
         if (DEMO) {
           await new Promise(function (ok) { setTimeout(ok, 600); });
-          const yeni = Object.assign({}, vd);
-          bloklar.forEach(function (b) {
-            const x = g[b.y.toLowerCase()], d = b.d;
-            yeni[b.y] = { ad: !x.sil && (d.ad || !!x.ad), eposta: !x.sil && (d.eposta || !!x.eposta), tel: !x.sil && (d.tel || !!x.tel),
-                          epostaIzin: x.epostaIzin, waIzin: x.waIzin };
-          });
+          const x = g.veli;
+          const yeni = Object.assign({}, vd, { fazla: 0, veli: { yakin: x.yakin || d.yakin || '', ad: !sil && (d.ad || !!x.ad), eposta: !sil && (d.eposta || !!x.eposta),
+                                                                 tel: !sil && (d.tel || !!x.tel), epostaIzin: x.epostaIzin, waIzin: x.waIzin } });
           if (oe) yeni.Ogrenci = { eposta: true };
           r = { ok: true, veli: Object.assign({}, s.veli, { [ad]: yeni }) };
         } else r = await (await fetch(VERI_URL, { method: 'POST', body: JSON.stringify(g) })).json();
         if (!r.ok) { mesaj.textContent = (r.kim ? r.kim + ': ' : '') + (VELI_HATA[r.hata] || HATA_METNI[r.hata] || 'Kaydedilemedi.'); return; }
         s.veli = r.veli; grubumCiz(s);
-        const silinen = bloklar.filter(function (b) { return b.sil; }).map(function (b) { return b.y.toLowerCase(); });
-        const bilgi = el('div', { sinif: 'bilgi', metin: ad + ': veli bilgisi ' + (silinen.length ? '(' + silinen.join(', ') + ') silindi.' : 'kaydedildi.') });
+        const bilgi = el('div', { sinif: 'bilgi', metin: ad + ': veli bilgisi ' + (sil ? 'silindi.' : 'kaydedildi.') });
         $('grubumIcerik').prepend(bilgi); setTimeout(function () { bilgi.remove(); }, 4000);
-      } catch (e) { mesaj.textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; }
-      finally { kaydet.disabled = false; bloklar.forEach(function (b) { b.sil = false; }); }
+      } catch (err) { mesaj.textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; }
+      finally { kaydet.disabled = false; sil = false; }
     };
     kaydet.onclick = function () { gonder(); };
-    return el('div', { sinif: 'ekle-form veli-form' }, [diger, bloklar[0].kutu, bloklar[1].kutu, ogrBlok,
+    return el('div', { sinif: 'ekle-form veli-form' }, [fazla, veliBlok, ogrBlok,
       el('p', { sinif: 'not', metin: 'Kayıtlı bilgi gizlilik için gösterilmez; değiştirmek istediğiniz alanı yazın, boş bırakılan değişmez. Bilgiyi yalnız rehberler görür.' }),
       mesaj, el('div', { sinif: 'dugmeler' }, [kaydet])]);
   }
   const VELI_HATA = { eposta: 'E-posta adresi geçerli görünmüyor.', tel: 'Telefon numarası geçerli görünmüyor (ör. 403 555 1234).',
-                      veliTablo: 'Veli tablosu henüz kurulmamış; rehberinize haber verin.', satir: 'Öğrenci bulunamadı; sayfayı yenileyin.' };
+                      veliTablo: 'Veli tablosu henüz kurulmamış; rehberinize haber verin.', satir: 'Öğrenci bulunamadı; sayfayı yenileyin.',
+                      surum: 'Uygulamanın yeni sürümü var: kapatıp yeniden açın, sonra tekrar kaydedin.' };
 
   const DEMO_DOGUM = { 2: '', 4: '21.10' };
   const DEMO_OKUMA = { liste: [{ kitap: 'Çağ ve Nesil', yazar: 'M. Fethullah Gülen', sayfa: 220 }, { kitap: 'Küçük Prens', yazar: 'Saint-Exupéry', sayfa: 112 }],
@@ -3474,7 +3468,7 @@
     if (!s.acik) {
       ic.appendChild(el('div', { sinif: 'bilgi', metin: s.durum === 'Planlandı' ? 'Görüşme planlandı: ' + s.secilen + '. Takvim daveti e-postanızda.'
         : s.durum === 'Veli onayı' ? 'Saat seçildi: ' + s.secilen + '. Veli onayı bekleniyor.'
-        : s.durum === 'Son onay' ? 'Saat seçildi' + (s.rol === 'v' ? ' ve bir veli tarafından onaylandı' : '') + ': ' + s.secilen + '. Ders Koçu Rehberi onaylayınca takvim daveti gelecek. Bir sorun varsa mentorunuzla görüşün.'
+        : s.durum === 'Son onay' ? 'Saat seçildi' + (s.rol === 'v' ? ' ve onaylandı' : '') + ': ' + s.secilen + '. Ders Koçu Rehberi onaylayınca takvim daveti gelecek. Bir sorun varsa mentorunuzla görüşün.'
         : 'Bu talep için seçim kapandı (' + s.durum + ').' }));
       return;
     }
@@ -3517,7 +3511,7 @@
     const onayla = el('button', { sinif: 'ana', type: 'button', metin: 'Onaylıyorum' });
     onayla.onclick = function () { secimGonder('onay', '', onayla); };
     ic.appendChild(onayla);
-    ic.appendChild(el('p', { sinif: 'not', metin: 'Bu, ' + s.ogr + ' için bu öğretim yılında ' + s.koc + ' ile ilk görüşme. Onayınız bu yıl bu ders koçuyla yapılacak görüşmeler için geçerlidir; velilerden birinin onaylaması yeterlidir. Sonraki görüşmelerde size takvim daveti ve rapor gelir. Ders koçu değişirse onayınız yeniden istenir.' }));
+    ic.appendChild(el('p', { sinif: 'not', metin: 'Bu, ' + s.ogr + ' için bu öğretim yılında ' + s.koc + ' ile ilk görüşme. Onayınız bu yıl bu ders koçuyla yapılacak görüşmeler için geçerlidir. Sonraki görüşmelerde size takvim daveti ve rapor gelir. Ders koçu değişirse onayınız yeniden istenir.' }));
     const red = el('button', { sinif: 'baglanti-kucuk ders-red', type: 'button', metin: 'Bu desteği istemiyoruz' });
     red.onclick = function () {
       const n = prompt('Talep kapatılsın mı? İsterseniz kısa bir not yazın:', '');
