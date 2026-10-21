@@ -360,6 +360,9 @@
     .gorev-alt { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 4px; font-size: 13px; color: var(--soluk); }
     .gorev-kart.gecikti .gorev-tarih { color: var(--r-zorunlu); font-weight: 650; } .gorev-kart.yakin .gorev-tarih { color: var(--rapor-baslik); font-weight: 650; }
     .gorev-kart .dugmeler { display: flex; justify-content: flex-end; margin-top: 8px; }
+    .gorev-kart .dugmeler input { flex: 1; min-width: 0; } .gorev-kart.kapali { opacity: .65; } .gorev-kart.karar { border-left-color: var(--cizgi); }
+    .gorev-kart details .gorev-alt { align-items: center; } .gorev-kime { display: flex; flex-direction: column; gap: 4px; max-height: 260px; overflow-y: auto; }
+    .onay-kutu { font-size: 13px; }
     .ogr { position: relative; background: var(--kart); border: 1px solid var(--cizgi); border-radius: 16px; padding: 12px 14px;
            touch-action: pan-y; transition: transform .2s ease; user-select: none; -webkit-user-select: none; }
     .ogr.surukleniyor { transition: none; }
@@ -924,8 +927,9 @@
     (v.bulusma ? ikili : ic).appendChild(kare(satir({ k: 'yatili', ikon: 'takvim', baslik: 'Yatılı', alt: v.bulusma ? y.metin.replace(/ · /g, '\n') : y.metin, url: v.yatiliUrl || '#', ekDugme: programDugme,
                            durum: y.durum, durumSinif: y.durum === 'Onay bekliyor' ? 'bekliyor' : '', tikla: yatiliAc })));
     ic.appendChild(satir({ ikon: 'kisiler', baslik: 'Grubum', alt: 'Öğrenciler · Durum · Katılım', url: v.grubumUrl || '#', tikla: grubumAc }));
-    if (['rehber', 'org', 'test', 'akademik'].indexOf(kisiRolu()) >= 0)
-      ic.appendChild(satir({ k: 'gorev', ikon: 'onay', baslik: 'Görevlerim', alt: 'Rehberlik toplantısından · bitince ✓', url: '#', tikla: gorevlerAc }));
+    if (['rehber', 'org', 'test', 'akademik', 'mentor'].indexOf(kisiRolu()) >= 0)
+      ic.appendChild(satir({ k: 'gorev', ikon: 'onay', baslik: 'Görevlerim', url: '#', tikla: gorevlerAc,
+        alt: kisiRolu() === 'mentor' ? 'Toplantılarda verilen görevler · kararlar' : ['rehber', 'org'].indexOf(kisiRolu()) >= 0 ? 'Görevlerim · ekip görevleri · görev / karar ekle' : 'Rehberlik toplantısından · bitince ✓' }));
     ic.appendChild(satir({ k: 'ders', ikon: 'kitap', baslik: 'Ders desteği', url: '#', tikla: dersAc,
       alt: dersRehberiMi() ? 'Talepler · koç ataması · onay' : kisiRolu() === 'akademik' ? 'Tüm talepler · süreç takibi' : 'Zorlanan öğrenciye ders koçu · süreci takip et' }));
 
@@ -968,8 +972,16 @@
       let yatili = 0;
       if (onceki === null || onceki === '__acildi') depo.yaz(anahtar, simdi);   // ilk açılış / kendi işlemi: rozet yok
       else if (onceki !== simdi) yatili = 1;
-      rozetKoy('rapor', rapor); rozetKoy('yatili', yatili);
-      ikonRozeti(rapor + yatili);
+      rozetKoy('rapor', rapor); rozetKoy('yatili', yatili); rozetKoy('gorev', gorevSayac);
+      ikonRozeti(rapor + yatili + gorevSayac);
+      // Açık görev sayısı sunucudan (en çok dakikada bir)
+      if (!DEMO && Date.now() - sayacZamani >= 60000) {
+        sayacZamani = Date.now();
+        islem('&islem=sayac').then(function (s) {
+          if (!s || !s.ok) return;
+          gorevSayac = s.gorev || 0; rozetKoy('gorev', gorevSayac); ikonRozeti(rapor + yatili + gorevSayac);
+        }).catch(function () {});
+      }
       return;
     }
     if (['rehber', 'org', 'test', 'akademik'].indexOf(rol) < 0) return;
@@ -1226,7 +1238,8 @@
     duzenle: 'Güncellenecek rapor bulunamadı; sayfayı kapatıp yeniden aç.',
     raporYok: 'Rapor formu bulunamadı. Sistem sorumlusuna haber verin.', istek: 'İstek okunamadı.',
     kisaDers: 'Kısa dersler belgesi henüz bağlanmadı.',
-    gorevYok: 'Rehberlik Defteri bulunamadı.',
+    gorevYok: 'Rehberlik Defteri bulunamadı.', gorevToplanti: 'Toplantı seçimi geçersiz; sayfayı yenileyin.', gorevMetin: 'Ne yapılacağını ya da kararı yazın.',
+    gorevKime: 'Görevin kime verileceğini seçin (listede olmayan kişiye görev verilemez).',
     takvimTekrar: 'Tekrar eden etkinlik için başlangıçtan sonraki bir "Ne zamana kadar" tarihi seçin.',
     bulusmaBicim: 'Gün ve saati anlaşılır yazın (ör. Cumartesi, 18:00).',
     gunubirlikYok: 'Bu hafta için günübirlik günü/saati girilmemiş (Günübirlik → Her hafta).', gunubirlikYatili: 'Bu hafta yatılı var; günübirlik yok.', bulusmaHafta: 'Bu hafta Sıralar tablosunda yok (sezon dışı).',
@@ -2034,50 +2047,175 @@
   }
 
   // ---------- Görevlerim ----------
-  // Toplantı notunda "Kim"e yazılan / @ ile etiketlenen kişinin açık görevleri. ✓ → defterde Tamamlandı (geri alınabilir).
+  // Sunucu (Gorevler.gs): { gorevler (bana verilen, açık), kararlar (mentor: ekibinin mentor toplantısı kararları),
+  //   ekip (rehber/org: ekibindeki ve verdiği görevler, toplu olanlar birleşik), secenekler (rehber/org: Görev / Karar ekle), defter }
   let demoGorev = null;
   function DEMO_GOREVLER() {
-    if (demoGorev) return { ok: true, defter: '#', gorevler: demoGorev };
-    return { ok: true, defter: '#', gorevler: demoGorev = [
-      { no: 'G-012', gorev: 'Mentorlara uygulama anlatılacak ve kurdurulacak', sorumlu: 'Rehber', tarih: '2026-10-21', tarihMetni: '21 Eki', gecikti: false, yakin: true, durum: 'Açık' },
-      { no: 'G-015', gorev: 'Veli ziyaretleri: tanışma ziyareti, akşam yemeği', sorumlu: 'Rehberler', tarih: '2026-11-01', tarihMetni: '1 Kas', gecikti: false, yakin: false, durum: 'Açık' },
-      { no: 'G-008', gorev: 'Öğrencilere sohbet yapacak abiyi bulmak', sorumlu: 'Rehberlik', tarih: '', tarihMetni: '', gecikti: false, yakin: false, durum: 'Takıldı' }] };
+    if (demoGorev) return demoGorev;
+    const mentor = DEMO_MENTOR;
+    return demoGorev = { ok: true, defter: mentor ? '' : '#', bilgi: '',
+      gorevler: [
+        { no: 'G-041', gorev: 'Kasım kampı kayıt listesini gönderin', sorumlu: 'Örnek Mentor', tarih: '2026-10-24', tarihMetni: '24 Eki', gecikti: false, yakin: true, durum: 'Açık', kaynak: 'Mentor toplantısı', ekip: 'E Lise', veren: 'Örnek Rehber' },
+        { no: 'G-037', gorev: 'Veli tanışma ziyaretlerini tamamlayın', sorumlu: 'Örnek Mentor', tarih: '2026-11-01', tarihMetni: '1 Kas', gecikti: false, yakin: false, durum: 'Açık', kaynak: 'Mentor toplantısı', ekip: 'E Lise', veren: 'Örnek Rehber' }],
+      kararlar: mentor ? [{ tarih: '2026-10-19', tarihMetni: '19 Eki', karar: 'Buluşmalarda telefonlar girişte toplanacak', toplanti: 'E Lise mentor toplantısı', veren: 'Örnek Rehber' }] : [],
+      ekip: mentor ? [] : [{ anahtar: 'T-040', gorev: 'Kasım kampı kayıt listesini gönderin', tarihMetni: '24 Eki', kaynak: 'Mentor toplantısı', ekip: 'E Lise', veren: 'Örnek Rehber',
+        kisiler: [{ no: 'G-040', sorumlu: 'E10 mentoru', durum: 'Tamamlandı', tnot: 'Gönderildi' }, { no: 'G-041', sorumlu: 'E11 mentoru', durum: 'Açık' }, { no: 'G-042', sorumlu: 'E12 mentoru', durum: 'Açık' }],
+        tamam: 1, toplam: 3, acik: true, gecikti: false, yonet: true }],
+      secenekler: mentor ? [] : [{ id: 'm:E Lise', ad: 'E Lise mentor toplantısı', kaynak: 'Mentor toplantısı', ekip: 'E Lise',
+        kisiler: [{ id: 'a@x', ad: 'Örnek Mentor', alt: 'E10 mentoru' }, { id: 'b@x', ad: 'Örnek Mentor 2', alt: 'E11 mentoru' }], toplu: [{ id: 'grup:E Lise', ad: 'E Lise mentorları (hepsi)' }] },
+        { id: 'r', ad: 'Rehberlik toplantısı', kaynak: 'Rehberlik', ekip: '', kisiler: [{ id: 'c@x', ad: 'Örnek Rehber', alt: 'Rehber · E Lise' }], toplu: [] }] };
   }
   function gorevlerAc() {
     history.pushState({ alt: 'gorevler' }, ''); goster('gorevler');
     $('gorevlerIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
     gorevlerYukle('&islem=gorevlerim');
   }
-  async function gorevlerYukle(ek, bilgi) {
+  async function gorevlerYukle(ek, bilgiEl) {
     let s;
     try { s = DEMO ? DEMO_GOREVLER() : await islem(ek); }
     catch (e) { $('gorevlerIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; return; }
     const ic = $('gorevlerIcerik');
-    if (!s.ok) { ic.prepend(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s.hata] || 'Bir sorun oluştu.' })); return; }
+    if (!s.ok) { ic.prepend(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s.hata] || 'Bir sorun oluştu.' })); window.scrollTo(0, 0); return; }
     ic.textContent = '';
-    if (bilgi) ic.appendChild(bilgi);
+    if (bilgiEl) ic.appendChild(bilgiEl);
+    else if (s.bilgi) ic.appendChild(el('div', { sinif: 'bilgi', metin: s.bilgi }));
     $('gorevlerDefter').href = s.defter || '#'; $('gorevlerDefter').hidden = !s.defter;
-    gorevSayac = s.gorevler.filter(function (g) { return g.yakin; }).length;
-    if (!s.gorevler.length) { ic.appendChild(el('p', { sinif: 'bos', metin: 'Açık görevin yok. 🎉' })); return; }
-    s.gorevler.forEach(function (g) {
-      const tarih = g.tarihMetni ? (g.gecikti ? 'Gecikti · ' : 'Son tarih ') + g.tarihMetni : 'Tarih yok';
-      const bitti = el('button', { sinif: 'kucuk sicak', type: 'button', metin: '✓ Bitti' });
-      bitti.onclick = function () {
-        bitti.disabled = true;
+    gorevSayac = kisiRolu() === 'mentor' ? s.gorevler.length : s.gorevler.filter(function (g) { return g.yakin; }).length;
+    rozetKoy('gorev', gorevSayac);
+
+    if (s.secenekler && s.secenekler.length) ic.appendChild(gorevEkleFormu(s));
+
+    ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Size verilen görevler' }));
+    if (!s.gorevler.length) ic.appendChild(el('p', { sinif: 'bos', metin: 'Açık göreviniz yok.' }));
+    s.gorevler.forEach(function (g) { ic.appendChild(gorevKarti(g)); });
+
+    if (s.ekip && s.ekip.length) {
+      ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Ekipteki ve verdiğiniz görevler' }));
+      s.ekip.forEach(function (x) { ic.appendChild(ekipGorevKarti(x)); });
+    }
+    if (s.kararlar && s.kararlar.length) {
+      ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Ekibinizin son kararları' }));
+      s.kararlar.forEach(function (k) {
+        ic.appendChild(el('div', { sinif: 'gorev-kart karar' }, [el('div', { sinif: 'gorev-metin', metin: k.karar }),
+          el('div', { sinif: 'gorev-alt' }, [el('span', { metin: k.tarihMetni }), el('span', { metin: k.toplanti.replace(/ · \d{4}-\d{2}-\d{2}$/, '') })])]));
+      });
+    }
+    ic.appendChild(el('p', { sinif: 'not', metin: kisiRolu() === 'mentor'
+      ? 'Görevler rehberinizin mentor toplantısında ya da istişarede verdiği işlerdir. Bitirdiğinizde "Bitti" deyin; isterseniz kısa bir not yazın. Son tarihten bir gün önce ve geçince e-postayla hatırlatılır.'
+      : 'Rehberlik toplantısı notundaki görevler pazartesi deftere işlenir; ekip toplantılarında verdikleriniz hemen görünür. Toplu görevlerde her mentor kendi görevini kapatır.' }));
+  }
+  function gorevTarihMetni(g) { return g.tarihMetni ? (g.gecikti ? 'Gecikti · ' : 'Son tarih ') + g.tarihMetni : 'Tarih yok'; }
+  /** Bana verilen görev: Bitti → (isteğe bağlı not) → Kaydet; ardından "Geri al" */
+  function gorevKarti(g) {
+    const kart = el('div', { sinif: 'gorev-kart' + (g.gecikti ? ' gecikti' : g.yakin ? ' yakin' : '') });
+    const altBilgi = [el('span', { sinif: 'gorev-tarih', metin: gorevTarihMetni(g) })];
+    if (g.veren) altBilgi.push(el('span', { metin: 'Veren: ' + g.veren }));
+    altBilgi.push(el('span', { metin: (g.kaynak === 'Rehberlik' ? 'Rehberlik toplantısı' : g.kaynak) + (g.durum !== 'Açık' ? ' · ' + g.durum : '') }));
+    const dug = el('div', { sinif: 'dugmeler' });
+    const bitti = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Bitti' });
+    bitti.onclick = function () {
+      const not = el('input', { id: 'gorevNot-' + g.no, placeholder: 'Not (isteğe bağlı): ör. liste gönderildi', maxlength: '300', autocomplete: 'off' });
+      const kaydet = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Tamamlandı olarak kaydet' });
+      kaydet.onclick = function () {
+        kaydet.disabled = true;
         const geri = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Geri al' });
         geri.onclick = function () { gorevlerYukle('&islem=gorevTamam&geri=1&no=' + encodeURIComponent(g.no)); };
         const b = el('div', { sinif: 'bilgi' }, [document.createTextNode('“' + g.gorev + '” tamamlandı. '), geri]);
-        if (DEMO) { demoGorev = demoGorev.filter(function (x) { return x !== g; }); gorevlerYukle('', b); return; }
-        gorevlerYukle('&islem=gorevTamam&no=' + encodeURIComponent(g.no), b);
+        if (DEMO) { demoGorev.gorevler = demoGorev.gorevler.filter(function (x) { return x !== g; }); gorevlerYukle('', b); return; }
+        gorevlerYukle('&islem=gorevTamam&no=' + encodeURIComponent(g.no) + '&not=' + encodeURIComponent(not.value.trim()), b);
       };
-      ic.appendChild(el('div', { sinif: 'gorev-kart' + (g.gecikti ? ' gecikti' : g.yakin ? ' yakin' : '') }, [
-        el('div', { sinif: 'gorev-metin', metin: g.gorev }),
-        el('div', { sinif: 'gorev-alt' }, [
-          el('span', { sinif: 'gorev-tarih', metin: tarih }),
-          el('span', { metin: g.no + (g.durum !== 'Açık' ? ' · ' + g.durum : '') + (g.sorumlu ? ' · ' + g.sorumlu : '') })]),
-        el('div', { sinif: 'dugmeler' }, [bitti])]));
+      dug.replaceChildren(not, kaydet);
+      not.focus();
+    };
+    dug.appendChild(bitti);
+    [el('div', { sinif: 'gorev-metin', metin: g.gorev }), el('div', { sinif: 'gorev-alt' }, altBilgi), dug].forEach(function (x) { kart.appendChild(x); });
+    return kart;
+  }
+  /** Rehber: ekipteki / verdiği görev (toplu ise kişi kişi durum) */
+  function ekipGorevKarti(x) {
+    const kart = el('div', { sinif: 'gorev-kart' + (!x.acik ? ' kapali' : x.gecikti ? ' gecikti' : '') });
+    kart.appendChild(el('div', { sinif: 'gorev-metin', metin: x.gorev }));
+    kart.appendChild(el('div', { sinif: 'gorev-alt' }, [
+      el('span', { sinif: 'gorev-tarih', metin: x.acik ? gorevTarihMetni(x) : 'Tamamlandı' }),
+      el('span', { metin: x.tamam + '/' + x.toplam + ' tamamladı' }),
+      el('span', { metin: [x.ekip, x.veren ? 'veren: ' + x.veren : ''].filter(String).join(' · ') })]));
+    const d = el('details', {}, [el('summary', { metin: x.toplam > 1 ? 'Kişiler' : 'Ayrıntı' })]);
+    x.kisiler.forEach(function (k) {
+      const sat = el('div', { sinif: 'gorev-alt' }, [el('span', { metin: (k.durum === 'Tamamlandı' ? '✓ ' : '○ ') + k.sorumlu }),
+        k.tnot ? el('span', { metin: k.tnot }) : null]);
+      if (x.yonet && k.durum !== 'Tamamlandı') {
+        const iptal = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'İptal et' });
+        iptal.onclick = function () {
+          iptal.replaceWith(onayKutusu(k.sorumlu + ' için görev iptal edilsin mi?', function () {
+            if (DEMO) return;
+            gorevlerYukle('&islem=gorevIptal&no=' + encodeURIComponent(k.no), el('div', { sinif: 'bilgi', metin: 'Görev iptal edildi.' }));
+          }));
+        };
+        sat.appendChild(iptal);
+      }
+      d.appendChild(sat);
     });
-    ic.appendChild(el('p', { sinif: 'not', metin: 'Görevler rehberlik toplantısı notundan gelir. Bitirdiğin görevi ✓ ile kapat; bir sonraki toplantıda tamamlanmış görünür.' }));
+    kart.appendChild(d);
+    return kart;
+  }
+  /** Sayfa içi onay (confirm yerine; PWA'da da tutarlı) */
+  function onayKutusu(soru, evet) {
+    const k = el('span', { sinif: 'onay-kutu' }, [el('span', { metin: soru + ' ' })]);
+    const e = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Evet' });
+    const h = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Vazgeç' });
+    e.onclick = function () { e.disabled = true; evet(); };
+    h.onclick = function () { k.remove(); };
+    k.appendChild(e); k.appendChild(h);
+    return k;
+  }
+  /** Rehber / org: Görev / Karar ekle (geçici basit form; 3. aşamada toplantı ekranına taşınacak) */
+  function gorevEkleFormu(s) {
+    const kap = el('div', {});
+    const ac = el('button', { sinif: 'kucuk sicak', type: 'button', metin: '+ Görev / Karar ekle' });
+    kap.appendChild(el('div', { sinif: 'dugmeler' }, [ac]));
+    ac.onclick = function () {
+      const v = { tur: 'Görev', toplanti: s.secenekler[0].id, kime: [] };
+      const f = el('div', { sinif: 'ekle-form' });
+      const toplanti = el('select', { id: 'gorevToplanti', 'aria-label': 'Toplantı' });
+      s.secenekler.forEach(function (x) { toplanti.appendChild(el('option', { value: x.id, metin: x.ad })); });
+      const metin = el('textarea', { id: 'gorevMetin', placeholder: 'Ne yapılacak? / Ne kararlaştırıldı?', maxlength: '500' });
+      const tarih = el('input', { id: 'gorevTarih', type: 'date' });
+      const kimeKap = el('div', { sinif: 'gorev-kime' });
+      const tarihAlan = alanEl('Son tarih (isteğe bağlı)', tarih), kimeAlan = el('div', {}, [el('span', { sinif: 'ders-etiket', metin: 'Kime' }), kimeKap]);
+      const kimeCiz = function () {
+        const sec = s.secenekler.filter(function (x) { return x.id === toplanti.value; })[0];
+        v.kime = [];
+        kimeKap.replaceChildren();
+        sec.toplu.concat(sec.kisiler).forEach(function (x) {
+          const i = el('input', { type: 'checkbox', id: 'kime-' + x.id });
+          i.onchange = function () { const n = v.kime.indexOf(x.id); if (i.checked && n < 0) v.kime.push(x.id); if (!i.checked && n >= 0) v.kime.splice(n, 1); };
+          kimeKap.appendChild(el('label', { sinif: 'onay' }, [i, el('span', { metin: x.ad + (x.alt ? ' · ' + x.alt : '') })]));
+        });
+        if (!sec.toplu.length && !sec.kisiler.length) kimeKap.appendChild(el('p', { sinif: 'not', metin: 'Bu toplantıda görev verilebilecek kişi yok.' }));
+      };
+      const turCiz = function () { kimeAlan.hidden = tarihAlan.hidden = v.tur !== 'Görev'; };
+      toplanti.onchange = kimeCiz;
+      const mesaj = el('p', { sinif: 'not', metin: '' });
+      const gonder = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Kaydet' });
+      const vazgec = el('button', { sinif: 'kucuk', type: 'button', metin: 'Vazgeç' });
+      vazgec.onclick = function () { f.replaceWith(kap); };
+      gonder.onclick = function () {
+        const m = metin.value.trim();
+        if (m.length < 3) { mesaj.textContent = 'Ne yapılacağını ya da kararı yazın.'; return; }
+        if (v.tur === 'Görev' && !v.kime.length) { mesaj.textContent = 'Görevin kime verileceğini seçin.'; return; }
+        gonder.disabled = true; mesaj.textContent = 'Kaydediliyor…';
+        if (DEMO) { gorevlerYukle('', el('div', { sinif: 'bilgi', metin: v.tur === 'Görev' ? v.kime.length + ' kişiye görev verildi (örnek).' : 'Karar deftere yazıldı (örnek).' })); return; }
+        gorevlerYukle('&islem=gorevEkle&tur=' + (v.tur === 'Görev' ? 'gorev' : 'karar') + '&toplanti=' + encodeURIComponent(toplanti.value) +
+          '&metin=' + encodeURIComponent(m) + '&kime=' + encodeURIComponent(v.kime.join('|')) + '&tarih=' + encodeURIComponent(tarih.value));
+      };
+      [alanEl('Toplantı', toplanti), el('span', { sinif: 'ders-etiket', metin: 'Tür' }),
+       secimGrubu(['Görev', 'Karar'], false, function () { return v.tur; }, function (x) { v.tur = x || 'Görev'; turCiz(); }),
+       alanEl('Metin', metin), kimeAlan, tarihAlan, mesaj, el('div', { sinif: 'dugmeler' }, [vazgec, gonder])].forEach(function (x) { f.appendChild(x); });
+      kimeCiz(); turCiz();
+      kap.replaceWith(f);
+      metin.focus();
+    };
+    return kap;
   }
 
   /** Kartı sola kaydırınca arkadaki düğme (104 px) açılır; bir kart açılınca diğerleri kapanır. */
