@@ -387,6 +387,8 @@
       background: var(--ana-zemin); border: 1px dashed var(--ana); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; }
     .rp-don .i { width: 18px; height: 18px; } .rp-don-alt { margin-left: auto; font-weight: 400; font-size: 13px; color: var(--soluk); }
     .rp-tur summary { cursor: pointer; font-weight: 600; font-size: 14px; } .rp-tur dl { margin: 8px 0 0; }
+    .okt-ozet { font-size: 15px; font-weight: 600; margin: 0 0 10px; } .okt-ust { display: flex; align-items: center; gap: 8px; } .okt-ust b { font-size: 16px; flex: 1; min-width: 0; }
+    .gorev-kart.okt .gorev-alt + .gorev-alt { margin-top: 2px; }
     .ogr { position: relative; background: var(--kart); border: 1px solid var(--cizgi); border-radius: 16px; padding: 12px 14px;
            touch-action: pan-y; transition: transform .2s ease; user-select: none; -webkit-user-select: none; }
     .ogr.surukleniyor { transition: none; }
@@ -655,6 +657,13 @@
     <h1 class="okuma-baslik" id="gorevlerBaslik">Görevlerim</h1>
     <div id="gorevlerIcerik"></div>
     <a class="docs" id="gorevlerDefter" target="_blank" rel="noopener" hidden>Rehberlik Defteri'ni aç</a>
+  </section>
+
+  <!-- Okuma takibi (rehber / org): ekipteki bütün öğrenciler, okumayanlar önce -->
+  <section id="okumaTakip" hidden>
+    <div class="gezinti"><button class="geri" id="okumaTakipGeri" type="button"></button></div>
+    <h1 class="okuma-baslik">Okuma takibi</h1>
+    <div id="okumaTakipIcerik"></div>
   </section>
 
   <!-- Ders desteği: talepler (mentor / rehber / akademik) ya da Derslerim (ders koçu) ya da veli/öğrenci seçim sayfası -->
@@ -1054,9 +1063,9 @@
       bekleyen: { yatili: 1, misafir: 0, ders: 1, geciken: 1, raporEksik: ['E11'], raporGec: true },
       toplanti: { baslik: 'E Lise mentor toplantısı', metin: 'Bugün · 18:30 · KM', bugun: true, secenek: 'm:E Lise' },
       ekibim: [
-        { grup: 'E10', ekip: 'E Lise', mentor: 'Örnek Mentor', rapor: 'bu', katilim: '8/10', raporTarih: '19 Eki', yatili: '7 Kas', gorev: 2, okuma: { sayfa: 140, dk: 300, biten: 1 }, ders: 1 },
-        { grup: 'E11', ekip: 'E Lise', mentor: 'Örnek Mentor 2', rapor: 'yok', katilim: '', raporTarih: '', yatili: '14 Kas · onay bekliyor', gorev: 1, okuma: { sayfa: 0, dk: 0, biten: 0 }, ders: 0 },
-        { grup: 'E12', ekip: 'E Lise', mentor: 'Örnek Mentor 3', rapor: 'gecen', katilim: '6/9', raporTarih: '12 Eki', yatili: '', gorev: 0, okuma: { sayfa: 60, dk: 90, biten: 0 }, ders: 2 }] };
+        { grup: 'E10', ekip: 'E Lise', mentor: 'Örnek Mentor', rapor: 'bu', katilim: '8/10', raporTarih: '19 Eki', yatili: '7 Kas', gorev: 2, okuma: { sayfa: 140, biten: 1, okuyan: 6, toplam: 8 }, ders: 1 },
+        { grup: 'E11', ekip: 'E Lise', mentor: 'Örnek Mentor 2', rapor: 'yok', katilim: '', raporTarih: '', yatili: '14 Kas · onay bekliyor', gorev: 1, okuma: { sayfa: 0, biten: 0, okuyan: 1, toplam: 7 }, ders: 0 },
+        { grup: 'E12', ekip: 'E Lise', mentor: 'Örnek Mentor 3', rapor: 'gecen', katilim: '6/9', raporTarih: '12 Eki', yatili: '', gorev: 0, okuma: { sayfa: 60, biten: 0, okuyan: 4, toplam: 6 }, ders: 2 }] };
   }
   function rehberCiz(v, s) {
     const ic = $('icerik');
@@ -1133,7 +1142,8 @@
       if (g.katilim) cip('Katılım ' + g.katilim);
       cip(g.yatili ? 'Yatılı ' + g.yatili : 'Yatılı yok', /onay bekliyor|iptal/.test(g.yatili) ? 'uyari' : '');
       if (g.gorev) cip(g.gorev + ' açık görev');
-      if (g.okuma && (g.okuma.sayfa || g.okuma.biten)) cip('Okuma ' + g.okuma.sayfa + ' sf' + (g.okuma.biten ? ' · ' + g.okuma.biten + ' kitap bitti' : ''));
+      if (g.okuma && g.okuma.toplam) cip('Okuma ' + g.okuma.okuyan + '/' + g.okuma.toplam + (g.okuma.sayfa ? ' · ' + g.okuma.sayfa + ' sf' : ''),
+        g.okuma.okuyan * 2 < g.okuma.toplam ? 'uyari' : '');
       if (g.ders) cip(g.ders + ' ders desteği');
       const satirEl = el('button', { sinif: 'rp-grup', type: 'button' }, [
         el('div', { sinif: 'rp-g-ust' }, [el('b', { metin: g.grup }), el('span', { metin: g.mentor || 'mentor yok' }), ikon('sag')]),
@@ -1144,6 +1154,9 @@
 
     // 4. Kısayollar
     ic.appendChild(satir({ k: 'gorev', ikon: 'onay', baslik: 'Görevlerim', alt: 'Size verilenler · ekip görevleri · görev / karar ekle', url: '#', tikla: function () { gorevlerAc(); } }));
+    const okT = (s.ekibim || []).reduce(function (a, g) { if (g.okuma) { a.o += g.okuma.okuyan; a.t += g.okuma.toplam; } return a; }, { o: 0, t: 0 });
+    ic.appendChild(satir({ ikon: 'kitap', baslik: 'Okuma takibi', url: '#', tikla: okumaTakipAc,
+      alt: okT.t ? okT.o + '/' + okT.t + ' öğrenci son iki haftada okudu · kimin okumadığını görün' : 'Öğrenci öğrenci kitap ve sayfa' }));
     ic.appendChild(satir({ k: 'ders', ikon: 'kitap', baslik: 'Ders desteği', url: '#', tikla: dersAc,
       alt: dersRehberiMi() ? 'Talepler · koç ataması · onay' : 'Ekibin talepleri · süreç takibi' }));
     if (v.konu) ic.appendChild(satir({ ikon: 'belge', baslik: 'Haftanın konusu', alt: v.konu.ad, url: '#', tikla: function () { okuyucuAc('tr'); } }));
@@ -1160,6 +1173,53 @@
     if (!s || !s.ok) { $('icerik').prepend(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s && s.hata] || 'Özet yüklenemedi.' })); return; }
     depo.yaz('rehberPano_' + ekip, JSON.stringify(s));
     if (sonVeri === v && !mentorGozu && !$('pano').hidden) rehberCiz(v, s);
+  }
+  /** Okuma takibi: ekipteki öğrenciler, son iki haftada okuma girilmeyenler önce (RehberPano.gs rehberOkuma_) */
+  let okumaFiltre = 'Okumayanlar';
+  function okumaTakipAc() {
+    history.pushState({ alt: 'okumaTakip' }, ''); goster('okumaTakip');
+    $('okumaTakipIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    okumaTakipYukle(false);
+  }
+  async function okumaTakipYukle(yenileMi) {
+    const ic = $('okumaTakipIcerik'), ekip = depo.al('rehberEkip') || 'hepsi';
+    let s;
+    try {
+      s = DEMO ? { ok: true, ekipler: ['E Lise'], secili: 'hepsi', gunSiniri: 14, saat: '15:40', ozet: { toplam: 4, okuyan: 2, sayfa: 170, biten: 1 }, ogrenciler: [
+          { grup: 'E11', ad: 'Örnek Öğrenci 1', kitap: '', sayfa: '', toplam: '', aySayfa: 0, ayDk: 0, son: '', gun: null, okuyor: false, bitenAy: [] },
+          { grup: 'E12', ad: 'Örnek Öğrenci 2', kitap: 'Küçük Prens', sayfa: 40, toplam: 112, aySayfa: 20, ayDk: 30, son: '2026-10-02', gun: 19, okuyor: false, bitenAy: [] },
+          { grup: 'E10', ad: 'Örnek Öğrenci 3', kitap: 'Çağ ve Nesil', sayfa: 120, toplam: 220, aySayfa: 90, ayDk: 150, son: '2026-10-19', gun: 2, okuyor: true, bitenAy: [] },
+          { grup: 'E10', ad: 'Örnek Öğrenci 4', kitap: '', sayfa: '', toplam: '', aySayfa: 60, ayDk: 80, son: '2026-10-20', gun: 1, okuyor: true, bitenAy: ['Kayıp Şehir'] }] }
+        : await islem('&islem=rehberPano&detay=okuma&ekip=' + encodeURIComponent(ekip) + (yenileMi ? '&yenile=1' : ''));
+    } catch (e) { ic.textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; return; }
+    if (!s || !s.ok) { ic.textContent = HATA_METNI[s && s.hata] || 'Okuma bilgisi yüklenemedi.'; return; }
+    ic.textContent = '';
+    const o = s.ozet;
+    ic.appendChild(el('p', { sinif: 'okt-ozet', metin: o.okuyan + '/' + o.toplam + ' öğrenci son ' + s.gunSiniri + ' günde okudu · bu ay ' + o.sayfa + ' sayfa' + (o.biten ? ' · ' + o.biten + ' kitap bitti' : '') }));
+    const liste = el('div', {});
+    const ciz = function () {
+      liste.textContent = '';
+      const gor = s.ogrenciler.filter(function (x) { return okumaFiltre === 'Hepsi' || !x.okuyor; });
+      if (!gor.length) { liste.appendChild(el('p', { sinif: 'bos', metin: okumaFiltre === 'Hepsi' ? 'Öğrenci yok.' : 'Herkes son iki haftada okumuş.' })); return; }
+      let grup = '';
+      gor.forEach(function (x) {
+        if (okumaFiltre === 'Hepsi' && x.grup !== grup) { grup = x.grup; liste.appendChild(el('div', { sinif: 'hs-baslik', metin: x.grup })); }
+        const son = x.gun === null ? 'Hiç okuma girilmedi' : x.gun === 0 ? 'Son okuma bugün' : 'Son okuma ' + x.gun + ' gün önce';
+        const kitap = x.kitap ? x.kitap + (x.sayfa !== '' ? ' · ' + x.sayfa + (x.toplam ? '/' + x.toplam : '') + ' sf' : '') : 'Şu an okuduğu kitap yok';
+        liste.appendChild(el('div', { sinif: 'gorev-kart okt' + (x.okuyor ? '' : ' gecikti') }, [
+          el('div', { sinif: 'okt-ust' }, [el('b', { metin: x.ad }), okumaFiltre === 'Hepsi' ? null : el('span', { sinif: 'rp-cip', metin: x.grup })]),
+          el('div', { sinif: 'gorev-alt' }, [el('span', { metin: kitap })]),
+          el('div', { sinif: 'gorev-alt' }, [el('span', { sinif: 'gorev-tarih', metin: son }),
+            el('span', { metin: 'Bu ay ' + x.aySayfa + ' sf' + (x.ayDk ? ' · ' + x.ayDk + ' dk' : '') }),
+            x.bitenAy.length ? el('span', { metin: 'Bitirdi: ' + x.bitenAy.join(', ') }) : null])]));
+      });
+    };
+    ic.appendChild(secimGrubu(['Okumayanlar', 'Hepsi'], false, function () { return okumaFiltre; }, function (x) { okumaFiltre = x || 'Okumayanlar'; ciz(); }));
+    ic.appendChild(liste);
+    ciz();
+    const yen = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Yenile' });
+    yen.onclick = function () { yen.disabled = true; okumaTakipYukle(true); };
+    ic.appendChild(el('p', { sinif: 'not rp-saat' }, [document.createTextNode('Mentorların Grubum → "Okuma gir" kayıtlarından. ' + (s.saat || '') + ' itibarıyla. '), yen]));
   }
   /** Ekibim → o grubun mentor ekranı */
   function mentorGozuAc(grup) {
@@ -1203,7 +1263,7 @@
   }
 
   function goster(bolum) {
-    ['kurulum', 'pano', 'okuma', 'medya', 'yatili', 'grubum', 'gorevler', 'dersler', 'bulusma', 'takvim', 'toplanti', 'program', 'yardim', 'rapor'].forEach(function (b) { $(b).hidden = b !== bolum; });
+    ['kurulum', 'pano', 'okuma', 'medya', 'yatili', 'grubum', 'gorevler', 'okumaTakip', 'dersler', 'bulusma', 'takvim', 'toplanti', 'program', 'yardim', 'rapor'].forEach(function (b) { $(b).hidden = b !== bolum; });
     if (bolum !== 'medya') $('medyaKutu').textContent = '';   // video arkada çalmaya devam etmesin
     window.scrollTo(0, 0);
   }
@@ -1376,7 +1436,7 @@
     goster('medya');
   }
 
-  [$('geri'), $('medyaGeri'), $('yatiliGeri'), $('grubumGeri'), $('gorevlerGeri'), $('derslerGeri'), $('bulusmaGeri'), $('takvimGeri'), $('toplantiGeri'), $('programGeri'), $('yardimGeri'), $('raporGeri')].forEach(function (b) {
+  [$('geri'), $('medyaGeri'), $('yatiliGeri'), $('grubumGeri'), $('gorevlerGeri'), $('okumaTakipGeri'), $('derslerGeri'), $('bulusmaGeri'), $('takvimGeri'), $('toplantiGeri'), $('programGeri'), $('yardimGeri'), $('raporGeri')].forEach(function (b) {
     b.appendChild(ikon('sol')); b.appendChild(document.createTextNode('Geri'));
     b.addEventListener('click', function () { history.back(); });
   });
