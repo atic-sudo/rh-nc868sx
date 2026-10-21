@@ -3143,7 +3143,7 @@
     ic.appendChild(el('p', { sinif: 'not', metin: s.yetki.yonet
       ? 'Akademik mesul bu listeyi görür; koç ataması ve onay sizde. 24 saat cevap gelmezse sistem hatırlatır, 48 saatte mentora haber verir.'
       : s.rol === 'akademik' ? 'Bütün grupların talepleri. Koç ataması ve son onay ekibin Ders Koçu Rehberinde; yeni talep, onaylanan görüşme (takvim daveti) ve raporlar size e-postayla da gelir.'
-      : 'Saat seçimi veliye (yılın ilk görüşmesinde ya da koç değişince, izinle birlikte) ya da öğrenciye e-postayla gider. 2 gün cevap gelmezse size haber verilir; linki WhatsApp\'tan da iletebilirsiniz.' }));
+      : 'Saati öğrenci seçer (e-postayla; e-postası yoksa link size gelir). Bu yıl bu koçla ilk görüşmeyse ardından veliye onay e-postası gider. 2 gün cevap gelmezse size haber verilir; linkleri WhatsApp\'tan da iletebilirsiniz.' }));
   }
   function saltOkunurDers(s) { return s.rol === 'musahit'; }
   function dersRehberiMi() { try { return !!(JSON.parse(depo.al('kisi') || 'null') || {}).dkr; } catch (e) { return false; } }
@@ -3248,7 +3248,7 @@
     const sec = el('select', { 'aria-label': 'Ders koçu' });
     koclar.forEach(function (c) {
       sec.appendChild(el('option', { value: c.no, metin: c.ad + (c.tur ? ' · ' + c.tur : '') + ' · ' + c.yuk + '/' + c.kapasite +
-        (c.yuk >= c.kapasite ? ' · dolu' : '') + (c.uyar ? '' : ' · ders listesinde yok') }));
+        (c.yuk >= c.kapasite ? ' · dolu' : '') + (c.uyar ? '' : ' · ⚠ listede yok') }));
     });
     const ata = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Ata' });
     ata.onclick = function () { dersGonder({ islem: 'dersAta', id: t.id, koc: sec.value }, ata); };
@@ -3348,7 +3348,7 @@
   // ----- Ders koçu: Derslerim -----
   function kocCiz(s, ic) {
     $('derslerBaslik').textContent = 'Derslerim';
-    if (s.ben) ic.appendChild(el('div', { sinif: 'tarih ders-ben', metin: s.ben.ad + ' · ' + (s.ben.dersler.join(', ') || 'ders girilmemiş') + ' · ' + s.ben.yuk + '/' + s.ben.kapasite + ' aktif' }));
+    if (s.ben) ic.appendChild(el('div', { sinif: 'tarih ders-ben', metin: s.ben.ad + ' · Dersleriniz: ' + (s.ben.dersler.join(', ') || 'girilmemiş') + ' · ' + s.ben.yuk + '/' + s.ben.kapasite + ' aktif' }));
     const t0 = s.talepler, grup = function (baslik, liste, ek) {
       if (!liste.length) return;
       ic.appendChild(el('div', { sinif: 'hs-baslik', metin: baslik }));
