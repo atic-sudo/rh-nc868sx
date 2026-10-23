@@ -1223,7 +1223,6 @@
       alt: okT.t ? okT.o + '/' + okT.t + ' öğrenci son iki haftada okudu · kimin okumadığını görün' : 'Öğrenci öğrenci kitap ve sayfa' }));
     ic.appendChild(satir({ k: 'ders', ikon: 'kitap', baslik: 'Ders desteği', url: '#', tikla: dersAc,
       alt: dersRehberiMi() ? 'Talepler · koç ataması · onay' : 'Ekibin talepleri · süreç takibi' }));
-    if (v.konu) ic.appendChild(satir({ ikon: 'belge', baslik: 'Haftanın konusu', alt: v.konu.ad, url: '#', tikla: function () { okuyucuAc('tr'); } }));
     const yen = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Yenile' });
     yen.onclick = function () { yen.disabled = true; rehberYukle(v, true); };
     ic.appendChild(el('p', { sinif: 'not rp-saat' }, [document.createTextNode('Özet ' + (s.saat || '') + ' itibarıyla (birkaç dakikada bir tazelenir). '), yen]));
