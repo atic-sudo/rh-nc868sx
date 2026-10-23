@@ -372,6 +372,17 @@
     .rp-istek { flex-direction: column; align-items: stretch; border-left-color: var(--ana); margin-bottom: 6px; }
     .rp-istek-dug { display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
     .rp-bayrak { border-left-color: var(--rapor-cizgi); } .rp-bayrak small { color: var(--soluk); }
+    .ders-akis summary { cursor: pointer; font-size: 14px; font-weight: 600; color: var(--ana); margin-top: 6px; }
+    .akis { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 0; }
+    .akis li { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; position: relative; color: var(--soluk); }
+    .akis li + li::before { content: ""; position: absolute; left: 11px; top: -6px; height: 12px; border-left: 2px solid var(--cizgi); }
+    .akis-nokta { width: 24px; height: 24px; border-radius: 99px; flex: none; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; background: var(--ikon-zemin); }
+    .akis li div { display: flex; flex-direction: column; min-width: 0; } .akis li b { font-size: 14px; font-weight: 600; } .akis li small { font-size: 12.5px; }
+    .akis li.bitti { color: var(--yazi); } .akis li.bitti .akis-nokta { background: var(--rozet); color: var(--rozet-yazi); }
+    .akis li.simdi { color: var(--yazi); } .akis li.simdi .akis-nokta { background: var(--ana); color: var(--kart); } .akis li.simdi small { color: var(--rapor-baslik); font-weight: 600; }
+    .akis li.iptal .akis-nokta { background: var(--r-zorunlu); color: #fff; }
+    .ders-kendin { margin: -4px 0 6px; font-size: 13px; } .ders-kendin-sira { display: flex; gap: 14px; flex-wrap: wrap; }
+    .ders-test-kutu summary { cursor: pointer; font-size: 14px; color: var(--ana); font-weight: 600; margin: 4px 0; }
     .soru-istek .onay { display: flex; align-items: flex-start; gap: 10px; text-align: left; font-weight: 500; }
     .soru-istek .onay input { flex: none; width: 20px; height: 20px; margin: 1px 0 0; }
     .rp-toplanti { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 14px; padding: 14px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 4px; }
@@ -395,7 +406,14 @@
     .rp-gv { flex: none; padding: 4px 10px; font-size: 13px; }
     .not-kart { border-left-color: var(--rozet-yazi); } .not-metin { white-space: pre-wrap; font-weight: 500; }
     .not-dug { gap: 14px; flex-wrap: wrap; } .rp-tur dl { margin: 8px 0 0; }
-    .okt-ozet { font-size: 15px; font-weight: 600; margin: 0 0 10px; } .okt-ust { display: flex; align-items: center; gap: 8px; } .okt-ust b { font-size: 16px; flex: 1; min-width: 0; }
+    .okt-ozet { font-size: 15px; font-weight: 600; margin: 0 0 10px; }
+    .sp-satir { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 15px; } .sp-satir + .sp-satir { border-top: 1px solid var(--cizgi); }
+    .sp-no { width: 22px; height: 22px; border-radius: 99px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; background: var(--ikon-zemin); color: var(--soluk); flex: none; }
+    .sp-satir.ilk .sp-no { background: var(--rozet); color: var(--rozet-yazi); } .sp-satir.ilk .sp-ad, .sp-satir.ilk b { font-weight: 700; }
+    .sp-satir.benim { background: var(--ana-zemin); border-radius: 8px; padding-inline: 6px; }
+    .sp-ad { flex: 1; min-width: 0; } .sp-deger { color: var(--soluk); font-size: 13px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .sp-bar { flex: 1; height: 8px; border-radius: 99px; background: var(--ikon-zemin); overflow: hidden; } .sp-bar span { display: block; height: 100%; background: var(--rozet-yazi); border-radius: 99px; }
+    .sp-ilerleyen { margin-top: 6px; } .sp-rozet { margin-left: 4px; } .okt-ust { display: flex; align-items: center; gap: 8px; } .okt-ust b { font-size: 16px; flex: 1; min-width: 0; }
     .gorev-kart.okt .gorev-alt + .gorev-alt { margin-top: 2px; }
     .ogr { position: relative; background: var(--kart); border: 1px solid var(--cizgi); border-radius: 16px; padding: 12px 14px;
            touch-action: pan-y; transition: transform .2s ease; user-select: none; -webkit-user-select: none; }
@@ -670,7 +688,7 @@
   <!-- Okuma takibi (rehber / org): ekipteki bütün öğrenciler, okumayanlar önce -->
   <section id="okumaTakip" hidden>
     <div class="gezinti"><button class="geri" id="okumaTakipGeri" type="button"></button></div>
-    <h1 class="okuma-baslik">Okuma takibi</h1>
+    <h1 class="okuma-baslik" id="okumaTakipBaslik">Okuma takibi</h1>
     <div id="okumaTakipIcerik"></div>
   </section>
 
@@ -974,6 +992,7 @@
     (v.bulusma ? ikili : ic).appendChild(kare(satir({ k: 'yatili', ikon: 'takvim', baslik: 'Yatılı', alt: v.bulusma ? y.metin.replace(/ · /g, '\n') : y.metin, url: v.yatiliUrl || '#', ekDugme: programDugme,
                            durum: y.durum, durumSinif: y.durum === 'Onay bekliyor' ? 'bekliyor' : '', tikla: yatiliAc })));
     ic.appendChild(satir({ ikon: 'kisiler', baslik: 'Grubum', alt: 'Öğrenciler · Durum · Katılım', url: v.grubumUrl || '#', tikla: grubumAc }));
+    if (kisiRolu() === 'mentor' || mentorGozu) ic.appendChild(satir({ ikon: 'kitap', baslik: 'Okuma şampiyonları', alt: 'Ayın ilk 5\'i · okuyan grup · rozetler', url: '#', tikla: sampiyonAc }));
     if (['rehber', 'org', 'test', 'akademik', 'mentor'].indexOf(kisiRolu()) >= 0)
       ic.appendChild(satir({ k: 'gorev', ikon: 'onay', baslik: 'Görevlerim', url: '#', tikla: gorevlerAc,
         alt: kisiRolu() === 'mentor' ? 'Toplantılarda verilen görevler · kararlar' : ['rehber', 'org'].indexOf(kisiRolu()) >= 0 ? 'Görevlerim · ekip görevleri · görev / karar ekle' : 'Rehberlik toplantısından · bitince ✓' }));
@@ -1223,6 +1242,7 @@
   let okumaFiltre = 'Okumayanlar';
   function okumaTakipAc() {
     history.pushState({ alt: 'okumaTakip' }, ''); goster('okumaTakip');
+    $('okumaTakipBaslik').textContent = 'Okuma takibi';
     $('okumaTakipIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
     okumaTakipYukle(false);
   }
@@ -1259,12 +1279,84 @@
             x.bitenAy.length ? el('span', { metin: 'Bitirdi: ' + x.bitenAy.join(', ') }) : null])]));
       });
     };
-    ic.appendChild(secimGrubu(['Okumayanlar', 'Hepsi'], false, function () { return okumaFiltre; }, function (x) { okumaFiltre = x || 'Okumayanlar'; ciz(); }));
+    ic.appendChild(secimGrubu(['Okumayanlar', 'Hepsi', 'Şampiyonlar'], false, function () { return okumaFiltre; }, function (x) {
+      okumaFiltre = x || 'Okumayanlar';
+      if (okumaFiltre === 'Şampiyonlar') { liste.innerHTML = '<div class="yukleniyor">Yükleniyor…</div>'; sampiyonYukle(liste, false); } else ciz();
+    }));
     ic.appendChild(liste);
-    ciz();
+    if (okumaFiltre === 'Şampiyonlar') sampiyonYukle(liste, false); else ciz();
     const yen = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Yenile' });
     yen.onclick = function () { yen.disabled = true; okumaTakipYukle(true); };
     ic.appendChild(el('p', { sinif: 'not rp-saat' }, [document.createTextNode('Mentorların Grubum → "Okuma gir" kayıtlarından. ' + (s.saat || '') + ' itibarıyla. '), yen]));
+  }
+  /** Okuma şampiyonları (aylık): mentor kendi grubu + ekip sıralaması; rehber Okuma takibi → Şampiyonlar (RehberPano.gs okumaSampiyon_) */
+  function sampiyonAc() {
+    history.pushState({ alt: 'okumaTakip' }, ''); goster('okumaTakip');
+    $('okumaTakipBaslik').textContent = 'Okuma şampiyonları';
+    const ic = $('okumaTakipIcerik');
+    ic.innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    sampiyonYukle(ic, false);
+  }
+  async function sampiyonYukle(kap, yenileMi) {
+    let s;
+    try {
+      s = DEMO ? { ok: true, mentor: kisiRolu() === 'mentor', ay: 'Ekim', gecenAyAd: 'Eylül', gosterGecen: true, saat: '15:40', benimGruplar: ['E10'],
+          buAy: { gruplar: [{ grup: 'E10', ilk5: [{ ad: 'Örnek Öğrenci 1', hafta: 4, sayfa: 80 }, { ad: 'Örnek Öğrenci 2', hafta: 3, sayfa: 120 }, { ad: 'Örnek Öğrenci 3', hafta: 2, sayfa: 40 }],
+                    ilerleyen: { ad: 'Örnek Öğrenci 2', artis: 90 }, oran: 60, duzenli: 6, toplam: 10 }],
+                  sira: [{ grup: 'E11', oran: 75, duzenli: 6, toplam: 8 }, { grup: 'E10', oran: 60, duzenli: 6, toplam: 10 }, { grup: 'E12', oran: 30, duzenli: 3, toplam: 10 }] },
+          gecenAy: { gruplar: [{ grup: 'E10', ilk5: [{ ad: 'Örnek Öğrenci 2', hafta: 4, sayfa: 150 }], ilerleyen: null }], sira: [{ grup: 'E10', oran: 70, duzenli: 7, toplam: 10 }] },
+          rozetler: { E10: [{ ad: 'Örnek Öğrenci 1', rozetler: ['İlk kitap', '4 hafta üst üste'] }, { ad: 'Örnek Öğrenci 2', rozetler: ['500 sayfa'] }] } }
+        : await islem('&islem=rehberPano&detay=sampiyon&ekip=' + encodeURIComponent(depo.al('rehberEkip') || 'hepsi') + (yenileMi ? '&yenile=1' : ''));
+    } catch (e) { kap.textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; return; }
+    if (!s || !s.ok) { kap.textContent = HATA_METNI[s && s.hata] || 'Şampiyonlar yüklenemedi.'; return; }
+    kap.textContent = '';
+    const benim = s.benimGruplar || [];
+    const sira = function (baslik, liste) {
+      if (!liste.length) return;
+      kap.appendChild(el('div', { sinif: 'hs-baslik', metin: baslik }));
+      const d = el('div', { sinif: 'gorev-kart sp-sira' });
+      liste.forEach(function (x, i) {
+        d.appendChild(el('div', { sinif: 'sp-satir' + (benim.indexOf(x.grup) >= 0 ? ' benim' : '') + (i === 0 ? ' ilk' : '') }, [
+          el('span', { sinif: 'sp-no', metin: String(i + 1) }), el('b', { metin: x.grup }),
+          el('span', { sinif: 'sp-bar' }, [el('span', { style: 'width:' + Math.max(4, x.oran) + '%' })]),
+          el('span', { sinif: 'sp-deger', metin: '%' + x.oran + ' · ' + x.duzenli + '/' + x.toplam })]));
+      });
+      kap.appendChild(d);
+    };
+    const gruplar = function (ay, a) {
+      a.gruplar.forEach(function (g) {
+        const d = el('div', { sinif: 'gorev-kart sp-grup' }, [el('div', { sinif: 'gorev-metin', metin: g.grup + ' · ' + ay + ' ayının ilk 5\'i' })]);
+        if (!g.ilk5.length) d.appendChild(el('p', { sinif: 'not', metin: 'Bu ay henüz okuma girilmedi.' }));
+        g.ilk5.forEach(function (x, i) {
+          d.appendChild(el('div', { sinif: 'sp-satir' + (i === 0 ? ' ilk' : '') }, [el('span', { sinif: 'sp-no', metin: String(i + 1) }), el('span', { sinif: 'sp-ad', metin: x.ad }),
+            el('span', { sinif: 'sp-deger', metin: x.hafta + ' hafta · ' + x.sayfa + ' sf' })]));
+        });
+        if (g.ilerleyen) d.appendChild(el('div', { sinif: 'gorev-alt sp-ilerleyen' }, [el('span', { sinif: 'rp-cip iyi', metin: 'En çok ilerleyen' }),
+          el('span', { metin: g.ilerleyen.ad + ' · geçen aya göre +' + g.ilerleyen.artis + ' sf' })]));
+        kap.appendChild(d);
+      });
+    };
+    if (s.gosterGecen && s.gecenAy) {
+      kap.appendChild(el('div', { sinif: 'bilgi', metin: s.gecenAyAd + ' ayı kesinleşti: şampiyonları buluşmada açıklayabilirsiniz.' }));
+      sira(s.gecenAyAd + ' · ayın okuyan grubu', s.gecenAy.sira);
+      gruplar(s.gecenAyAd, s.gecenAy);
+    }
+    sira(s.ay + ' · ayın okuyan grubu (devam ediyor)', s.buAy.sira);
+    gruplar(s.ay, s.buAy);
+    const rz = Object.keys(s.rozetler || {}).filter(function (g) { return s.rozetler[g].length; });
+    if (rz.length) {
+      kap.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Rozetler' }));
+      rz.forEach(function (g) {
+        const d = el('div', { sinif: 'gorev-kart' }, [el('div', { sinif: 'gorev-metin', metin: g })]);
+        s.rozetler[g].forEach(function (x) {
+          d.appendChild(el('div', { sinif: 'gorev-alt' }, [el('span', { sinif: 'sp-ad', metin: x.ad }), el('span', {}, x.rozetler.map(function (r) { return el('span', { sinif: 'rp-cip iyi sp-rozet', metin: r }); }))]));
+        });
+        kap.appendChild(d);
+      });
+    }
+    const yen = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Yenile' });
+    yen.onclick = function () { yen.disabled = true; sampiyonYukle(kap, true); };
+    kap.appendChild(el('p', { sinif: 'not rp-saat' }, [document.createTextNode('Sıralama istikrara göre: ayda en çok haftada okuyan öğrenci öne geçer, eşitlikte sayfa. Okuyan grup = ayda en az iki farklı haftada okuyan öğrenci oranı. ' + (s.saat || '') + ' itibarıyla. '), yen]));
   }
   /** Ekibim → o grubun mentor ekranı */
   function mentorGozuAc(grup) {
@@ -3633,7 +3725,8 @@
     if (s.bilgi) ic.appendChild(el('div', { sinif: 'bilgi', metin: s.bilgi }));
     if (s.yetki.koc) { kocCiz(s, ic); return; }
     $('derslerBaslik').textContent = 'Ders desteği' + (s.grup && !s.yetki.yonet && s.rol !== 'akademik' ? ' · ' + s.grup : '');
-    const aktif = s.talepler.filter(function (t) { return DERS_AKTIF.indexOf(t.durum) >= 0; });
+    const aktif = s.talepler.filter(function (t) { return DERS_AKTIF.indexOf(t.durum) >= 0; })
+      .sort(function (a, b) { return (b.saat || 0) - (a.saat || 0); });   // en uzun bekleyen üstte
     const biten = s.talepler.filter(function (t) { return DERS_AKTIF.indexOf(t.durum) < 0; });
     if (s.yetki.ac && s.ogrenciler && s.ogrenciler.length && !saltOkunurDers(s)) {
       const ac = el('button', { sinif: 'kucuk sicak', type: 'button', metin: '+ Yeni talep' });
@@ -3683,6 +3776,39 @@
   function saltOkunurDers(s) { return s.rol === 'musahit'; }
   function dersRehberiMi() { try { return !!(JSON.parse(depo.al('kisi') || 'null') || {}).dkr; } catch (e) { return false; } }
 
+  /** Talebin akışı: 7 adım; tamamlananlar ✓ (ne zaman, kim), şu anki adım vurgulu ("Bekleyen: Veli · 2 gündür"), sonrakiler soluk */
+  const AKIS = [
+    { ad: 'Talep açıldı', re: /^Talep açıldı/ },
+    { ad: 'Koç atandı', re: /^Koç atandı/ },
+    { ad: 'Koç saat önerdi', re: /saat önerildi/ },
+    { ad: 'Öğrenci saat seçti', re: / seçti: / },
+    { ad: 'Veli onayı', re: /^Veli onayladı/ },
+    { ad: 'Ders Koçu Rehberi son onay', re: /^Onaylandı/ },
+    { ad: 'Ders ve koç raporu', re: /^Rapor girildi/ }];
+  const AKIS_SIRA = { 'Koç ataması': 1, 'Saat önerisi': 2, 'Saat seçimi': 3, 'Veli onayı': 4, 'Son onay': 5, 'Planlandı': 6, 'Tamamlandı': 7 };
+  function akisCiz(t) {
+    const liste = el('ol', { sinif: 'akis' });
+    const simdi = t.durum === 'İptal' ? -1 : AKIS_SIRA[t.durum];
+    const zaman = function (iso) { const d = new Date(iso); return isNaN(d) ? '' : d.getDate() + ' ' + AYLAR_UZUN[d.getMonth()].slice(0, 3) + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+    const son = function (re) { const x = t.gecmis.filter(function (g) { return re.test(g.ne); }); return x[x.length - 1]; };
+    AKIS.forEach(function (a, i) {
+      const g = son(a.re);
+      const bitti = simdi === -1 ? !!g : i < simdi;
+      const aktifMi = i === simdi;
+      let alt = '';
+      if (bitti && g) alt = zaman(g.z) + (g.kim ? ' · ' + g.kim : '');
+      else if (bitti && i === 4) alt = 'Gerekmedi (bu koç için bu yıl izin var)';
+      else if (aktifMi) alt = 'Bekleyen: ' + (t.bekleyen || '—') + ' · ' + sureSaat(t.saat);
+      liste.appendChild(el('li', { sinif: bitti ? 'bitti' : aktifMi ? 'simdi' : '' }, [el('span', { sinif: 'akis-nokta', metin: bitti ? '✓' : String(i + 1) }),
+        el('div', {}, [el('b', { metin: a.ad }), alt ? el('small', { metin: alt }) : null])]));
+    });
+    if (t.durum === 'İptal') {
+      const ip = t.gecmis.filter(function (g) { return /^İptal|istemedi/.test(g.ne); }).pop();
+      liste.appendChild(el('li', { sinif: 'iptal' }, [el('span', { sinif: 'akis-nokta', metin: '×' }), el('div', {}, [el('b', { metin: 'İptal edildi' }),
+        ip ? el('small', { metin: zaman(ip.z) + ' · ' + ip.ne.replace(/^İptal: /, '') }) : null])]));
+    }
+    return liste;
+  }
   function talepKarti(t, s) {
     const rol = s.rol, yonet = !!t.yonet, aktif = DERS_AKTIF.indexOf(t.durum) >= 0;   // yönetim (atama/onay) talebin ekibine göre
     const kart = el('div', { sinif: 'gorev-kart ders-kart' + (aktif && t.bekleyen && t.saat >= 48 ? ' gecikti' : aktif && t.bekleyen && t.saat >= 24 ? ' yakin' : '') });
@@ -3700,6 +3826,11 @@
       const dl = el('dl');
       ayrinti.forEach(function (x) { dl.appendChild(el('dt', { metin: x[0] })); dl.appendChild(el('dd', { metin: x[1] })); });
       kart.appendChild(el('details', {}, [el('summary', { metin: 'Ayrıntı' }), dl]));
+    }
+    if (t.gecmis && t.gecmis.length) {
+      const akis = el('details', { sinif: 'ders-akis' }, [el('summary', { metin: 'Akış · hangi aşamada' })]);
+      akis.appendChild(akisCiz(t));
+      kart.appendChild(akis);
     }
     if (t.rapor) {
       const test = t.on != null && t.son != null ? 'Ön %' + t.on + ' → Son %' + t.son + ' (' + (t.son - t.on >= 0 ? '+' : '') + (t.son - t.on) + ')\n'
@@ -3831,6 +3962,13 @@
       kursDegis();
     };
     ders.onchange = dersDegis; kurs.onchange = kursDegis; konu.onchange = function () { konuYaz.hidden = konu.value !== DIGER; };
+    // Listede olmayan ders / kurs / konu: görünür kısayol ("Diğer (yazın)" seçeneği listenin en altında gözden kaçıyordu)
+    const kendin = function (sec, yaz, degis) {
+      const b = el('button', { sinif: 'baglanti-kucuk ders-kendin', type: 'button', metin: 'Listede yok mu? Kendiniz yazın' });
+      b.onclick = function () { if (![].slice.call(sec.options).some(function (o) { return o.value === DIGER; })) sec.appendChild(el('option', { value: DIGER, metin: DIGER })); sec.value = DIGER; if (degis) degis(); yaz.hidden = false; yaz.focus(); };
+      return b;
+    };
+    const dersKendin = kendin(ders, dersYaz, dersDegis), kursKendin = kendin(kurs, kursYaz, kursDegis), konuKendin = kendin(konu, konuYaz, null);
     dersDegis();
     const not = el('textarea', { placeholder: 'Öğrenciyle birlikte: nerede takılıyor, sınav ne zaman?', maxlength: '600' });
     const eposta = el('p', { sinif: 'not ders-eposta' });
@@ -3855,8 +3993,8 @@
     };
     [el('div', { sinif: 'veli-baslik' }, [el('span', { metin: 'Yeni ders desteği talebi' })]),
      grupSec ? alanEl('Grup', grupSec) : null,
-     el('div', { sinif: 'iki' }, [alanEl('Öğrenci', ogr), alanEl('Sınıf', sinif)]), alanEl('Ders', ders), dersYaz,
-     el('div', { sinif: 'iki' }, [alanEl('Kurs', kurs), alanEl('Konu', konu)]), kursYaz, konuYaz,
+     el('div', { sinif: 'iki' }, [alanEl('Öğrenci', ogr), alanEl('Sınıf', sinif)]), alanEl('Ders', ders), dersYaz, dersKendin,
+     el('div', { sinif: 'iki' }, [alanEl('Kurs', kurs), alanEl('Konu', konu)]), kursYaz, konuYaz, el('div', { sinif: 'ders-kendin-sira' }, [kursKendin, konuKendin]),
      el('span', { sinif: 'ders-etiket', metin: 'Ne durumda?' }), secimGrubu(dersVeri.seviyeler, false, function () { return v.seviye; }, function (x) { v.seviye = x; }),
      el('span', { sinif: 'ders-etiket', metin: 'Ne zamana?' }), secimGrubu(dersVeri.zamanlar, false, function () { return v.zaman; }, function (x) { v.zaman = x; }),
      alanEl('Not', not), eposta, el('div', { sinif: 'dugmeler' }, [vazgec, gonder])].forEach(function (x) { if (x) f.appendChild(x); });
@@ -3948,28 +4086,44 @@
     return f;
   }
 
+  /** Koç raporu: dokunarak (Ders yapıldı mı? · Öğrenci ne durumda? · Tekrar görüşme gerekli mi?), not ve test isteğe bağlı */
   function raporFormu(t) {
     const f = el('div', { sinif: 'ekle-form' });
+    const v = { yapildi: '', durum: '', tekrar: '' };
     const sayi = function (ph) { return el('input', { type: 'number', inputmode: 'numeric', min: '0', max: '200', placeholder: ph }); };
     const onT = sayi('Soru'), onD = sayi('Doğru'), sonT = sayi('Soru'), sonD = sayi('Doğru');
     const onY = el('span', { sinif: 'ders-puan' }), sonY = el('span', { sinif: 'ders-puan' });
-    const hesap = function (T, D, out) { const t = +T.value, d = +D.value; out.textContent = T.value && D.value && t > 0 && d <= t ? '%' + Math.round(d / t * 100) : ''; };
+    const hesap = function (T, D, out) { const t2 = +T.value, d = +D.value; out.textContent = T.value && D.value && t2 > 0 && d <= t2 ? '%' + Math.round(d / t2 * 100) : ''; };
     [onT, onD].forEach(function (x) { x.oninput = function () { hesap(onT, onD, onY); }; });
     [sonT, sonD].forEach(function (x) { x.oninput = function () { hesap(sonT, sonD, sonY); }; });
-    const testNot = el('input', { type: 'text', placeholder: 'Test hakkında kısa not (isteğe bağlı)', maxlength: '300' });
-    const not = el('textarea', { placeholder: 'Neler çalışıldı, nerede zorlanıyor, sonraki adım?', maxlength: '1500' });
+    const testNot = el('input', { type: 'text', placeholder: 'Test hakkında kısa not', maxlength: '300' });
+    const not = el('textarea', { placeholder: 'Not (ör. denklemlerde iyi, kesirlerde zorlanıyor)', maxlength: '1500' });
     const testSatir = function (ad, T, D, Y) { return el('div', { sinif: 'ders-test' }, [el('span', { sinif: 'ders-etiket', metin: ad }), T, D, Y]); };
+    const test = el('details', { sinif: 'ders-test-kutu' }, [el('summary', { metin: 'Test ekle' }), testSatir('Ön test', onT, onD, onY), testSatir('Son test', sonT, sonD, sonY), testNot]);
+    const durumKutu = el('div', {}, [el('span', { sinif: 'ders-etiket', metin: 'Öğrenci ne durumda?' }),
+      secimGrubu(['Anladı', 'Kısmen', 'Zorlanıyor'], false, function () { return v.durum; }, function (x) { v.durum = x; })]);
+    const tekrarKutu = el('div', {}, [el('span', { sinif: 'ders-etiket', metin: 'Tekrar görüşme gerekli mi?' }),
+      secimGrubu(['Evet', 'Hayır'], false, function () { return v.tekrar; }, function (x) { v.tekrar = x; })]);
     const gonder = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Raporu gönder' });
+    const ciz = function () {
+      const yap = v.yapildi === 'Yapıldı';
+      durumKutu.hidden = tekrarKutu.hidden = test.hidden = !yap;
+      gonder.textContent = v.yapildi === 'Ertelendi' ? 'Ertelendi olarak kaydet' : 'Raporu gönder';
+    };
     gonder.onclick = function () {
-      if (not.value.trim().length < 10) { not.focus(); alert(DERS_HATA.dersRaporNot); return; }
+      if (!v.yapildi) { alert('Ders yapıldı mı? sorusunu seçin.'); return; }
+      if (v.yapildi === 'Yapıldı' && !v.durum) { alert('Öğrencinin durumunu seçin.'); return; }
       const eksik = function (T, D) { return !!T.value !== !!D.value || (T.value && (+D.value > +T.value || +T.value < 1)); };
       if (eksik(onT, onD) || eksik(sonT, sonD)) { alert(DERS_HATA.dersYuzde); return; }
-      dersGonder({ islem: 'dersRapor', id: t.id, onT: onT.value, onD: onD.value, sonT: sonT.value, sonD: sonD.value, testNot: testNot.value.trim(), not: not.value.trim() }, gonder);
+      dersGonder({ islem: 'dersRapor', id: t.id, yapildi: v.yapildi, durum: v.durum, tekrar: v.tekrar,
+                   onT: onT.value, onD: onD.value, sonT: sonT.value, sonD: sonD.value, testNot: testNot.value.trim(), not: not.value.trim() }, gonder);
     };
-    [el('span', { sinif: 'ders-etiket', metin: 'Test (isteğe bağlı · ikisi de aynı konuyu, benzer zorlukta ölçmeli)' }),
-     testSatir('Ön test', onT, onD, onY), testSatir('Son test', sonT, sonD, sonY), testNot, alanEl('Not (zorunlu)', not),
-     el('p', { sinif: 'not', metin: 'Rapor öğrenciye, veliye, mentora, Ders Koçu Rehberine ve akademik mesule gider.' }),
+    [el('span', { sinif: 'ders-etiket', metin: 'Ders yapıldı mı?' }),
+     secimGrubu(['Yapıldı', 'Öğrenci gelmedi', 'Ertelendi'], false, function () { return v.yapildi; }, function (x) { v.yapildi = x; ciz(); }),
+     durumKutu, tekrarKutu, alanEl('Not', not), test,
+     el('p', { sinif: 'not', metin: 'Rapor öğrenciye, veliye, mentora, Ders Koçu Rehberine ve akademik mesule gider. "Ertelendi" seçerseniz takvim daveti iptal olur ve yeni saat önerirsiniz.' }),
      el('div', { sinif: 'dugmeler' }, [gonder])].forEach(function (x) { f.appendChild(x); });
+    ciz();
     return f;
   }
 
@@ -4078,7 +4232,7 @@
   function DEMO_DERS() {
     if (!demoDers) demoDers = [
       { id: 'D-0003', grup: 'E11', ogr: 'Elif', sinif: '11', ders: 'Biology', kurs: 'Biology 20', konu: 'Ecosystems', seviye: 'Kısmen', zaman: 'Bu hafta', not: 'Sınav 30 Ekim.', acan: 'Örnek Mentor', mentor: 'Örnek Mentor', durum: 'Koç ataması', kocNo: '', koc: '', secenekler: [], secilen: null, meet: '', izin: false, bekleyen: 'Ders Koçu Rehberi', saat: 5, acildi: '18 Eki', on: null, son: null, rapor: '' },
-      { id: 'D-0002', grup: 'E10', ogr: 'Ahmet', sinif: '10', ders: 'Mathematics', kurs: 'Mathematics 20-1', konu: 'Quadratic Functions', seviye: 'Kısmen', zaman: '2 hafta içinde', not: 'Faktörlemeyi yapıyor, grafikte tepe noktasını bulamıyor. Sınav 6 Kasım.', acan: 'Örnek Mentor', mentor: 'Örnek Mentor', durum: 'Son onay', kocNo: '1', koc: 'Yusuf', secenekler: [], secilen: { metin: 'Salı 21 Ekim · 17:00 · 60 dk · Online', gecti: false }, meet: '', izin: true, bekleyen: 'Ders Koçu Rehberi', saat: 3, acildi: '17 Eki', on: null, son: null, rapor: '' },
+      { id: 'D-0002', grup: 'E10', ogr: 'Ahmet', sinif: '10', ders: 'Mathematics', kurs: 'Mathematics 20-1', konu: 'Quadratic Functions', seviye: 'Kısmen', zaman: '2 hafta içinde', not: 'Faktörlemeyi yapıyor, grafikte tepe noktasını bulamıyor. Sınav 6 Kasım.', acan: 'Örnek Mentor', mentor: 'Örnek Mentor', durum: 'Son onay', kocNo: '1', koc: 'Yusuf', secenekler: [], secilen: { metin: 'Salı 21 Ekim · 17:00 · 60 dk · Online', gecti: false }, meet: '', izin: true, bekleyen: 'Ders Koçu Rehberi', saat: 3, acildi: '17 Eki', on: null, son: null, rapor: '' , gecmis: [{ z: '2026-10-19T15:02:00', kim: 'Örnek Mentor', ne: 'Talep açıldı' }, { z: '2026-10-19T18:40:00', kim: 'Örnek Rehber', ne: 'Koç atandı: Meryem' }, { z: '2026-10-20T09:15:00', kim: 'Meryem', ne: '3 saat önerildi' }] },
       { id: 'D-0004', grup: 'E10', ogr: 'Mehmet', sinif: '10', ders: 'Physics', kurs: 'Physics 20', konu: 'Kinematics', seviye: 'Pratik lazım', zaman: '', not: '', acan: 'Örnek Mentor', mentor: 'Örnek Mentor', durum: 'Saat seçimi', kocNo: '2', koc: 'Meryem', secenekler: [{ metin: 'Perşembe 23 Ekim · 19:30 · 60 dk · KM Daire 5' }, { metin: 'Cumartesi 25 Ekim · 11:00 · 60 dk · Online' }], secilen: null, meet: '', izin: false, bekleyen: 'Veli', saat: 52, acildi: '16 Eki', on: null, son: null, rapor: '', link: 'https://atic-sudo.github.io/rh-nc868sx/?d=D-0004.v.ornek' },
       { id: 'D-0005', grup: 'E10', ogr: 'Ali', sinif: '12', ders: 'Chemistry', kurs: 'Chemistry 20', konu: 'Stoichiometry', seviye: '', zaman: '', not: '', acan: 'Örnek Mentor', mentor: 'Örnek Mentor', durum: 'Planlandı', kocNo: '1', koc: 'Yusuf', secenekler: [], secilen: { metin: 'Cuma 17 Ekim · 18:00 · 60 dk · Online', gecti: true }, meet: 'https://meet.google.com/abc-defg-hij', izin: true, bekleyen: 'Rapor (ders koçu)', saat: 30, acildi: '12 Eki', on: null, son: null, rapor: '' },
       { id: 'D-0006', grup: 'E10', ogr: 'Yusuf', sinif: '10', ders: 'Mathematics', kurs: 'Mathematics 10C', konu: 'Trigonometry', seviye: '', zaman: '', not: '', acan: 'Örnek Mentor', mentor: 'Örnek Mentor', durum: 'Saat önerisi', kocNo: '1', koc: 'Yusuf', secenekler: [], secilen: null, meet: '', izin: true, bekleyen: 'Ders koçu', saat: 6, acildi: '18 Eki', on: null, son: null, rapor: '' },
