@@ -390,6 +390,7 @@
     .rp-t-ust { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--soluk); }
     .rp-t-ad { font-size: 17px; font-weight: 650; } .rp-t-alt { font-size: 14px; color: var(--soluk); }
     .rp-toplanti .dugmeler { display: flex; justify-content: flex-end; }
+    .rp-harf-liste { margin: -2px 0 10px 14px; padding-left: 10px; border-left: 2px solid var(--cizgi); }
     .rp-grup { display: flex; flex-direction: column; gap: 6px; width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer;
       background: var(--kart); border: 1px solid var(--cizgi); border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; }
     .rp-g-ust { display: flex; align-items: center; gap: 10px; } .rp-g-ust b { font-size: 16px; } .rp-g-ust span { flex: 1; min-width: 0; color: var(--soluk); font-size: 14px; }
@@ -428,6 +429,22 @@
     .veli-form .not { margin: 0; }
     .ogr .dogum { margin-top: 4px; font-size: 14px; color: var(--soluk); }
     .ogr .okuma { margin-top: 6px; font-size: 14px; display: grid; gap: 2px; justify-items: start; }
+    .yol-kap { width: 100%; justify-self: stretch; }
+    .yol { display: flex; align-items: center; gap: 10px; margin: 2px 0 4px; width: 100%; }
+    .kus-dugme { border: 0; background: none; padding: 0; cursor: pointer; line-height: 0; border-radius: 99px; }
+    .kus { display: block; }
+    .yol-orta { flex: 1; min-width: 0; }
+    .yol-ust { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-size: 14px; }
+    .yol-puan { color: var(--soluk); font-size: 12px; }
+    .yol-seri { font-size: 11px; font-weight: 600; color: #b4541a; background: #fbe9dc; border-radius: 99px; padding: 0 7px; }
+    .yol-bar { height: 6px; border-radius: 99px; background: var(--cizgi); margin-top: 4px; overflow: hidden; }
+    .yol-bar span { display: block; height: 100%; border-radius: 99px; background: var(--ana); }
+    .yol-alt { color: var(--soluk); font-size: 12px; margin-top: 2px; }
+    .yol-acik { background: var(--ikon-zemin); border-radius: 12px; padding: 8px; margin-bottom: 4px; }
+    .yol-yol { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; font-size: 10.5px; }
+    .yol-yol div { display: flex; flex-direction: column; align-items: center; gap: 2px; opacity: .45; }
+    .yol-yol div.gecti { opacity: 1; }
+    .yol-yol small { color: var(--soluk); font-size: 10px; }
     .okuma-ust { color: var(--yazi); } .okuma-alt { color: var(--soluk); font-size: 13px; }
     .okuma-form { width: 100%; margin-top: 6px; }
     .okuma-ozet { margin: -4px 0 10px; font-size: 14px; color: var(--ana-etiket); font-weight: 600; }
@@ -1011,7 +1028,7 @@
   // Telefon ikonundaki sayı (Badging API) yalnız uygulama açılınca güncellenir; iPhone'da bildirim izni ister.
   let sayacZamani = 0, sunucuSayac = 0, gorevSayac = 0;
   function kisiRolu() {
-    if (DEMO) return DEMO_MENTOR ? 'mentor' : 'rehber';
+    if (DEMO) return DEMO_MENTOR ? 'mentor' : /rol=org/.test(location.search) ? 'org' : 'rehber';
     try { return (JSON.parse(depo.al('kisi') || 'null') || {}).rol || ''; } catch (e) { return ''; }
   }
   function rozetKoy(k, n) {
@@ -1093,7 +1110,10 @@
       ekibim: [
         { grup: 'E10', ekip: 'E Lise', mentor: 'Örnek Mentor', rapor: 'bu', katilim: '8/10', nasil: 'İyi', konu: 'Tam', raporTarih: '19 Eki', yatili: '7 Kas', gorev: 2, okuma: { sayfa: 140, biten: 1, okuyan: 6, toplam: 8 }, ders: 1 },
         { grup: 'E11', ekip: 'E Lise', mentor: 'Örnek Mentor 2', rapor: 'yok', katilim: '', raporTarih: '', yatili: '14 Kas · onay bekliyor', gorev: 1, okuma: { sayfa: 0, biten: 0, okuyan: 1, toplam: 7 }, ders: 0 },
-        { grup: 'E12', ekip: 'E Lise', mentor: 'Örnek Mentor 3', rapor: 'gecen', katilim: '6/9', nasil: 'Zor', konu: 'Kısmen', raporTarih: '12 Eki', yatili: '', gorev: 0, okuma: { sayfa: 60, biten: 0, okuyan: 4, toplam: 6 }, ders: 2 }] };
+        { grup: 'E12', ekip: 'E Lise', mentor: 'Örnek Mentor 3', rapor: 'gecen', katilim: '6/9', nasil: 'Zor', konu: 'Kısmen', raporTarih: '12 Eki', yatili: '', gorev: 0, okuma: { sayfa: 60, biten: 0, okuyan: 4, toplam: 6 }, ders: 2 }]
+        .concat(/rol=org/.test(location.search) ? [
+        { grup: 'K7', ekip: 'K Ortaokul', mentor: 'Örnek Mentor 4', rapor: 'bu', katilim: '7/8', nasil: 'İyi', konu: 'Tam', yatili: '', gorev: 1, okuma: { sayfa: 90, biten: 0, okuyan: 5, toplam: 8 }, ders: 0 },
+        { grup: 'K10', ekip: 'K Lise', mentor: 'Örnek Mentor 5', rapor: 'bu', katilim: '9/9', nasil: 'Orta', konu: 'Tam', yatili: '21 Kas', gorev: 0, okuma: { sayfa: 200, biten: 1, okuyan: 7, toplam: 9 }, ders: 1 }] : []) };
   }
   function rehberCiz(v, s) {
     const ic = $('icerik');
@@ -1197,7 +1217,7 @@
 
     // 3. Ekibim
     ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Ekibim' }));
-    (s.ekibim || []).forEach(function (g) {
+    const grupSatiri = function (g) {
       const cipler = [];
       const cip = function (metin, tur) { cipler.push(el('span', { sinif: 'rp-cip' + (tur ? ' ' + tur : ''), metin: metin })); };
       cip(g.rapor === 'bu' ? 'Rapor ✓' : g.rapor === 'gecen' ? 'Rapor ✓ geçen hafta' : 'Rapor yok', g.rapor === 'yok' ? (b.raporGec ? 'kirmizi' : 'uyari') : 'iyi');
@@ -1213,8 +1233,43 @@
         el('div', { sinif: 'rp-g-ust' }, [el('b', { metin: g.grup }), el('span', { metin: g.mentor || 'mentor yok' }), ikon('sag')]),
         el('div', { sinif: 'rp-cipler' }, cipler)]);
       satirEl.onclick = function () { mentorGozuAc(g.grup); };
-      ic.appendChild(satirEl);
-    });
+      return satirEl;
+    };
+    // Org + "Bütün ekipler": E ve K diye iki özet kart; dokununca o harfin grupları açılır (açık kart hatırlanır)
+    const harfler = (s.ekibim || []).map(function (g) { return g.grup.charAt(0); }).filter(function (h, i, a) { return a.indexOf(h) === i; });
+    if (kisiRolu() === 'org' && s.secili === 'hepsi' && harfler.length > 1) {
+      harfler.sort().forEach(function (h) {
+        const gs = s.ekibim.filter(function (g) { return g.grup.charAt(0) === h; });
+        const say = function (f) { return gs.filter(f).length; };
+        const cipler = [];
+        const cip = function (metin, tur) { cipler.push(el('span', { sinif: 'rp-cip' + (tur ? ' ' + tur : ''), metin: metin })); };
+        const rapor = say(function (g) { return g.rapor === 'bu'; });
+        cip('Rapor ' + rapor + '/' + gs.length, rapor === gs.length ? 'iyi' : (b.raporGec ? 'kirmizi' : 'uyari'));
+        const zor = say(function (g) { return g.nasil === 'Zor'; }); if (zor) cip(zor + ' grup zor geçti', 'kirmizi');
+        const kon = say(function (g) { return g.konu && g.konu !== 'Tam'; }); if (kon) cip(kon + ' grup konu eksik', 'uyari');
+        const yat = say(function (g) { return /onay bekliyor|iptal/.test(g.yatili || ''); }); if (yat) cip(yat + ' yatılı onay bekliyor', 'uyari');
+        const ok = gs.reduce(function (a, g) { if (g.okuma) { a.o += g.okuma.okuyan; a.t += g.okuma.toplam; } return a; }, { o: 0, t: 0 });
+        if (ok.t) cip('Okuma ' + ok.o + '/' + ok.t, ok.o * 2 < ok.t ? 'uyari' : '');
+        const gor = gs.reduce(function (a, g) { return a + (+g.gorev || 0); }, 0); if (gor) cip(gor + ' açık görev');
+        const ders = gs.reduce(function (a, g) { return a + (+g.ders || 0); }, 0); if (ders) cip(ders + ' ders desteği');
+        const acik = depo.al('orgHarf') === h;
+        const liste = el('div', { sinif: 'rp-harf-liste' }, gs.map(grupSatiri));
+        liste.hidden = !acik;
+        const ok2 = ikon('sag');
+        if (acik) ok2.style.transform = 'rotate(90deg)';
+        const kart = el('button', { sinif: 'rp-grup rp-harf', type: 'button', 'aria-expanded': String(acik) }, [
+          el('div', { sinif: 'rp-g-ust' }, [el('b', { metin: h + ' ekipleri' }), el('span', { metin: gs.length + ' grup' }), ok2]),
+          el('div', { sinif: 'rp-cipler' }, cipler)]);
+        kart.onclick = function () {
+          liste.hidden = !liste.hidden;
+          kart.setAttribute('aria-expanded', String(!liste.hidden));
+          depo.yaz('orgHarf', liste.hidden ? '' : h);
+          ok2.style.transform = liste.hidden ? '' : 'rotate(90deg)';
+        };
+        ic.appendChild(kart);
+        ic.appendChild(liste);
+      });
+    } else (s.ekibim || []).forEach(function (g) { ic.appendChild(grupSatiri(g)); });
 
     // 4. Kısayollar
     ic.appendChild(satir({ k: 'gorev', ikon: 'onay', baslik: 'Görevlerim', alt: 'Size verilenler · ekip görevleri · görev / karar ekle', url: '#', tikla: function () { gorevlerAc(); } }));
@@ -1304,7 +1359,9 @@
                     ilerleyen: { ad: 'Örnek Öğrenci 2', artis: 90 }, oran: 60, duzenli: 6, toplam: 10 }],
                   sira: [{ grup: 'E11', oran: 75, duzenli: 6, toplam: 8 }, { grup: 'E10', oran: 60, duzenli: 6, toplam: 10 }, { grup: 'E12', oran: 30, duzenli: 3, toplam: 10 }] },
           gecenAy: { gruplar: [{ grup: 'E10', ilk5: [{ ad: 'Örnek Öğrenci 2', hafta: 4, sayfa: 150 }], ilerleyen: null }], sira: [{ grup: 'E10', oran: 70, duzenli: 7, toplam: 10 }] },
-          rozetler: { E10: [{ ad: 'Örnek Öğrenci 1', rozetler: ['İlk kitap', '4 hafta üst üste'] }, { ad: 'Örnek Öğrenci 2', rozetler: ['500 sayfa'] }] } }
+          rozetler: { E10: [{ ad: 'Örnek Öğrenci 1', rozetler: ['İlk kitap', '4 hafta üst üste'] }, { ad: 'Örnek Öğrenci 2', rozetler: ['500 sayfa'] }] },
+          yolculuk: { E10: [{ ad: 'Örnek Öğrenci 2', sv: 3, puan: 24, seri: 5, rozetler: ['500 sayfa'] }, { ad: 'Örnek Öğrenci 1', sv: 2, puan: 12, seri: 4, rozetler: ['İlk kitap', '4 hafta üst üste'] },
+            { ad: 'Örnek Öğrenci 3', sv: 1, puan: 4, seri: 1, rozetler: [] }, { ad: 'Örnek Öğrenci 4', sv: 0, puan: 0, seri: 0, rozetler: [] }] } }
         : await islem('&islem=rehberPano&detay=sampiyon&ekip=' + encodeURIComponent(depo.al('rehberEkip') || 'hepsi') + (yenileMi ? '&yenile=1' : ''));
     } catch (e) { kap.textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; return; }
     if (!s || !s.ok) { kap.textContent = HATA_METNI[s && s.hata] || 'Şampiyonlar yüklenemedi.'; return; }
@@ -1342,7 +1399,20 @@
     }
     sira(s.ay + ' · ayın okuyan grubu (devam ediyor)', s.buAy.sira);
     gruplar(s.ay, s.buAy);
-    const rz = Object.keys(s.rozetler || {}).filter(function (g) { return s.rozetler[g].length; });
+    const yg = Object.keys(s.yolculuk || {}).filter(function (g) { return s.yolculuk[g].length; });
+    if (yg.length) {
+      kap.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Okuma yolculuğu · bu yıl' }));
+      yg.forEach(function (g) {
+        const d = el('div', { sinif: 'gorev-kart' }, [el('div', { sinif: 'gorev-metin', metin: g })]);
+        s.yolculuk[g].forEach(function (x) {
+          d.appendChild(el('div', { sinif: 'sp-satir' }, [kusIkon(Math.min(6, +x.sv || 0), 28), el('span', { sinif: 'sp-ad' }, [el('span', { metin: x.ad }),
+            (x.rozetler || []).length ? el('span', {}, x.rozetler.map(function (r) { return el('span', { sinif: 'rp-cip iyi sp-rozet', metin: r }); })) : null]),
+            el('span', { sinif: 'sp-deger', metin: YOL_AD[Math.min(6, +x.sv || 0)] + ' · ' + x.puan + ' puan' })]));
+        });
+        kap.appendChild(d);
+      });
+    }
+    const rz = yg.length ? [] : Object.keys(s.rozetler || {}).filter(function (g) { return s.rozetler[g].length; });
     if (rz.length) {
       kap.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Rozetler' }));
       rz.forEach(function (g) {
@@ -1432,6 +1502,7 @@
       if (/ekran=yatili/.test(location.search)) yatiliAc();
       if (/ekran=rapor/.test(location.search)) raporAc();
       if (/ekran=grubum/.test(location.search)) grubumAc();
+      if (/ekran=sampiyon/.test(location.search)) sampiyonAc();
       if (/ekran=gorevler/.test(location.search)) gorevlerAc();
       if (/ekran=bulusma/.test(location.search)) bulusmaAc();
       if (/ekran=gprogram/.test(location.search)) gunubirlikProgramAc('');
@@ -2371,8 +2442,8 @@
 
   const DEMO_DOGUM = { 2: '', 4: '21.10' };
   const DEMO_OKUMA = { liste: [{ kitap: 'Çağ ve Nesil', yazar: 'M. Fethullah Gülen', sayfa: 220 }, { kitap: 'Küçük Prens', yazar: 'Saint-Exupéry', sayfa: 112 }],
-    ay: { sayfa: 340, dk: 410, biten: 1 }, ogr: { Ahmet: { kitap: 'Çağ ve Nesil', sayfa: 120, toplam: 220, biten: ['Küçük Prens'], aySayfa: 180, ayDk: 240 },
-                                                Mehmet: { kitap: 'Küçük Prens', sayfa: 40, toplam: 112, biten: [], aySayfa: 40, ayDk: 60 } } };
+    ay: { sayfa: 340, dk: 410, biten: 1 }, esik: [15, 50, 120], ogr: { Ahmet: { kitap: 'Çağ ve Nesil', sayfa: 120, toplam: 220, biten: ['Küçük Prens'], aySayfa: 180, ayDk: 240, yol: { puan: 28, sv: 3, seri: 4, kitap: 1 } },
+                                                Mehmet: { kitap: 'Küçük Prens', sayfa: 40, toplam: 112, biten: [], aySayfa: 40, ayDk: 60, yol: { puan: 4, sv: 1, seri: 1, kitap: 0 } } } };
   function sureMetni(dk) { dk = +dk || 0; return dk < 60 ? dk + ' dk' : Math.floor(dk / 60) + ' sa' + (dk % 60 ? ' ' + dk % 60 + ' dk' : ''); }
 
   /** Öğrenci kartında okuma: şu anki kitap + sayfa, bitirdikleri, bu ay; "Okuma gir" formu (mentor öğrenciye sorup girer). */
@@ -2381,6 +2452,7 @@
     const kutu = el('div', { sinif: 'okuma' });
     const ust = x.kitap ? '📖 ' + x.kitap + (x.sayfa !== '' ? ' · ' + x.sayfa + (x.toplam ? '/' + x.toplam : '') + ' s' : '') : '📖 Şu an okuduğu kitap yok';
     const alt = [x.biten.length ? x.biten.length + ' kitap bitirdi' : '', x.aySayfa || x.ayDk ? 'bu ay ' + x.aySayfa + ' s · ' + sureMetni(x.ayDk) : ''].filter(String).join(' · ');
+    if (!ayrildi) kutu.appendChild(yolSatiri(x.yol, s.okuma && s.okuma.esik));
     kutu.appendChild(el('div', { sinif: 'okuma-ust', metin: ust }));
     if (alt) kutu.appendChild(el('div', { sinif: 'okuma-alt', metin: alt, title: x.biten.join(', ') }));
     if (ayrildi || saltOkunur()) return kutu;
@@ -2416,6 +2488,31 @@
       setTimeout(function () { (x.kitap ? sayfa : kitap).focus(); }, 30);
     };
     return kutu;
+  }
+
+  // ----- Okuma yolculuğu: Yumurta → Anka (puan sunucuda: haftalık sayfa eşikleri, haftada en çok 3; biten kitap +2; her Eylül baştan) -----
+  const YOL_AD = ['Yumurta', 'Civciv', 'Serçe', 'Kırlangıç', 'Şahin', 'Kartal', 'Anka'];
+  const YOL_YONE = ['', "Civciv'e", "Serçe'ye", "Kırlangıç'a", "Şahin'e", "Kartal'a", "Anka'ya"];
+  const YOL_PUAN = [0, 3, 10, 20, 35, 55, 80];
+  function kusIkon(sv, boy) { return el('img', { sinif: 'kus', src: 'kus-' + (sv + 1) + '.png', width: String(boy), height: String(boy), alt: YOL_AD[sv] }); }
+  function yolSatiri(y, esik) {
+    y = y || { puan: 0, sv: 0, seri: 0, kitap: 0 };
+    const sv = Math.min(6, Math.max(0, +y.sv || 0)), son = sv === 6;
+    const yuzde = son ? 100 : Math.round(100 * (y.puan - YOL_PUAN[sv]) / (YOL_PUAN[sv + 1] - YOL_PUAN[sv]));
+    const ikon = el('button', { sinif: 'kus-dugme', type: 'button', 'aria-label': 'Okuma yolculuğu: ' + YOL_AD[sv] + '. Açıklama' }, [kusIkon(sv, 34)]);
+    const kap = el('div', { sinif: 'yol' }, [ikon, el('div', { sinif: 'yol-orta' }, [
+      el('div', { sinif: 'yol-ust' }, [el('b', { metin: YOL_AD[sv] }), el('span', { sinif: 'yol-puan', metin: y.puan + ' puan' }),
+        y.seri >= 2 ? el('span', { sinif: 'yol-seri', metin: y.seri + ' hafta üst üste' }) : null]),
+      el('div', { sinif: 'yol-bar' }, [el('span', { style: 'width:' + Math.max(3, yuzde) + '%' })]),
+      el('div', { sinif: 'yol-alt', metin: son ? 'Yolculuk tamamlandı' : YOL_YONE[sv + 1] + ' ' + (YOL_PUAN[sv + 1] - y.puan) + ' puan' })])]);
+    const acik = el('div', { sinif: 'yol-acik', hidden: '' });
+    const e = esik || [10, 30, 70];
+    acik.appendChild(el('div', { sinif: 'yol-yol' }, YOL_AD.map(function (a, i) {
+      return el('div', { sinif: i <= sv ? 'gecti' : '' }, [kusIkon(i, 30), el('span', { metin: a }), el('small', { metin: String(YOL_PUAN[i]) })]);
+    })));
+    acik.appendChild(el('p', { sinif: 'not', metin: 'Her hafta okunan sayfaya göre puan: ' + e[0] + ' sayfa 1 puan, ' + e[1] + ' sayfa 2 puan, ' + e[2] + ' sayfa ve üstü 3 puan (haftada en çok 3). Bitirilen her kitap +2 puan. Yolculuk her Eylül baştan başlar.' }));
+    ikon.onclick = function (ev) { ev.stopPropagation(); acik.hidden = !acik.hidden; };
+    return el('div', { sinif: 'yol-kap' }, [kap, acik]);
   }
   const AY_ADI = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 
