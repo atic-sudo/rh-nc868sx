@@ -393,6 +393,14 @@
     .rp-t-ust { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--soluk); }
     .rp-t-ad { font-size: 17px; font-weight: 650; } .rp-t-alt { font-size: 14px; color: var(--soluk); }
     .rp-toplanti .dugmeler { display: flex; justify-content: flex-end; }
+    .rap-sekme { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 10px; }
+    .rap-sekme button { flex: 0 0 auto; font: inherit; font-size: 12.5px; border: 1px solid var(--cizgi); background: var(--kart); color: var(--yazi); border-radius: 99px; padding: 6px 10px; cursor: pointer; }
+    .rap-sekme button.secili { background: var(--ana); border-color: var(--ana); color: var(--kart); }
+    .rap-nokta { margin-left: auto; display: inline-flex; gap: 4px; }
+    .rap-nokta span { display: inline-block; flex: 0 0 8px !important; width: 8px; min-width: 0; height: 8px; padding: 0; border-radius: 99px; border: 1.5px solid var(--ok); }
+    .rap-nokta span.var { background: var(--ana); border-color: var(--ana); }
+    .rap-satir { font-size: 14px; margin-top: 6px; overflow-wrap: anywhere; }
+    .rap-satir.istek b { color: var(--ana); } .rap-satir.dikkat b { color: #b4541a; }
     .rp-harf-liste { margin: -2px 0 10px 14px; padding-left: 10px; border-left: 2px solid var(--cizgi); }
     .rp-grup { display: flex; flex-direction: column; gap: 6px; width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer;
       background: var(--kart); border: 1px solid var(--cizgi); border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; }
@@ -1283,7 +1291,7 @@
       alt: okT.t ? okT.o + '/' + okT.t + ' öğrenci son iki haftada okudu · kimin okumadığını görün' : 'Öğrenci öğrenci kitap ve sayfa' }));
     ic.appendChild(satir({ k: 'ders', ikon: 'kitap', baslik: 'Ders desteği', url: '#', tikla: dersAc,
       alt: dersRehberiMi() ? 'Talepler · koç ataması · onay' : 'Ekibin talepleri · süreç takibi' }));
-    if (s.raporUrl) ic.appendChild(satir({ ikon: 'belge', baslik: 'Haftalık raporlar', alt: 'Son 4 hafta yan yana · grup grup (tablo açılır)', url: s.raporUrl }));
+    ic.appendChild(satir({ ikon: 'belge', baslik: 'Haftalık raporlar', alt: 'Son 4 hafta · grup grup', url: '#', tikla: raporlarAc }));
     const yen = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Yenile' });
     yen.onclick = function () { yen.disabled = true; rehberYukle(v, true); };
     ic.appendChild(el('p', { sinif: 'not rp-saat' }, [document.createTextNode('Özet ' + (s.saat || '') + ' itibarıyla (birkaç dakikada bir tazelenir). '), yen]));
@@ -1452,6 +1460,64 @@
     kart.onclick = function () { dersAc(); };
     return kart;
   }
+
+  // ----- Haftalık raporlar (rehber / org; uygulama içinde, son 4 hafta) -----
+  let raporHafta = null;
+  function raporlarAc() {
+    history.pushState({ alt: 'okumaTakip' }, ''); goster('okumaTakip');
+    $('okumaTakipBaslik').textContent = 'Haftalık raporlar';
+    $('okumaTakipIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    raporlarYukle();
+  }
+  async function raporlarYukle() {
+    const ic = $('okumaTakipIcerik');
+    let s;
+    try {
+      s = DEMO ? { ok: true, haftalar: ['2026-10-05', '2026-10-12', '2026-10-19', '2026-10-26'], saat: '15:40', gruplar: [
+          { grup: 'E10', mentor: 'Örnek Mentor', h: { '2026-10-12': { tarih: '17 Eki', nasil: 'İyi', katilim: '8/10', gelmedi: ['Ali'], mazeretli: ['Ömer'], mazeretNot: 'Ömer – hasta', konu: 'Tam', konuAciklama: '', istek: '', dikkat: '', not: 'Sohbet çok iyi geçti.' },
+                                                          '2026-10-19': { tarih: '24 Eki', nasil: 'Orta', katilim: '7/10', gelmedi: ['Ali', 'Yusuf'], mazeretli: ['Ömer'], mazeretNot: '', konu: 'Kısmen', konuAciklama: 'Zaman yetmedi, gelecek hafta tamamlanacak', istek: 'Kamp için araç lazım', dikkat: 'Yusuf – iki haftadır gelmiyor', not: '' } } },
+          { grup: 'E11', mentor: 'Örnek Mentor 2', h: { '2026-10-19': { tarih: '25 Eki', nasil: 'Zor', katilim: '5/8', gelmedi: ['Hasan', 'Kerem', 'Emre'], mazeretli: [], mazeretNot: '', konu: 'İşlenmedi', konuAciklama: 'Gezi vardı', istek: '', dikkat: '', not: '' } } },
+          { grup: 'E12', mentor: 'Örnek Mentor 3', h: {} }] }
+        : await islem('&islem=rehberPano&detay=raporlar&ekip=' + encodeURIComponent(depo.al('rehberEkip') || 'hepsi'));
+    } catch (e) { ic.textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; return; }
+    if (!s || !s.ok) { ic.textContent = HATA_METNI[s && s.hata] || 'Raporlar yüklenemedi.'; return; }
+    const H = s.haftalar, ad = ['3 hf. önce', '2 hf. önce', 'Geçen hafta', 'Bu hafta'];
+    if (!raporHafta || H.indexOf(raporHafta) < 0)   // bu hafta henüz rapor yoksa geçen hafta açılır
+      raporHafta = s.gruplar.some(function (g) { return g.h[H[3]]; }) ? H[3] : H[2];
+    const ciz = function () {
+      ic.textContent = '';
+      const sekme = el('div', { sinif: 'ot-sekme rap-sekme' });
+      H.forEach(function (iso, i) {
+        const n = s.gruplar.filter(function (g) { return g.h[iso]; }).length;
+        const b = el('button', { type: 'button', sinif: iso === raporHafta ? 'secili' : '', metin: ad[i] + ' · ' + n + '/' + s.gruplar.length });
+        b.onclick = function () { raporHafta = iso; ciz(); };
+        sekme.appendChild(b);
+      });
+      ic.appendChild(sekme);
+      s.gruplar.forEach(function (g) {
+        const r = g.h[raporHafta];
+        const noktalar = el('span', { sinif: 'rap-nokta' }, H.map(function (iso, i) { return el('span', { sinif: g.h[iso] ? 'var' : '', title: ad[i] }); }));
+        const kart = el('div', { sinif: 'gorev-kart rap-kart' + (r ? '' : ' kapali') }, [
+          el('div', { sinif: 'rp-g-ust' }, [el('b', { metin: g.grup }), el('span', { metin: g.mentor || '' }), noktalar])]);
+        if (!r) { kart.appendChild(el('p', { sinif: 'not', metin: 'Bu hafta rapor yok.' })); ic.appendChild(kart); return; }
+        const cipler = [el('span', { sinif: 'rp-cip', metin: r.tarih || '—' })];
+        if (r.nasil) cipler.push(el('span', { sinif: 'rp-cip' + (r.nasil === 'Zor' ? ' kirmizi' : r.nasil === 'İyi' ? ' iyi' : ''), metin: /^\d+$/.test(r.nasil) ? 'Verim ' + r.nasil + '/5' : r.nasil + ' geçti' }));
+        cipler.push(el('span', { sinif: 'rp-cip', metin: 'Katılım ' + r.katilim }));
+        if (r.konu) cipler.push(el('span', { sinif: 'rp-cip' + (r.konu === 'Tam' ? ' iyi' : ' uyari'), metin: r.konu === 'Tam' ? 'Konu ✓' : 'Konu ' + r.konu.toLocaleLowerCase('tr') }));
+        kart.appendChild(el('div', { sinif: 'rp-cipler' }, cipler));
+        const sat = function (et, m, sinif) { if (m) kart.appendChild(el('div', { sinif: 'rap-satir' + (sinif ? ' ' + sinif : '') }, [el('b', { metin: et + ' ' }), document.createTextNode(m)])); };
+        sat('Konu:', r.konuAciklama);
+        sat('Gelmedi:', r.gelmedi.join(', '));
+        sat('Mazeretli:', r.mazeretli.join(', ') + (r.mazeretNot ? ' (' + r.mazeretNot + ')' : ''));
+        sat('İstek:', r.istek, 'istek');
+        sat('⚑', r.dikkat, 'dikkat');
+        sat('Mentorun notu:', r.not);
+        ic.appendChild(kart);
+      });
+      ic.appendChild(el('p', { sinif: 'not rp-saat', metin: 'Noktalar son 4 haftayı gösterir (dolu = rapor geldi). ' + (s.saat || '') + ' itibarıyla.' }));
+    };
+    ciz();
+  }
   /** Ekibim → o grubun mentor ekranı */
   function mentorGozuAc(grup) {
     mentorGozu = true;
@@ -1528,6 +1594,7 @@
       if (/ekran=rapor/.test(location.search)) raporAc();
       if (/ekran=grubum/.test(location.search)) grubumAc();
       if (/ekran=sampiyon/.test(location.search)) sampiyonAc();
+      if (/ekran=raporlar/.test(location.search)) raporlarAc();
       if (/ekran=gorevler/.test(location.search)) gorevlerAc();
       if (/ekran=bulusma/.test(location.search)) bulusmaAc();
       if (/ekran=gprogram/.test(location.search)) gunubirlikProgramAc('');
