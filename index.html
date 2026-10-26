@@ -1116,7 +1116,8 @@
         { grup: 'E12', ekip: 'E Lise', mentor: 'Örnek Mentor 3', rapor: 'gecen', katilim: '6/9', nasil: 'Zor', konu: 'Kısmen', raporTarih: '12 Eki', yatili: '', gorev: 0, okuma: { sayfa: 60, biten: 0, okuyan: 4, toplam: 6 }, ders: 2 }]
         .concat(/rol=org/.test(location.search) ? [
         { grup: 'K7', ekip: 'K Ortaokul', mentor: 'Örnek Mentor 4', rapor: 'bu', katilim: '7/8', nasil: 'İyi', konu: 'Tam', yatili: '', gorev: 1, okuma: { sayfa: 90, biten: 0, okuyan: 5, toplam: 8 }, ders: 0 },
-        { grup: 'K10', ekip: 'K Lise', mentor: 'Örnek Mentor 5', rapor: 'bu', katilim: '9/9', nasil: 'Orta', konu: 'Tam', yatili: '21 Kas', gorev: 0, okuma: { sayfa: 200, biten: 1, okuyan: 7, toplam: 9 }, ders: 1 }] : []) };
+        { grup: 'K10', ekip: 'K Lise', mentor: 'Örnek Mentor 5', rapor: 'bu', katilim: '9/9', nasil: 'Orta', konu: 'Tam', yatili: '21 Kas', gorev: 0, okuma: { sayfa: 200, biten: 1, okuyan: 7, toplam: 9 }, ders: 1 }] : []),
+      akademik: /rol=org/.test(location.search) ? { acik: 4, bekleyen: { 'Ders Koçu Rehberi': 2, 'Öğrenci': 1, 'Rapor (ders koçu)': 1 }, geciken: 1, buAy: 6, koc: 5, gorev: 3 } : null };
   }
   function rehberCiz(v, s) {
     const ic = $('icerik');
@@ -1272,6 +1273,7 @@
         ic.appendChild(kart);
         ic.appendChild(liste);
       });
+      if (s.akademik) ic.appendChild(akademikKarti(s.akademik));
     } else (s.ekibim || []).forEach(function (g) { ic.appendChild(grupSatiri(g)); });
 
     // 4. Kısayollar
@@ -1429,6 +1431,25 @@
     const yen = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Yenile' });
     yen.onclick = function () { yen.disabled = true; sampiyonYukle(kap, true); };
     kap.appendChild(el('p', { sinif: 'not rp-saat' }, [document.createTextNode('Sıralama istikrara göre: ayda en çok haftada okuyan öğrenci öne geçer, eşitlikte sayfa. Okuyan grup = ayda en az iki farklı haftada okuyan öğrenci oranı. ' + (s.saat || '') + ' itibarıyla. '), yen]));
+  }
+  /** Org: akademik tarafın özeti (ders desteği + akademik görevler); dokununca Ders desteği */
+  function akademikKarti(a) {
+    const cipler = [];
+    const cip = function (metin, tur) { cipler.push(el('span', { sinif: 'rp-cip' + (tur ? ' ' + tur : ''), metin: metin })); };
+    cip(a.acik ? a.acik + ' açık talep' : 'Açık talep yok', a.acik ? '' : 'iyi');
+    const b = a.bekleyen || {};
+    [['Ders Koçu Rehberi', 'DKR\'de'], ['Ders koçu', 'koçta'], ['Öğrenci', 'öğrencide'], ['Veli', 'velide'], ['Rapor (ders koçu)', 'rapor bekliyor']].forEach(function (x) {
+      if (b[x[0]]) cip(b[x[0]] + ' ' + x[1], x[0] === 'Rapor (ders koçu)' ? 'uyari' : '');
+    });
+    if (a.geciken) cip(a.geciken + ' talep 48 saati geçti', 'kirmizi');
+    cip('Bu ay ' + a.buAy + ' ders yapıldı', a.buAy ? 'iyi' : '');
+    cip(a.koc + ' aktif koç');
+    if (a.gorev) cip(a.gorev + ' açık akademik görev');
+    const kart = el('button', { sinif: 'rp-grup rp-harf', type: 'button' }, [
+      el('div', { sinif: 'rp-g-ust' }, [el('b', { metin: 'Akademik' }), el('span', { metin: 'ders desteği' }), ikon('sag')]),
+      el('div', { sinif: 'rp-cipler' }, cipler)]);
+    kart.onclick = function () { dersAc(); };
+    return kart;
   }
   /** Ekibim → o grubun mentor ekranı */
   function mentorGozuAc(grup) {
