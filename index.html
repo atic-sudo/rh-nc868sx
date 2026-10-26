@@ -973,7 +973,7 @@
       ic.appendChild(satir({ k: 'ders', ikon: 'kitap', baslik: 'Ders desteği', url: '#', tikla: dersAc,
         alt: dersRehberiMi() ? 'Talepler · koç ataması · onay' : 'Tüm talepler · süreç takibi' }));
       ic.appendChild(satir({ k: 'yatili', ikon: 'misafir', baslik: 'Yatılı · etüt koçu', alt: 'Yatılı programlarına ders koçu ata', url: '#', tikla: misafirlerAc }));
-      ic.appendChild(satir({ k: 'gorev', ikon: 'onay', baslik: 'Görevlerim', alt: 'Rehberlik toplantısından · bitince ✓', url: '#', tikla: gorevlerAc }));
+      ic.appendChild(satir({ k: 'gorev', ikon: 'onay', baslik: 'Görevlerim', alt: 'Size verilenler · not ekle · rehberlik toplantısının bütün açık görevleri', url: '#', tikla: gorevlerAc }));
       sayacGuncelle(v);
       $('altBilgi').textContent = '';
       return;
@@ -1031,7 +1031,7 @@
   // Telefon ikonundaki sayı (Badging API) yalnız uygulama açılınca güncellenir; iPhone'da bildirim izni ister.
   let sayacZamani = 0, sunucuSayac = 0, gorevSayac = 0;
   function kisiRolu() {
-    if (DEMO) return DEMO_MENTOR ? 'mentor' : /rol=org/.test(location.search) ? 'org' : 'rehber';
+    if (DEMO) return DEMO_MENTOR ? 'mentor' : /rol=org/.test(location.search) ? 'org' : /rol=mesul/.test(location.search) ? 'akademik' : 'rehber';
     try { return (JSON.parse(depo.al('kisi') || 'null') || {}).rol || ''; } catch (e) { return ''; }
   }
   function rozetKoy(k, n) {
@@ -2575,7 +2575,14 @@
   let demoGorev = null;
   function DEMO_GOREVLER() {
     if (demoGorev) return demoGorev;
-    const mentor = DEMO_MENTOR;
+    const mentor = DEMO_MENTOR || /rol=mesul/.test(location.search);
+    if (/rol=mesul/.test(location.search)) return demoGorev = { ok: true, defter: '', bilgi: '', kararlar: [], notlar: [], ekip: [], secenekler: [], istekler: [],
+      gorevler: [{ no: 'G-061', gorev: '(Aka) 7 Kasım ilk deneme sınavı', sorumlu: 'Akademik mesul', tarih: '2026-11-07', tarihMetni: '7 Kas', gecikti: false, yakin: false, durum: 'Devam', kaynak: 'Rehberlik', tnot: 'Salon ayarlandı, soru kitapçıkları basılıyor · Örnek Akademik · 26 Eki' },
+                 { no: 'G-062', gorev: '(Aka) Test sonuçlarına göre ödüllendirme', sorumlu: 'Akademik mesul', tarih: '', tarihMetni: '', gecikti: false, yakin: false, durum: 'Açık', kaynak: 'Rehberlik', tnot: '' }],
+      rehberlik: { gorevler: [
+        { no: 'G-050', gorev: '(Aka) Gelen sonuçlara göre geri besleme yapılacak', sorumlu: 'Ders Koçu Rehberi', tarihMetni: '14 Kas', gecikti: false, durum: 'Devam', tnot: 'Koçlarla konuşuldu · Örnek DKR · 25 Eki' },
+        { no: 'G-051', gorev: 'Kasım veli toplantısı için salon ayarlamak', sorumlu: 'Org sorumlusu', tarihMetni: '', gecikti: false, durum: 'Açık', tnot: '' }],
+        kararlar: [{ tarih: '2026-10-21', tarihMetni: '21 Eki', karar: 'Veli toplantısı 15 Kasım\'da yapılacak' }] } };
     return demoGorev = { ok: true, defter: mentor ? '' : '#', bilgi: '',
       gorevler: [
         { no: 'G-041', gorev: 'Kasım kampı kayıt listesini gönderin', sorumlu: 'Örnek Mentor', tarih: '2026-10-24', tarihMetni: '24 Eki', gecikti: false, yakin: true, durum: 'Açık', kaynak: 'Mentor toplantısı', ekip: 'E Lise', veren: 'Örnek Rehber' },
