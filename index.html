@@ -368,7 +368,8 @@
     .g-sekme b { display: inline-block; min-width: 16px; font-size: 11px; background: var(--ana); color: var(--kart); border-radius: 99px; padding: 0 5px; margin-left: 4px; }
     .gorev-kart.gk-gec { border-left: 4px solid #d64545; } .gorev-kart.gk-dev { border-left: 4px solid #4f7fb8; }
     .gorev-kart.gk-ac { border-left: 4px solid var(--cizgi); } .gorev-kart.gk-bit { border-left: 4px solid #3f8f6b; opacity: .72; }
-    .gorev-kart.gk-karar { border-left: 4px solid #8a6bc2; }
+    .gorev-kart.gk-karar { border-left: 4px solid #8a6bc2; } .gorev-kart.gk-ony { border-left: 4px solid #e2956b; }
+    .gk-etiket.ony { background: #fbe9dc; color: #a0522d; } .gk-etiket.tk { background: #eee7f8; color: #6a4ca8; }
     .gk-etiket { font-size: 11.5px; font-weight: 700; border-radius: 99px; padding: 1px 8px; }
     .gk-etiket.ac { background: var(--ikon-zemin); color: var(--soluk); } .gk-etiket.dev { background: #e3edf8; color: #2f5c94; }
     .gk-etiket.gec { background: #fde5e5; color: #b22; } .gk-etiket.bit { background: #e2f2ea; color: #2f7a55; } .gk-etiket.kr { background: #eee7f8; color: #6a4ca8; }
@@ -2668,7 +2669,8 @@
                    gecmis: [{ m: 'Salon için okul müdürüyle görüşüldü', kim: 'Örnek Akademik', z: '2026-10-22', tur: '' }, { m: 'Salon ayarlandı, soru kitapçıkları basılıyor', kim: 'Örnek Akademik', z: '2026-10-26', tur: '' }] },
                  { no: 'G-062', gorev: '(Aka) Test sonuçlarına göre ödüllendirme', sorumlu: 'Akademik mesul', tarih: '', tarihMetni: '', gecikti: false, yakin: false, durum: 'Açık', kaynak: 'Rehberlik', tnot: '' }],
       bitenler: [{ no: 'G-058', gorev: '(Aka) Deneme sınavı tarihini duyurmak', sorumlu: 'Akademik mesul', durum: 'Tamamlandı', kaynak: 'Rehberlik', bittiTarih: '2026-10-24', gecmis: [{ m: 'Veli grubuna duyuruldu', kim: 'Örnek Akademik', z: '2026-10-24', tur: 'bitti' }] }],
-      takip: [{ no: 'G-050', gorev: '(Aka) Gelen sonuçlara göre geri besleme yapılacak', sorumlu: 'Ders Koçu Rehberi', tarihMetni: '14 Kas', gecikti: false, durum: 'Devam', kaynak: 'Rehberlik', tnot: '', gecmis: [{ m: 'Koçlarla konuşuldu', kim: 'Örnek DKR', z: '2026-10-25', tur: '' }] }],
+      takip: [{ no: 'G-052', gorev: 'AKA Koçlara deneme sınavı sonuçlarını iletmek', sorumlu: 'Ders Koçu Rehberi', tarihMetni: '7 Kas', gecikti: false, durum: 'Onay bekliyor', kaynak: 'Rehberlik', tnot: '', takip: true, onayla: true, gecmis: [{ m: 'Sonuçlar koçlara gönderildi', kim: 'Örnek DKR', z: '2026-10-27', tur: 'bitti' }] },
+              { no: 'G-050', gorev: '(Aka) Gelen sonuçlara göre geri besleme yapılacak', sorumlu: 'Ders Koçu Rehberi', tarihMetni: '14 Kas', gecikti: false, durum: 'Devam', kaynak: 'Rehberlik', tnot: '', takip: true, onayla: true, gecmis: [{ m: 'Koçlarla konuşuldu', kim: 'Örnek DKR', z: '2026-10-25', tur: '' }] }],
       rehberlik: { gorevler: [
         { no: 'G-050', gorev: '(Aka) Gelen sonuçlara göre geri besleme yapılacak', sorumlu: 'Ders Koçu Rehberi', tarihMetni: '14 Kas', gecikti: false, durum: 'Devam', kaynak: 'Rehberlik', tnot: '', gecmis: [{ m: 'Koçlarla konuşuldu', kim: 'Örnek DKR', z: '2026-10-25', tur: '' }] },
         { no: 'G-051', gorev: 'Kasım veli toplantısı için salon ayarlamak', sorumlu: 'Org sorumlusu', tarihMetni: '', gecikti: false, durum: 'Açık', tnot: '' }],
@@ -2773,7 +2775,7 @@
   function gorevTarihKisa(iso) { if (!iso) return ''; const d = new Date(iso + 'T12:00:00'); return d.getDate() + ' ' + AYLAR_UZUN[d.getMonth()].slice(0, 3); }
   function gorevSekmeleri(ic, s) {
     const rol = kisiRolu(), mentor = rol === 'mentor', akademik = rol === 'akademik';
-    const takipSay = akademik ? (s.takip || []).length : (s.ekip || []).filter(function (x) { return x.acik; }).length;
+    const takipSay = (s.takip || []).length + (akademik ? 0 : (s.ekip || []).filter(function (x) { return x.acik; }).length);
     const sek = mentor ? [['is', 'Görevlerim', s.gorevler.length], ['karar', 'Kararlar', 0]]
       : [['is', 'Görevlerim', s.gorevler.length], ['takip', 'Takip', takipSay], ['top', 'Toplantı', 0]].concat(akademik ? [] : [['not', 'Notlarım', 0]]);
     let secili = depo.al('gorevSekme') || 'is';
@@ -2805,14 +2807,15 @@
         yardim('Sorumlusu siz olan görevler. "Durum yaz" görevi kapatmadan ne aşamada olduğunu yazar; "Bitti" görevi kapatır. ' +
           (mentor ? 'Son tarihten bir gün önce ve geçince e-postayla hatırlatılır.' : 'Rehberlik toplantısı notundaki görevler toplantı gecesi (çarşamba 23:30) buraya düşer.'));
       } else if (secili === 'takip') {
+        const tk = s.takip || [];
+        if (tk.length) { if (!akademik) baslik('Takip ettikleriniz'); tk.forEach(function (g) { alan.appendChild(gKart(g, false)); }); }
         if (akademik) {
-          if (!(s.takip || []).length) bos('Başkasına verilmiş "(Aka)" göreviniz yok.');
-          (s.takip || []).forEach(function (g) { alan.appendChild(gKart(g, false)); });
-          yardim('Gündeme sizin getirdiğiniz ("(Aka)" ile başlayan), sorumlusu başkası olan görevler. Yalnız okunur.');
+          if (!tk.length) bos('Takip ettiğiniz açık görev yok.');
+          yardim('Takip ettiğiniz görevler: toplantı notunda "cc" ile eklendiğiniz, "Aka" ile başlayan ve Ders Koçu Rehberlerine verilen görevler. Durum yazabilirsiniz; sorumlu "Bitti" deyince onayınız istenir.');
         } else {
-          if (!(s.ekip || []).length) bos('Ekibinizde ya da verdiğiniz açık görev yok.');
-          (s.ekip || []).forEach(function (x) { alan.appendChild(ekipGorevKarti(x)); });
-          yardim('Verdiğiniz ve ekibinizdeki görevler. Toplu görevlerde her mentor kendi görevini kapatır; "Kişiler"den kimin bitirdiğini görürsünüz.');
+          if (!(s.ekip || []).length && !tk.length) bos('Takip ettiğiniz, ekibinizde ya da verdiğiniz açık görev yok.');
+          if ((s.ekip || []).length) { baslik('Ekibinizdeki ve verdiğiniz görevler'); (s.ekip || []).forEach(function (x) { alan.appendChild(ekipGorevKarti(x)); }); }
+          yardim('Toplantı notunda "cc @kişi" ile takip eden yapılırsınız: görürsünüz, durum yazarsınız, sorumlu bitirince onaylarsınız. Toplu görevlerde her mentor kendi görevini kapatır.');
         }
       } else if (secili === 'top') {
         const r = s.rehberlik || { gorevler: [], kararlar: [] };
@@ -2842,8 +2845,9 @@
   function gorevKarti(g) { return gKart(g, true); }   // toplantı ekranı da aynı kartı kullanır
   /** sahip: düğmeler görünür · bitti: "Son bitenler" (soluk, "Geri al") */
   function gKart(g, sahip, bitti) {
-    const kod = bitti ? 'bit' : g.gecikti ? 'gec' : g.durum === 'Açık' ? 'ac' : 'dev';
-    const etiket = { bit: 'Bitti', gec: 'Gecikti', ac: 'Açık', dev: g.durum === 'Takıldı' ? 'Takıldı' : 'Devam' }[kod];
+    const onay = g.durum === 'Onay bekliyor';
+    const kod = bitti ? 'bit' : onay ? 'ony' : g.gecikti ? 'gec' : g.durum === 'Açık' ? 'ac' : 'dev';
+    const etiket = { bit: 'Bitti', ony: 'Onay bekliyor', gec: 'Gecikti', ac: 'Açık', dev: g.durum === 'Takıldı' ? 'Takıldı' : 'Devam' }[kod];
     const kart = el('div', { sinif: 'gorev-kart gk-' + kod });
     const alt = [el('span', { sinif: 'gk-etiket ' + kod, metin: etiket })];
     if (bitti) alt.push(el('span', { metin: gorevTarihKisa(g.bittiTarih) }));
@@ -2851,6 +2855,8 @@
     else alt.push(el('span', { metin: (g.sorumlu || '?') + ' → ' + (g.tarihMetni || 'tarih yok') }));
     if (sahip && !bitti && g.veren) alt.push(el('span', { metin: '· Veren: ' + g.veren }));
     if (!bitti) alt.push(el('span', { metin: '· ' + (g.kaynak === 'Rehberlik' ? 'Rehberlik toplantısı' : g.kaynak) }));
+    if (g.takip) alt.push(el('span', { sinif: 'gk-etiket tk', metin: 'Takip ediyorsunuz' }));
+    else if (g.takipciler && !bitti) alt.push(el('span', { metin: '· Takip: ' + g.takipciler }));
     kart.appendChild(el('div', { sinif: 'gorev-metin', metin: g.gorev }));
     kart.appendChild(el('div', { sinif: 'gorev-alt' }, alt));
     // Son durum (geçmişiyle); eski kayıtlarda yalnız metin
@@ -2878,8 +2884,45 @@
       kart.appendChild(kutu);
     }
     const bNot = (g.gecmis || []).filter(function (x) { return x.tur === 'bitti' && x.m; }).pop();
-    if (bitti && bNot) kart.appendChild(el('div', { sinif: 'gk-durum' }, [el('div', { sinif: 'gk-durum-ust', metin: 'Bitti notu' }), el('div', { metin: bNot.m })]));
-    if (!sahip) return kart;
+    if ((bitti || onay) && bNot) kart.appendChild(el('div', { sinif: 'gk-durum' }, [el('div', { sinif: 'gk-durum-ust', metin: 'Bitti notu' }), el('div', { metin: bNot.m })]));
+    if (!sahip) {
+      if (!g.takip || g.onayla === false) return kart;   // takip eden: durum yazar; onay bekliyorsa onaylar / geri gönderir
+      const yazT = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Durum yaz' });
+      yazT.onclick = function () { durumEditoru(g, kart, dug, '', false); };
+      dug.appendChild(yazT);
+      if (onay) {
+        const red = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Geri gönder' });
+        red.onclick = function () {
+          const not = el('textarea', { sinif: 'gorev-not-girdi', rows: '2', placeholder: 'Neden geri gönderiyorsunuz? ör. liste eksik', maxlength: '300' });
+          const gon = el('button', { sinif: 'kucuk', type: 'button', metin: 'Geri gönder' }), vz = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Vazgeç' });
+          const eski = Array.from(dug.childNodes);
+          vz.onclick = function () { not.remove(); dug.replaceChildren.apply(dug, eski); };
+          gon.onclick = function () {
+            if (!not.value.trim()) { not.focus(); return; }
+            gon.disabled = true;
+            if (DEMO) { g.durum = 'Devam'; gorevlerYukle(''); return; }
+            gorevlerYukle('&islem=gorevRed&no=' + encodeURIComponent(g.no) + '&not=' + encodeURIComponent(not.value.trim()), el('div', { sinif: 'bilgi', metin: 'Görev sorumlusuna geri gönderildi.' }));
+          };
+          dug.before(not); dug.replaceChildren(vz, gon); not.focus();
+        };
+        const ok = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Onayla' });
+        ok.onclick = function () {
+          ok.disabled = true;
+          if (DEMO) { demoGorev.takip = (demoGorev.takip || []).filter(function (x) { return x !== g; }); gorevlerYukle(''); return; }
+          gorevlerYukle('&islem=gorevOnay&no=' + encodeURIComponent(g.no), el('div', { sinif: 'bilgi', metin: '“' + g.gorev + '” onaylandı ve kapandı.' }));
+        };
+        dug.appendChild(red); dug.appendChild(ok);
+      }
+      kart.appendChild(dug);
+      return kart;
+    }
+    if (onay) {   // sorumlu: onay beklenirken "Geri al" (yeniden açar)
+      const ger = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Geri al' });
+      ger.onclick = function () { if (!DEMO) gorevlerYukle('&islem=gorevTamam&geri=1&no=' + encodeURIComponent(g.no), el('div', { sinif: 'bilgi', metin: 'Görev yeniden açıldı.' })); };
+      kart.appendChild(el('p', { sinif: 'not', metin: 'Bitti dediniz; ' + (g.takipciler || 'takip eden') + ' onaylayınca kapanacak.' }));
+      dug.appendChild(ger); kart.appendChild(dug);
+      return kart;
+    }
     if (bitti) {
       const geri = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Geri al' });
       geri.onclick = function () { if (!DEMO) gorevlerYukle('&islem=gorevTamam&geri=1&no=' + encodeURIComponent(g.no), el('div', { sinif: 'bilgi', metin: 'Görev yeniden açıldı.' })); };
