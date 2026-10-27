@@ -32,8 +32,10 @@
       --sec-gelmedi: #f6d6c4; --sec-gelmedi-yazi: #5a2814;
       --sec-mazeret: #dde3e0; --sec-mazeret-yazi: #2a3431;
     }
+    :root { --nd-zemin: #fffdf8; --nd-kenar: #efe9dc; --nd-cizgi: rgba(150,135,100,.10); --nd-yazi: #1f2a28; }
     @media (prefers-color-scheme: dark) {
       :root {
+        --nd-zemin: #232a28; --nd-kenar: #343d3a; --nd-cizgi: rgba(220,230,225,.07); --nd-yazi: #e6ece9;
         --at-renk: #fdeee4;
         --r-e-gun: #7fb6ea; --r-e-yat: #6e97e0; --r-k-gun: #f29ac4; --r-k-yat: #e06aa3; --r-ortak: #f5a05e;
         --r-rehberlik: #4fae74; --r-mentor-top: #8fd694; --r-seminer: #b08de8; --r-kamp: #f0c75a; --r-diger: #8c9692; --r-dogum: #5fd0c8;
@@ -377,15 +379,15 @@
     .nd-liste button { display: block; width: 100%; text-align: left; font: inherit; color: inherit; background: none; border: 0; border-top: 1px solid var(--cizgi); padding: 10px 14px; cursor: pointer; }
     .nd-liste button:first-child { border-top: 0; } .nd-liste button.secili { background: var(--ikon-zemin); }
     .nd-liste b { display: block; font-size: 15px; } .nd-liste span { font-size: 12.5px; color: var(--soluk); }
-    .nd-sayfa { background: #fffdf8; border: 1px solid #efe9dc; border-radius: 14px; margin-top: 10px; padding: 10px 14px 18px; min-height: 360px;
-      background-image: repeating-linear-gradient(transparent 0 33px, rgba(150,135,100,.10) 33px 34px); background-position: 0 40px; }
+    .nd-sayfa { background: var(--nd-zemin); border: 1px solid var(--nd-kenar); border-radius: 14px; margin-top: 10px; padding: 10px 14px 18px; min-height: 360px;
+      background-image: repeating-linear-gradient(transparent 0 33px, var(--nd-cizgi) 33px 34px); background-position: 0 40px; }
     .nd-ust { display: flex; justify-content: space-between; font-size: 12px; color: var(--soluk); margin-bottom: 6px; }
     .nd-madde { display: flex; gap: 8px; align-items: flex-start; } .nd-nokta { color: var(--ana); font-weight: 800; line-height: 34px; }
     .nd-ic { flex: 1; min-width: 0; padding-bottom: 2px; }
-    .nd-girdi { width: 100%; box-sizing: border-box; border: 0; background: transparent; resize: none; overflow: hidden; font: inherit; font-size: 15.5px; line-height: 34px; padding: 0; color: var(--yazi); text-transform: none; letter-spacing: normal; text-align: left; outline: none; }
+    .nd-girdi { width: 100%; box-sizing: border-box; border: 0; background: transparent; resize: none; overflow: hidden; font: inherit; font-size: 15.5px; line-height: 34px; padding: 0; color: var(--nd-yazi); text-transform: none; letter-spacing: normal; text-align: left; outline: none; }
     .nd-madde.donustu .nd-girdi { color: var(--soluk); }
-    .nd-arac { position: sticky; bottom: 8px; display: flex; gap: 8px; margin-top: 10px; z-index: 5; }
-    .nd-arac button { flex: 1; font: inherit; font-weight: 800; font-size: 15px; border-radius: 12px; padding: 11px; border: 1px solid var(--cizgi); background: var(--kart); cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    .nd-arac { display: flex; gap: 8px; margin: 2px 0 6px; }
+    .nd-arac button { font: inherit; font-weight: 800; font-size: 13.5px; border-radius: 99px; padding: 5px 14px; border: 1px solid var(--cizgi); background: var(--kart); cursor: pointer; }
     .nd-g { color: var(--ana); } .nd-k { color: #6a4ca8; }
     .nd-perde { position: fixed; inset: 0; background: rgba(31,42,40,.35); z-index: 50; }
     .nd-pencere { position: fixed; left: 0; right: 0; bottom: 0; z-index: 51; background: var(--bg); border-radius: 20px 20px 0 0; padding: 16px; max-height: 85vh; overflow-y: auto; display: grid; gap: 8px; }
@@ -3002,7 +3004,7 @@
         t.value = x.m || '';
         const boy = function () { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; };
         t.oninput = function () { x.m = t.value; boy(); kaydet(); };
-        t.onfocus = function () { aktif = i; arac.hidden = false; };
+        t.onfocus = function () { aktif = i; if (!arac.childNodes.length) return; arac.hidden = !!x.tur; icKap.appendChild(arac); };   // düğmeler imlecin olduğu maddenin altında (klavye kapatmasın)
         t.onkeydown = function (e) {
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -3019,8 +3021,8 @@
             kaydet(); satirCiz(); odak(i - 1, uz);
           }
         };
-        const sat = el('div', { sinif: 'nd-madde' + (x.tur ? ' donustu' : '') }, [el('span', { sinif: 'nd-nokta', metin: '•' }),
-          el('div', { sinif: 'nd-ic' }, [t, x.tur ? el('span', { sinif: 'gk-etiket ' + (x.tur === 'gorev' ? 'dev' : 'kr'), metin: x.etiket || (x.tur === 'gorev' ? '→ Görev' : '→ Karar') }) : null])]);
+        const icKap = el('div', { sinif: 'nd-ic' }, [t, x.tur ? el('span', { sinif: 'gk-etiket ' + (x.tur === 'gorev' ? 'dev' : 'kr'), metin: x.etiket || (x.tur === 'gorev' ? '→ Görev' : '→ Karar') }) : null]);
+        const sat = el('div', { sinif: 'nd-madde' + (x.tur ? ' donustu' : '') }, [el('span', { sinif: 'nd-nokta', metin: '•' }), icKap]);
         maddeKap.appendChild(sat);
         setTimeout(boy, 0);
       });
@@ -3032,7 +3034,6 @@
     const secenek = function (id) { return (s.secenekler || []).filter(function (x) { return x.id === id; })[0]; };
     if (['rehber', 'org'].indexOf(rol) >= 0) { const b = el('button', { type: 'button', sinif: 'nd-g', metin: 'Görev +' }); b.onmousedown = function (e) { e.preventDefault(); }; b.onclick = function () { donusturPaneli('gorev'); }; arac.appendChild(b); }
     if (['rehber', 'org', 'mentor'].indexOf(rol) >= 0) { const b = el('button', { type: 'button', sinif: 'nd-k', metin: 'Karar +' }); b.onmousedown = function (e) { e.preventDefault(); }; b.onclick = function () { donusturPaneli('karar'); }; arac.appendChild(b); }
-    if (arac.childNodes.length) alan.appendChild(arac);
     const donusturPaneli = function (tur) {
       const x = maddeler[aktif];
       if (!x || !String(x.m || '').trim()) { alert('Önce bir madde yazın, sonra o satırdayken dokunun.'); return; }
