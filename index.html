@@ -2504,7 +2504,7 @@
   function aileLinkKutusu(s) {
     const akt = s.ogrenciler.filter(function (o) { return o.durum !== 'Ayrıldı'; });
     const dolu = akt.filter(function (o) { const v = (s.veli || {})[o.ad]; return v && v.veli && (v.veli.eposta || v.veli.tel); }).length;
-    const ortaokul = /^[EK][6-9]/.test(s.grup);
+    const ortaokul = s.ortaokul !== undefined ? s.ortaokul : /^[EK][6-9]/.test(s.grup);
     const kutu = el('div', { sinif: 'ekle-form veli-form' });
     kutu.appendChild(el('div', { sinif: 'veli-baslik' }, [el('span', { metin: 'Veli bilgileri' }), el('span', { sinif: 'veli-durum', metin: dolu + '/' + akt.length + ' kayıtlı' })]));
     const istek = async function (ek, dugme) {
@@ -2745,7 +2745,7 @@
               { no: 'G-050', gorev: '(Aka) Gelen sonuçlara göre geri besleme yapılacak', sorumlu: 'Ders Koçu Rehberi', tarihMetni: '14 Kas', gecikti: false, durum: 'Devam', kaynak: 'Rehberlik', tnot: '', takip: true, onayla: true, gecmis: [{ m: 'Koçlarla konuşuldu', kim: 'Örnek DKR', z: '2026-10-25', tur: '' }] }],
       rehberlik: { gorevler: [
         { no: 'G-050', gorev: '(Aka) Gelen sonuçlara göre geri besleme yapılacak', sorumlu: 'Ders Koçu Rehberi', tarihMetni: '14 Kas', gecikti: false, durum: 'Devam', kaynak: 'Rehberlik', tnot: '', gecmis: [{ m: 'Koçlarla konuşuldu', kim: 'Örnek DKR', z: '2026-10-25', tur: '' }] },
-        { no: 'G-051', gorev: 'Kasım veli toplantısı için salon ayarlamak', sorumlu: 'Org sorumlusu', tarihMetni: '', gecikti: false, durum: 'Açık', tnot: '' }],
+        { no: 'G-051', gorev: 'Kasım veli toplantısı için salon ayarlamak', sorumlu: 'Org sorumlusu', tarihMetni: '', gecikti: false, durum: 'Açık', kaynak: 'Rehberlik', tnot: '', izleyebilir: true }],
         kararlar: [{ tarih: '2026-10-21', tarihMetni: '21 Eki', karar: 'Veli toplantısı 15 Kasım\'da yapılacak' }] } };
     return demoGorev = { ok: true, defter: mentor ? '' : '#', bilgi: '',
       gorevler: [
@@ -2807,10 +2807,13 @@
       ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Rehberlik toplantısı · diğer açık görevler' }));
       if (!s.rehberlik.gorevler.length) ic.appendChild(el('p', { sinif: 'bos', metin: 'Başka açık görev yok.' }));
       s.rehberlik.gorevler.forEach(function (g) {
+        const rozet = el('span', { sinif: 'gk-etiket tk', metin: 'Takip ediyorsunuz' });
+        rozet.hidden = !g.izliyor;
         ic.appendChild(el('div', { sinif: 'gorev-kart' + (g.gecikti ? ' gecikti' : '') }, [el('div', { sinif: 'gorev-metin', metin: g.gorev }),
           el('div', { sinif: 'gorev-alt' }, [el('span', { sinif: 'gorev-tarih', metin: gorevTarihMetni(g) }), el('span', { metin: 'Sorumlu: ' + (g.sorumlu || '?') }),
-            g.durum !== 'Açık' ? el('span', { metin: g.durum }) : null]),
-          g.tnot ? el('div', { sinif: 'gorev-son-not', metin: 'Son not: ' + g.tnot }) : null]));
+            g.durum !== 'Açık' ? el('span', { metin: g.durum }) : null, rozet]),
+          g.tnot ? el('div', { sinif: 'gorev-son-not', metin: 'Son not: ' + g.tnot }) : null,
+          g.izleyebilir ? el('div', { sinif: 'dugmeler' }, [izleDugmesi(g, rozet, null)]) : null]));
       });
       if (s.rehberlik.kararlar.length) {
         ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Rehberlik kararları · son 30 gün' }));
@@ -2881,13 +2884,23 @@
       } else if (secili === 'takip') {
         const tk = s.takip || [];
         if (tk.length) { if (!akademik) baslik('Takip ettikleriniz'); tk.forEach(function (g) { alan.appendChild(gKart(g, false)); }); }
+        // Takip edilebilecekler: rehberlik toplantısının diğer açık görevleri (kapalı başlar)
+        const tkNo = tk.map(function (g) { return g.no; });
+        const aday = ((s.rehberlik && s.rehberlik.gorevler) || []).filter(function (g) { return g.izleyebilir && tkNo.indexOf(g.no) < 0; });
+        if (aday.length) {
+          const liste = el('div', { hidden: '' }, aday.map(function (g) { return gKart(g, false); }));
+          const ac = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Takip edebileceğiniz rehberlik görevleri (' + aday.length + ') ▾' });
+          ac.onclick = function () { liste.hidden = !liste.hidden; ac.textContent = ac.textContent.replace(/[▾▴]$/, liste.hidden ? '▾' : '▴'); };
+          alan.appendChild(el('div', { sinif: 'hs-baslik' }, [ac]));
+          alan.appendChild(liste);
+        }
         if (akademik) {
           if (!tk.length) bos('Takip ettiğiniz açık görev yok.');
-          yardim('Takip ettiğiniz görevler: toplantı notunda "cc" ile eklendiğiniz, "Aka" ile başlayan ve Ders Koçu Rehberlerine verilen görevler. Durum yazabilirsiniz; sorumlu "Bitti" deyince onayınız istenir.');
+          yardim('Takip ettiğiniz görevler: toplantı notunda "cc" ile eklendiğiniz, "Aka" ile başlayan ve Ders Koçu Rehberlerine verilen görevler (durum yazarsınız, sorumlu "Bitti" deyince onayınız istenir); bir de kendiniz "Takip et" dedikleriniz (yalnız izlersiniz, bitince e-posta gelir). "Takip et" düğmesi aşağıdaki "Takip edebileceğiniz rehberlik görevleri" listesinde ve Toplantılar\'da bir toplantıya dokununca çıkar.');
         } else {
           if (!(s.ekip || []).length && !tk.length) bos('Takip ettiğiniz, ekibinizde ya da verdiğiniz açık görev yok.');
           if ((s.ekip || []).length) { baslik('Ekibinizdeki ve verdiğiniz görevler'); (s.ekip || []).forEach(function (x) { alan.appendChild(ekipGorevKarti(x)); }); }
-          yardim('Toplantı notunda "cc @kişi" ile takip eden yapılırsınız: görürsünüz, durum yazarsınız, sorumlu bitirince onaylarsınız. Toplu görevlerde her mentor kendi görevini kapatır.');
+          yardim('Toplantı notunda "cc @kişi" ile takip eden yapılırsınız: görürsünüz, durum yazarsınız, sorumlu bitirince onaylarsınız. Başka bir görevi izlemek için aşağıdaki listede ya da Toplantılar\'da bir toplantıya dokunup "Takip et" deyin: buraya düşer, bitince e-posta gelir (onay sizde değil). Toplu görevlerde her mentor kendi görevini kapatır.');
         }
       } else if (secili === 'top') {
         toplantilarCiz(alan, s);
@@ -3177,6 +3190,23 @@
     return el('div', { sinif: 'gorev-kart gk-karar' }, [el('div', { sinif: 'gorev-metin', metin: metin }),
       el('div', { sinif: 'gorev-alt' }, [el('span', { sinif: 'gk-etiket kr', metin: 'Karar' }), el('span', { metin: alt })])]);
   }
+  /** "Takip et" / "Takibi bırak" — rozet: karttaki "Takip ediyorsunuz"; kaldir: Takip sekmesinde bırakınca kart kalkar */
+  function izleDugmesi(g, rozet, kaldir) {
+    const b = el('button', { sinif: 'baglanti-kucuk', type: 'button' });
+    const yaz = function () { b.textContent = g.izliyor ? 'Takibi bırak' : 'Takip et'; if (rozet) rozet.hidden = !g.izliyor; };
+    yaz();
+    b.onclick = async function () {
+      b.disabled = true;
+      try {
+        if (DEMO) g.izliyor = !g.izliyor;
+        else { const s = await islem('&islem=gorevIzle&no=' + encodeURIComponent(g.no)); if (!s.ok) throw 0; g.izliyor = s.izliyor; }
+        if (!g.izliyor && kaldir) { kaldir.remove(); return; }
+        yaz();
+      } catch (e) { b.textContent = 'Olmadı, tekrar deneyin'; }
+      b.disabled = false;
+    };
+    return b;
+  }
   function gorevKarti(g) { return gKart(g, true); }   // toplantı ekranı da aynı kartı kullanır
   /** sahip: düğmeler görünür · bitti: "Son bitenler" (soluk, "Geri al") */
   function gKart(g, sahip, bitti) {
@@ -3190,8 +3220,9 @@
     else alt.push(el('span', { metin: (g.sorumlu || '?') + ' → ' + (g.tarihMetni || 'tarih yok') }));
     if (sahip && !bitti && g.veren) alt.push(el('span', { metin: '· Veren: ' + g.veren }));
     if (!bitti) alt.push(el('span', { metin: '· ' + (g.kaynak === 'Rehberlik' ? 'Rehberlik toplantısı' : g.kaynak) }));
-    if (g.takip) alt.push(el('span', { sinif: 'gk-etiket tk', metin: 'Takip ediyorsunuz' }));
-    else if (g.takipciler && !bitti) alt.push(el('span', { metin: '· Takip: ' + g.takipciler }));
+    const izRozet = el('span', { sinif: 'gk-etiket tk', metin: 'Takip ediyorsunuz' });
+    if (g.takip || g.izleyebilir) { izRozet.hidden = !(g.takip || g.izliyor); alt.push(izRozet); }
+    if (!g.takip && g.takipciler && !bitti) alt.push(el('span', { metin: '· Takip: ' + g.takipciler }));
     kart.appendChild(el('div', { sinif: 'gorev-metin', metin: g.gorev }));
     kart.appendChild(el('div', { sinif: 'gorev-alt' }, alt));
     // Son durum (geçmişiyle); eski kayıtlarda yalnız metin
@@ -3222,7 +3253,8 @@
     if ((bitti || onay) && bNot) kart.appendChild(el('div', { sinif: 'gk-durum' }, [el('div', { sinif: 'gk-durum-ust', metin: 'Bitti notu' }), el('div', { metin: bNot.m })]));
     if (kapali && !bitti) return kart;   // toplantı ekranında kapanmış görev: yalnız okunur
     if (!sahip) {
-      if (!g.takip || g.onayla === false) return kart;   // takip eden: durum yazar; onay bekliyorsa onaylar / geri gönderir
+      if (g.izleyebilir) dug.appendChild(izleDugmesi(g, izRozet, g.takip ? kart : null));   // "Takip et" (yalnız izler, onay yok)
+      if (!g.takip || g.onayla === false) { if (dug.childNodes.length) kart.appendChild(dug); return kart; }   // takip eden: durum yazar; onay bekliyorsa onaylar / geri gönderir
       const yazT = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Durum yaz' });
       yazT.onclick = function () { durumEditoru(g, kart, dug, '', false); };
       dug.appendChild(yazT);
