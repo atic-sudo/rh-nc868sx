@@ -405,6 +405,7 @@
     .gorev-kart.gk-ac { border-left: 4px solid var(--cizgi); } .gorev-kart.gk-bit { border-left: 4px solid #3f8f6b; opacity: .72; }
     .gorev-kart.gk-karar { border-left: 4px solid #8a6bc2; } .gorev-kart.gk-ony { border-left: 4px solid #e2956b; }
     .gk-etiket.ony { background: #fbe9dc; color: #a0522d; } .gk-etiket.tk { background: #eee7f8; color: #6a4ca8; }
+    .karar-ara { width: 100%; box-sizing: border-box; margin: 4px 0 10px; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--cizgi); background: var(--kart); color: var(--yazi); font: inherit; }
     .gk-etiket { font-size: 11.5px; font-weight: 700; border-radius: 99px; padding: 1px 8px; }
     .gk-etiket.ac { background: var(--ikon-zemin); color: var(--soluk); } .gk-etiket.dev { background: #e3edf8; color: #2f5c94; }
     .gk-etiket.gec { background: #fde5e5; color: #b22; } .gk-etiket.bit { background: #e2f2ea; color: #2f7a55; } .gk-etiket.kr { background: #eee7f8; color: #6a4ca8; }
@@ -2916,8 +2917,12 @@
   // ----- Toplantılar sekmesi: liste → bir toplantının içi (görevler, kararlar, ortak not, kendi notlarım) -----
   let topSecili = null;   // açık toplantının anahtarı ('m:E Lise|2026-10-26'); işlemden sonra yeniden açılır
   function toplantilarCiz(alan, s) {
+    if (topSecili === 'kararlar') { kararlarCiz(alan, s); return; }
     if (topSecili) { toplantiDetayCiz(alan, s, topSecili); return; }
     const liste = s.toplantilar || [];
+    const kb = el('button', { sinif: 'kucuk', type: 'button', metin: 'Bütün kararlar ›' });
+    kb.onclick = function () { topSecili = 'kararlar'; alan.replaceChildren(); toplantilarCiz(alan, s); };
+    alan.appendChild(el('div', { sinif: 'tp-bag' }, [kb]));
     const bas = function (m) { alan.appendChild(el('div', { sinif: 'hs-baslik', metin: m })); };
     const satir = function (x) {
       const g = x.gun ? new Date(x.gun + 'T12:00:00') : new Date(x.pzt + 'T12:00:00');
@@ -2947,6 +2952,38 @@
       s.kararlar.forEach(function (k) { alan.appendChild(kararKarti(k.karar, k.tarihMetni + ' · ' + k.toplanti.replace(/ · \d{4}-\d{2}-\d{2}$/, ''))); });
     }
     alan.appendChild(el('p', { sinif: 'not', metin: 'Yalnız katıldığınız toplantılar görünür. Bir toplantıya dokununca ondan çıkan görevler, kararlar ve toplantı notu açılır.' }));
+  }
+  /** Bütün kararlar (yeniden eskiye, aranabilir); karara dokununca alındığı toplantı açılır */
+  async function kararlarCiz(alan, s) {
+    alan.appendChild(el('div', { sinif: 'yukleniyor', metin: 'Yükleniyor…' }));
+    let d;
+    try { d = DEMO ? { ok: true, kararlar: [{ tarih: '2026-10-21', tarihMetni: '21 Eki 2026', karar: 'Veli toplantısı 15 Kasım\'da yapılacak', konu: 'Veli', toplanti: 'Rehberlik toplantısı', anahtar: '' },
+                                             { tarih: '2026-10-07', tarihMetni: '7 Eki 2026', karar: 'Burs (400) grup abileriyle konuşuldu, olumlu karşılandı', konu: 'Burs', toplanti: 'Rehberlik toplantısı', anahtar: '' }] }
+                 : await islem('&islem=gorevKararlar'); }
+    catch (e) { alan.replaceChildren(el('p', { sinif: 'bos', metin: 'Bağlantı kurulamadı. Tekrar deneyin.' })); return; }
+    alan.replaceChildren();
+    const geri = el('button', { sinif: 'baglanti-kucuk tp-geri', type: 'button', metin: '‹ Toplantılar' });
+    geri.onclick = function () { topSecili = null; alan.replaceChildren(); toplantilarCiz(alan, s); };
+    alan.appendChild(geri);
+    if (!d || !d.ok) { alan.appendChild(el('p', { sinif: 'bos', metin: HATA_METNI[d && d.hata] || 'Kararlar açılamadı.' })); return; }
+    alan.appendChild(el('h3', { sinif: 'tp-baslik', metin: 'Bütün kararlar' }));
+    const ara = el('input', { type: 'search', sinif: 'karar-ara', placeholder: 'Ara: telefon, burs, veli…', 'aria-label': 'Kararlarda ara' });
+    const liste = el('div', {});
+    const ciz = function () {
+      const q = ara.value.trim().toLocaleLowerCase('tr');
+      const k = d.kararlar.filter(function (x) { return !q || (x.karar + ' ' + x.konu + ' ' + x.toplanti).toLocaleLowerCase('tr').indexOf(q) >= 0; });
+      liste.replaceChildren();
+      if (!k.length) { liste.appendChild(el('p', { sinif: 'bos', metin: d.kararlar.length ? 'Eşleşen karar yok.' : 'Henüz karar yok.' })); return; }
+      k.forEach(function (x) {
+        const kart = kararKarti(x.karar, x.tarihMetni + (x.toplanti ? ' · ' + x.toplanti : '') + (x.konu ? ' · ' + x.konu : ''));
+        if (x.anahtar) { kart.style.cursor = 'pointer'; kart.onclick = function () { topSecili = x.anahtar; alan.replaceChildren(); toplantilarCiz(alan, s); }; }
+        liste.appendChild(kart);
+      });
+    };
+    ara.oninput = ciz;
+    if (d.kararlar.length > 5) alan.appendChild(ara);
+    alan.appendChild(liste);
+    ciz();
   }
   async function toplantiDetayCiz(alan, s, anahtar) {
     alan.appendChild(el('div', { sinif: 'yukleniyor', metin: 'Yükleniyor…' }));
