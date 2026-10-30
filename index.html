@@ -411,6 +411,7 @@
     .gk-etiket.gec { background: #fde5e5; color: #b22; } .gk-etiket.bit { background: #e2f2ea; color: #2f7a55; } .gk-etiket.kr { background: #eee7f8; color: #6a4ca8; }
     .gk-durum { font-size: 14px; margin-top: 8px; background: var(--ikon-zemin); border-radius: 10px; padding: 7px 9px; line-height: 1.4; overflow-wrap: anywhere; }
     .gk-durum-ust { display: flex; justify-content: space-between; gap: 8px; color: var(--soluk); font-size: 12px; }
+    .linkli { overflow-wrap: anywhere; } .linkli a { color: var(--vurgu, inherit); font-weight: 600; }
     .gk-gecmis { border-top: 1px solid var(--cizgi); margin-top: 6px; padding-top: 6px; display: grid; gap: 6px; }
     .gk-secim { display: grid; gap: 8px; margin: 4px 0 12px; }
     .gk-secenek { display: flex; gap: 12px; align-items: flex-start; text-align: left; font: inherit; background: var(--kart); border: 1px solid var(--cizgi); border-radius: 14px; padding: 12px 14px; cursor: pointer; color: var(--yazi); }
@@ -3289,7 +3290,7 @@
     // Notlar (takip eden / izleyen yazar; durumu değiştirmez) ve toplu görevde kim ne durumda
     const yorumlar = (g.gecmis || []).filter(function (x) { return x.tur === 'yorum' && x.m; });
     if (yorumlar.length) kart.appendChild(el('div', { sinif: 'gk-durum' }, yorumlar.map(function (x) {
-      return el('div', {}, [el('div', { sinif: 'gk-durum-ust', metin: 'Not · ' + x.kim + ' · ' + gorevTarihKisa(x.z) }), el('div', { metin: x.m })]);
+      return el('div', {}, [el('div', { sinif: 'gk-durum-ust', metin: 'Not · ' + x.kim + ' · ' + gorevTarihKisa(x.z) }), linkliMetin(x.m)]);
     })));
     if (g.kisiler && g.kisiler.length) {
       const ac = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Kim ne durumda (' + g.kisiler.length + ') ▾' });
@@ -3374,10 +3375,19 @@
     kart.appendChild(dug);
     return kart;
   }
+  /** Metindeki https:// adresleri tıklanır (yeni sekmede); geri kalan düz metin */
+  function linkliMetin(m) {
+    const d = el('div', { sinif: 'linkli' });
+    String(m || '').split(/(https?:\/\/[^\s<>"]+)/).forEach(function (p, i) {
+      if (i % 2) { const u = p.replace(/[.,;:!?)]+$/, ''), a = el('a', { href: u, target: '_blank', rel: 'noopener', metin: 'Bağlantıyı aç' }); d.appendChild(a); if (u.length < p.length) d.appendChild(document.createTextNode(p.slice(u.length))); }
+      else if (p) d.appendChild(document.createTextNode(p));
+    });
+    return d;
+  }
   /** Not ekle (takip eden / izleyen): durum değişmez; toplu görevde bütün sorumlulara düşer */
   function yorumEditoru(g, kart, dug) {
     const eski = Array.from(dug.childNodes);
-    const not = el('textarea', { sinif: 'gorev-not-girdi', rows: '3', placeholder: 'Sorumlulara not: ör. derslerin yanına seviyesini de yazın (Math 20-1 gibi)', maxlength: '300' });
+    const not = el('textarea', { sinif: 'gorev-not-girdi', rows: '3', placeholder: 'Sorumlulara not: ör. derslerin yanına seviyesini de yazın (Math 20-1 gibi). Bağlantı da yapıştırabilirsiniz.', maxlength: '300' });
     const kaydet = el('button', { sinif: 'kucuk', type: 'button', metin: 'Notu gönder' });
     const vazgec = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Vazgeç' });
     vazgec.onclick = function () { not.remove(); dug.replaceChildren.apply(dug, eski); };
