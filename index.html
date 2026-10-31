@@ -3387,7 +3387,7 @@
   /** Not ekle (takip eden / izleyen): durum değişmez; toplu görevde bütün sorumlulara düşer */
   function yorumEditoru(g, kart, dug) {
     const eski = Array.from(dug.childNodes);
-    const not = el('textarea', { sinif: 'gorev-not-girdi', rows: '3', placeholder: 'Sorumlulara not: ör. derslerin yanına seviyesini de yazın (Math 20-1 gibi). Bağlantı da yapıştırabilirsiniz.', maxlength: '300' });
+    const not = el('textarea', { sinif: 'gorev-not-girdi', rows: '5', placeholder: 'Sorumlulara not: ör. derslerin yanına seviyesini de yazın (Math 20-1 gibi). Bağlantı da yapıştırabilirsiniz.', maxlength: '800' });
     const kaydet = el('button', { sinif: 'kucuk', type: 'button', metin: 'Notu gönder' });
     const vazgec = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Vazgeç' });
     vazgec.onclick = function () { not.remove(); dug.replaceChildren.apply(dug, eski); };
