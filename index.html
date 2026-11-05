@@ -3289,9 +3289,9 @@
     }
     // Notlar (takip eden / izleyen yazar; durumu değiştirmez) ve toplu görevde kim ne durumda
     const yorumlar = (g.gecmis || []).filter(function (x) { return x.tur === 'yorum' && x.m; });
-    if (yorumlar.length) kart.appendChild(el('div', { sinif: 'gk-durum' }, yorumlar.map(function (x) {
+    if (yorumlar.length) kart.appendChild(el('div', { sinif: 'gk-durum' }, [el('div', { sinif: 'not', metin: 'Notları görevin sorumluları (' + (g.sorumlu || '?') + ') ve takip edenler görür.' })].concat(yorumlar.map(function (x) {
       return el('div', {}, [el('div', { sinif: 'gk-durum-ust', metin: 'Not · ' + x.kim + ' · ' + gorevTarihKisa(x.z) }), linkliMetin(x.m)]);
-    })));
+    }))));
     if (g.kisiler && g.kisiler.length) {
       const ac = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Kim ne durumda (' + g.kisiler.length + ') ▾' });
       const liste = el('div', { sinif: 'gk-gecmis', hidden: '' }, g.kisiler.map(function (x) {
@@ -3395,8 +3395,7 @@
       if (!not.value.trim()) { not.focus(); return; }
       kaydet.disabled = true;
       if (DEMO) { g.gecmis = (g.gecmis || []).concat([{ m: not.value.trim(), kim: 'Siz', z: new Date().toISOString().slice(0, 10), tur: 'yorum' }]); gorevlerYukle(''); return; }
-      gorevlerYukle('&islem=gorevYorum&no=' + encodeURIComponent(g.no) + '&not=' + encodeURIComponent(not.value.trim()),
-        el('div', { sinif: 'bilgi', metin: 'Not eklendi; görevin sorumlularına e-posta gitti.' }));
+      gorevlerYukle('&islem=gorevYorum&no=' + encodeURIComponent(g.no) + '&not=' + encodeURIComponent(not.value.trim()));   // sunucu kime gittiğini yazar
     };
     dug.before(not); dug.replaceChildren(vazgec, kaydet); not.focus();
   }
