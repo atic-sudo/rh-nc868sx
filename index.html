@@ -1048,6 +1048,9 @@
       return;
     }
 
+    // Müşahit: yatılı misafirleri (sohbetçi / Kur'an hocası) onun işi (5 Kas)
+    if (musahit()) ic.appendChild(satir({ k: 'yatili', ikon: 'misafir', baslik: 'Yatılı misafirleri', alt: "Sohbetçi ve Kur'an hocası ata · gönüllü çağrısı", url: '#', tikla: misafirlerAc }));
+
     // Satırlar
     ic.appendChild(v.raporGonderildi
       ? satir({ k: 'rapor', ikon: 'kalem', baslik: 'Haftalık rapor', alt: (v.raporGonderildi === 'gecen' ? 'Geçen haftanınki gönderildi' : 'Bu hafta gönderildi') + ' · düzeltmek için dokun', url: '#', durum: 'Gönderildi', tikla: raporAc })
@@ -1139,7 +1142,7 @@
       }
       return;
     }
-    if (['rehber', 'org', 'test', 'akademik'].indexOf(rol) < 0) return;
+    if (['rehber', 'org', 'test', 'akademik', 'musahit'].indexOf(rol) < 0) return;
     rozetKoy('yatili', sunucuSayac); rozetKoy('gorev', gorevSayac); rozetKoy('ders', dersSayac);
     if (Date.now() - sayacZamani < 60000) return;
     sayacZamani = Date.now();
@@ -1615,7 +1618,7 @@
       sec.addEventListener('change', function () { depo.yaz('grup', sec.value); $('icerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>'; yenile(); });
       alan.appendChild(el('label', { sinif: 'grup-sec' }, [etiket, ikon('asagi'), sec]));
     }
-    $('kim').textContent = kisi && kisi.ad ? kisi.ad + (kisi.rol === 'rehber' ? ' · rehber' : kisi.rol === 'org' ? ' · org sorumlusu' : kisi.rol === 'musahit' ? ' · müşahit (görüntüleme)' : kisi.rol === 'akademik' ? ' · akademik' : '') : '';
+    $('kim').textContent = kisi && kisi.ad ? kisi.ad + (kisi.rol === 'rehber' ? ' · rehber' : kisi.rol === 'org' ? ' · org sorumlusu' : kisi.rol === 'musahit' ? ' · müşahit' : kisi.rol === 'akademik' ? ' · akademik' : '') : '';
   }
 
   /** "16 Ekim Cuma · Daire 5 · ✅ onaylandı" → metin + rozet */
@@ -1892,8 +1895,8 @@
     if (sonVeri) depo.yaz('yatiliGordu_' + sonVeri.grup, '__acildi');
     sayacZamani = 0;   // dönüşte rehber/org sayacı tazelensin
     history.pushState({ alt: 'yatili' }, ''); goster('yatili');
-    $('yatiliSekme').hidden = !yonetici();
-    yatiliSekmeSec(sekme === 'misafir' && yonetici() ? 'misafir' : 'rez');
+    $('yatiliSekme').hidden = !misafirAtayabilir();
+    yatiliSekmeSec(sekme === 'misafir' && misafirAtayabilir() ? 'misafir' : 'rez');
   }
 
   function yatiliSekmeSec(sekme) {
@@ -3734,13 +3737,19 @@
   function akademik() {
     try { const k = JSON.parse(depo.al('kisi') || 'null'); return !!k && k.rol === 'akademik'; } catch (e) { return false; }
   }
+  /** Müşahit (5 Kas): yalnız sohbetçi / Kur'an hocası atar; başka her yerde salt okunur */
+  function musahit() {
+    if (DEMO) return /rol=musahit/.test(location.search);
+    try { const k = JSON.parse(depo.al('kisi') || 'null'); return !!k && k.rol === 'musahit'; } catch (e) { return false; }
+  }
+  function misafirAtayabilir() { return yonetici() || musahit(); }
   function yonetici() {
     if (DEMO) return !DEMO_MENTOR;
     try { const k = JSON.parse(depo.al('kisi') || 'null'); return !!k && ['org', 'rehber', 'test', 'akademik'].indexOf(k.rol) >= 0; } catch (e) { return false; }
   }
   function misafirHucre(x, saat) {
     const s = programVeri, m = MISAFIR_ALAN[x.anahtar];
-    if (MISAFIR || !m || !yonetici() || !s.satir || (akademik() && x.anahtar !== 'etut')) return null;   // isim artık etkinlik adının yanında
+    if (MISAFIR || !m || !misafirAtayabilir() || !s.satir || (akademik() && x.anahtar !== 'etut') || (musahit() && x.anahtar === 'etut')) return null;   // isim artık etkinlik adının yanında
     const b = el('button', { sinif: 'kucuk', type: 'button', metin: x.misafir ? 'Düzenle' : 'Ata' });
     b.onclick = function () {
       if (x.misafir) {
@@ -4110,8 +4119,8 @@
     const ic = $('misafirIcerik');
     ic.textContent = '';
     if (!liste.length) { ic.appendChild(el('div', { sinif: 'bilgi', metin: 'Önümüzdeki 8 haftada onaylı yatılı yok.' })); return; }
-    const ak = akademik();   // akademik: yalnız ders koçu
-    const eksikler = liste.filter(function (y) { return ak ? !y.etut : !y.sohbet || !y.hoca || !y.etut; });
+    const ak = akademik(), mu = musahit();   // akademik: yalnız ders koçu · müşahit: yalnız sohbetçi + Kur'an hocası
+    const eksikler = liste.filter(function (y) { return ak ? !y.etut : mu ? !y.sohbet || !y.hoca : !y.sohbet || !y.hoca || !y.etut; });
     if (eksikler.length) {
       const b = el('button', { sinif: 'kucuk sicak genis', type: 'button', metin: 'Gönüllü çağrısı paylaş (' + eksikler.length + ' yatılıda eksik)' });
       b.onclick = function () {
@@ -4120,7 +4129,7 @@
           satirlar.push('📅 ' + tarihEtiket(y.gun1) + ' · ' + y.yer + ' ' + y.daire + ' · ' + y.ekip);
           if (!y.hoca && !ak) satirlar.push("   • Kur'an dersi: " + y.hocaSaat);
           if (!y.sohbet && !ak) satirlar.push('   • Konuk sohbeti: ' + y.sohbetSaat);
-          if (!y.etut) satirlar.push('   • Ders koçu (sabah, okul derslerine yardım): ' + y.etutSaat);
+          if (!y.etut && !mu) satirlar.push('   • Ders koçu (sabah, okul derslerine yardım): ' + y.etutSaat);
         });
         satirlar.push('', 'Katılabilecek olan bana yazabilir 🙏', '(Saatler namaz vaktine göre birkaç dakika değişebilir.)');
         paylas(satirlar.join('\n'));
@@ -4142,7 +4151,7 @@
           if (DEMO) { y[alan] = yeni.trim(); misafirCiz(liste); return; }
           misafirYukle('&islem=misafirAta&prog=' + y.prog + '&satir=' + y.satir + '&alan=' + alan + '&ad=' + encodeURIComponent(yeni.trim()));
         };
-        const dugmeler = ak && alan !== 'etut' ? [] : [ata];
+        const dugmeler = (ak && alan !== 'etut') || (mu && alan === 'etut') ? [] : [ata];
         if (ad && dugmeler.length) {
           const dv = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Davet gönder' });
           dv.onclick = function () {
