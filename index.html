@@ -3532,9 +3532,10 @@
     const kap = el('div', {});
     const ac = el('button', { sinif: 'kucuk sicak', type: 'button', metin: '+ Yeni' });   // ac.onclick = formu açar (toplantı ekranı doğrudan çağırır)
     const yeni = el('button', { sinif: 'kucuk sicak', type: 'button', metin: '+ Yeni' });
-    const secim = el('div', { sinif: 'gk-secim', hidden: '' }, [['Görev', 'gk-ik-g', '✓', 'Birine iş verin: kim, ne zamana kadar. Bitince o kişi "Bitti" der.'],
+    const yalnizGorev = s.secenekler.every(function (x) { return x.yalnizGorev; });   // akademik mesul: yalnız mentorlara görev (4 Kas)
+    const secim = el('div', { sinif: 'gk-secim', hidden: '' }, [['Görev', 'gk-ik-g', '✓', yalnizGorev ? 'Mentorlara akademik iş verin: kim, ne zamana kadar. Bitince "Bitti" der, onay size gelir; ekibin rehberi de görür.' : 'Birine iş verin: kim, ne zamana kadar. Bitince o kişi "Bitti" der.'],
       ['Karar', 'gk-ik-k', 'K', 'Alınan kararı kaydedin. Kimsenin işi değil; ilgili herkes görür.'],
-      ['Not', 'gk-ik-n', 'N', 'Kendinize not alın. Yalnız siz görürsünüz; sonra göreve ya da karara çevirebilirsiniz.']].map(function (x) {
+      ['Not', 'gk-ik-n', 'N', 'Kendinize not alın. Yalnız siz görürsünüz; sonra göreve ya da karara çevirebilirsiniz.']].filter(function (x) { return !yalnizGorev || x[0] === 'Görev'; }).map(function (x) {
         const b = el('button', { type: 'button', sinif: 'gk-secenek' }, [el('span', { sinif: 'gk-ik ' + x[1], metin: x[2] }), el('span', {}, [el('b', { metin: x[0] }), el('span', { metin: x[3] })])]);
         b.onclick = function () { gorevOnTur = x[0]; secim.hidden = true; ac.onclick(); };
         return b;
@@ -3590,8 +3591,9 @@
           '&metin=' + encodeURIComponent(m) + '&kime=' + encodeURIComponent(v.kime.join('|')) + '&tarih=' + encodeURIComponent(tarih.value) +
           (turKod === 'not' ? '&grup=' + encodeURIComponent(grupSec.value) : '') + (v.notSatir && turKod !== 'not' ? '&notSatir=' + v.notSatir : ''));
       };
-      [alanEl('Toplantı', toplanti), el('span', { sinif: 'ders-etiket', metin: 'Tür' }),
-       secimGrubu(['Görev', 'Karar', 'Not'], false, function () { return v.tur; }, function (x) { v.tur = x || 'Görev'; turCiz(); }),
+      if (yalnizGorev) toplanti.disabled = true;   // tek seçenek: "Akademik görev"
+      [alanEl(yalnizGorev ? 'Alan' : 'Toplantı', toplanti), el('span', { sinif: 'ders-etiket', metin: 'Tür' }),
+       secimGrubu(yalnizGorev ? ['Görev'] : ['Görev', 'Karar', 'Not'], false, function () { return v.tur; }, function (x) { v.tur = x || 'Görev'; turCiz(); }),
        alanEl('Metin', metin), kimeAlan, tarihAlan, grupAlan, mesaj, el('div', { sinif: 'dugmeler' }, [vazgec, gonder])].forEach(function (x) { f.appendChild(x); });
       kimeCiz(); grupCiz(); turCiz();
       // Grup turu kartındaki "Görev ver": Kime = o grubun mentoru, metin = varsa isteği
