@@ -1531,7 +1531,9 @@
     raporlarYukle();
   }
   async function raporlarYukle() {
-    const ic = $('okumaTakipIcerik');
+    const ic = $('okumaTakipIcerik'), anahtar = 'raporlar_' + (depo.al('rehberEkip') || 'hepsi');
+    const eski = !DEMO && onbellekAl(anahtar);
+    if (eski) { raporlarCiz(eski); eskiNotu(ic, 'Son kayıtlı raporlar · güncelleniyor…'); }
     let s;
     try {
       s = DEMO ? { ok: true, haftalar: ['2026-10-05', '2026-10-12', '2026-10-19', '2026-10-26'], saat: '15:40', gruplar: [
@@ -1540,8 +1542,13 @@
           { grup: 'E11', mentor: 'Örnek Mentor 2', h: { '2026-10-19': { tarih: '25 Eki', nasil: 'Zor', katilim: '5/8', gelmedi: ['Hasan', 'Kerem', 'Emre'], mazeretli: [], mazeretNot: '', konu: 'İşlenmedi', konuAciklama: 'Gezi vardı', istek: '', dikkat: '', not: '' } } },
           { grup: 'E12', mentor: 'Örnek Mentor 3', h: {} }] }
         : await islem('&islem=rehberPano&detay=raporlar&ekip=' + encodeURIComponent(depo.al('rehberEkip') || 'hepsi'));
-    } catch (e) { ic.textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; return; }
-    if (!s || !s.ok) { ic.textContent = HATA_METNI[s && s.hata] || 'Raporlar yüklenemedi.'; return; }
+    } catch (e) { if (eski) eskiNotu(ic, 'Bağlantı yok · son kayıtlı raporlar gösteriliyor'); else ic.textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; return; }
+    if (!s || !s.ok) { if (eski) eskiNotu(ic, HATA_METNI[s && s.hata] || 'Raporlar güncellenemedi.'); else ic.textContent = HATA_METNI[s && s.hata] || 'Raporlar yüklenemedi.'; return; }
+    if (!DEMO) onbellekYaz(anahtar, s);
+    raporlarCiz(s);
+  }
+  function raporlarCiz(s) {
+    const ic = $('okumaTakipIcerik');
     const H = s.haftalar, ad = ['3 hf. önce', '2 hf. önce', 'Geçen hafta', 'Bu hafta'];
     if (!raporHafta || H.indexOf(raporHafta) < 0)   // bu hafta henüz rapor yoksa geçen hafta açılır
       raporHafta = s.gruplar.some(function (g) { return g.h[H[3]]; }) ? H[3] : H[2];
@@ -1832,6 +1839,20 @@
   };
   const GUNLER = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
   const AYLAR_UZUN = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+
+  // Son görülen veri (5 Kas): ekran önce telefondaki kopyadan anında çizilir, sunucu cevabı gelince yeniden çizilir.
+  // Çıkışta localStorage.clear() hepsini siler.
+  function onbellekAl(anahtar) { try { return JSON.parse(depo.al('onb_' + anahtar) || 'null'); } catch (e) { return null; } }
+  function onbellekYaz(anahtar, s) { depo.yaz('onb_' + anahtar, JSON.stringify(s)); }
+  /** Kullanıcı bu alanda bir şey yazıyorsa yeniden çizip yazdığını silmeyelim */
+  function kullaniciYaziyor(ic) { const a = document.activeElement; return !!a && ic.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName); }
+  /** Üstte küçük durum satırı; tikla verilirse "Göster" düğmesi ekler */
+  function eskiNotu(ic, metin, tikla) {
+    let n = ic.querySelector(':scope > .onb-not');
+    if (!n) { n = el('p', { sinif: 'not onb-not' }); ic.prepend(n); }
+    n.textContent = metin;
+    if (tikla) { const b = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Göster' }); b.onclick = tikla; n.appendChild(document.createTextNode(' ')); n.appendChild(b); }
+  }
 
   async function islem(ek) {
     if (DEMO_MENTOR && /islem=yatili$/.test(ek)) return { ok: true, grup: 'E10', gruplar: ['E10'], rehber: false, url: '#', slotlar: [
@@ -2774,16 +2795,30 @@
     toplantiModu = o && o.ozet ? o.ozet : null;
     history.pushState({ alt: 'gorevler' }, ''); goster('gorevler');
     $('gorevlerBaslik').textContent = toplantiModu ? 'Toplantı' : 'Görevler';
-    $('gorevlerIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
-    gorevlerYukle('&islem=gorevlerim');
+    const eski = !DEMO && !toplantiModu && onbellekAl(gorevAnahtar());
+    if (eski) { gorevlerCiz(eski); eskiNotu($('gorevlerIcerik'), 'Son kayıtlı liste · güncelleniyor…'); }
+    else $('gorevlerIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    gorevlerYukle('&islem=gorevlerim', null, eski);
   }
-  async function gorevlerYukle(ek, bilgiEl) {
+  function gorevAnahtar() { return 'gorev_' + (depo.al('grup') || ''); }
+  /** eski: ekranda telefondaki kopya duruyorsa (gorevlerAc) */
+  async function gorevlerYukle(ek, bilgiEl, eski) {
     let s;
     if (toplantiModu && ek) ek += '&ozet=' + encodeURIComponent(toplantiModu);
     try { s = DEMO ? Object.assign({ toplantilar: DEMO_TOPLANTILAR(), defter2: DEMO_DEFTER() }, DEMO_GOREVLER(), { toplanti: toplantiModu ? DEMO_TOPLANTI_OZET() : null }) : await islem(ek); }
-    catch (e) { $('gorevlerIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; return; }
+    catch (e) {
+      if (eski) eskiNotu($('gorevlerIcerik'), 'Bağlantı yok · son kayıtlı liste gösteriliyor');
+      else $('gorevlerIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.';
+      return;
+    }
     const ic = $('gorevlerIcerik');
     if (!s.ok) { ic.prepend(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s.hata] || 'Bir sorun oluştu.' })); window.scrollTo(0, 0); return; }
+    if (!DEMO && !toplantiModu && Array.isArray(s.gorevler)) onbellekYaz(gorevAnahtar(), Object.assign({}, s, { bilgi: '' }));
+    if (eski && kullaniciYaziyor(ic)) { eskiNotu(ic, 'Liste güncellendi.', function () { gorevlerCiz(s); }); return; }
+    gorevlerCiz(s, bilgiEl);
+  }
+  function gorevlerCiz(s, bilgiEl) {
+    const ic = $('gorevlerIcerik');
     ic.textContent = '';
     if (bilgiEl) ic.appendChild(bilgiEl);
     else if (s.bilgi) ic.appendChild(el('div', { sinif: 'bilgi', metin: s.bilgi }));
