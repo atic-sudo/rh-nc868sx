@@ -1061,14 +1061,14 @@
     ic.appendChild(satir({ ikon: 'belge', baslik: 'Toplantı notu',
       alt: v.toplanti ? v.toplanti.tarih + ' haftası · gündem ve görevler' : 'Henüz toplantı notu yok', url: v.toplanti && v.toplanti.url,
       tikla: v.toplanti ? toplantiAc : null }));
-    if (DERS_BILGI_FORMU && !saltOkunur()) ic.appendChild(satir({ ikon: 'kitap', baslik: 'Ders bilgisi formu', alt: 'Akademik rehberlik · öğrencilere gönderin', url: '#',
+    if (DERS_BILGI_FORMU && !saltOkunur()) ic.appendChild(satir({ ikon: 'kitap', baslik: 'Student Course Information Form', alt: 'Akademik rehberlik · öğrencilere gönderin', url: '#',
       tikla: function () {
         paylas(['📚 Sevgili öğrenciler,', '',
           'Akademik destek ve ders koçluğunu planlayabilmemiz için bu yıl aldığınız dersleri öğrenmek istiyoruz. ' +
           'Lütfen okul ders programınıza bakarak aşağıdaki formu doldurun (2–3 dakika). 2. dönem dersleriniz henüz belli değilse o kısmı boş bırakabilirsiniz.', '',
           DERS_BILGI_FORMU, '', 'Teşekkürler 🙏'].join('\n'));
       } }));
-    if (DERS_KOCU_FORMU && !saltOkunur()) ic.appendChild(satir({ ikon: 'kitap', baslik: 'Ders koçu kayıt formu', alt: 'Akademik rehberlik · ders koçu adaylarına gönderin', url: '#',
+    if (DERS_KOCU_FORMU && !saltOkunur()) ic.appendChild(satir({ ikon: 'kitap', baslik: 'Academic Coach Registration Form', alt: 'Akademik rehberlik · ders koçu adaylarına gönderin', url: '#',
       tikla: function () {
         paylas(['📘 Merhaba,', '',
           'Öğrencilerimize ders desteği verecek ders koçlarını belirliyoruz. Ders anlatabileceğiniz konular ve uygun olduğunuz zamanlar için ' +
