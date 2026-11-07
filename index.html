@@ -895,6 +895,9 @@
 <script>
   // Apps Script web uygulaması (Mentor Sayfası). Veri yalnız doğru erişim koduyla gelir.
   const VERI_URL = 'https://script.google.com/macros/s/AKfycbzGG4cY3YwsE5ZP5ZiKEt0k7ukVmVSmoCRtRVRJRfNqauqQeViO9Rfm3xm5m_j_NuqM/exec';
+  // Akademik rehberliğin öğrenci ders formu (6 Kas 2026; form değiştirilmez, mentor gruba iletir). Kampanya bitince '' yapın → satır kalkar.
+  const DERS_BILGI_FORMU = 'https://docs.google.com/forms/d/e/1FAIpQLSeRK268xyqW7qPHQ78Bq83oaWfyom7plMW3cNtrrvHCS8kjgA/viewform';
+  const DERS_KOCU_FORMU = 'https://docs.google.com/forms/d/e/1FAIpQLSfOmB3ZMYEdPENUMKPMe7ZFhtE8gx1jPW21xsJgzPlmodT2YA/viewform';   // 7 Kas: akademik mesul — ders koçu adaylarına ('' = gizle)
   const DEMO = /[?&]demo\b/.test(location.search);   // ?demo → örnek verilerle görünüm denemesi (sunucuya gitmez)
   const DEMO_MENTOR = DEMO && /rol=mentor/.test(location.search);   // &rol=mentor → mentor gözüyle (kılavuz görüntüleri)
 
@@ -1058,6 +1061,20 @@
     ic.appendChild(satir({ ikon: 'belge', baslik: 'Toplantı notu',
       alt: v.toplanti ? v.toplanti.tarih + ' haftası · gündem ve görevler' : 'Henüz toplantı notu yok', url: v.toplanti && v.toplanti.url,
       tikla: v.toplanti ? toplantiAc : null }));
+    if (DERS_BILGI_FORMU && !saltOkunur()) ic.appendChild(satir({ ikon: 'kitap', baslik: 'Ders bilgisi formu', alt: 'Akademik rehberlik · öğrencilere gönderin', url: '#',
+      tikla: function () {
+        paylas(['📚 Sevgili öğrenciler,', '',
+          'Akademik destek ve ders koçluğunu planlayabilmemiz için bu yıl aldığınız dersleri öğrenmek istiyoruz. ' +
+          'Lütfen okul ders programınıza bakarak aşağıdaki formu doldurun (2–3 dakika). 2. dönem dersleriniz henüz belli değilse o kısmı boş bırakabilirsiniz.', '',
+          DERS_BILGI_FORMU, '', 'Teşekkürler 🙏'].join('\n'));
+      } }));
+    if (DERS_KOCU_FORMU && !saltOkunur()) ic.appendChild(satir({ ikon: 'kitap', baslik: 'Ders koçu kayıt formu', alt: 'Akademik rehberlik · ders koçu adaylarına gönderin', url: '#',
+      tikla: function () {
+        paylas(['📘 Merhaba,', '',
+          'Öğrencilerimize ders desteği verecek ders koçlarını belirliyoruz. Ders anlatabileceğiniz konular ve uygun olduğunuz zamanlar için ' +
+          'lütfen aşağıdaki formu doldurun (birkaç dakika).', '',
+          DERS_KOCU_FORMU, '', 'Teşekkürler 🙏'].join('\n'));
+      } }));
     takvimOzet();
     const ikili = el('div', { sinif: 'ikili' });
     ic.appendChild(ikili);
@@ -1837,7 +1854,7 @@
     satir: 'Liste değişmiş, yeniden açın.',
     iptalGerek: 'Yatılıya bir haftadan az kaldı; vazgeçmek için "İptal iste" ile rehberinize sebep bildirin.',
     sebep: 'İptal sebebini yazın.',
-    salt: 'Müşahit hesabı görüntüleme modunda: değişiklik yapılamaz, gönderilemez.',
+    salt: 'Bu hesap bu işlem için görüntüleme modunda; değişiklik yapılamaz.',
     ayniIsim: 'Bu isim listede zaten var. Aynı isimde iki öğrenci varsa soyadın baş harfini ekleyin.', ad: 'Geçerli bir isim yazın.',
   };
   const GUNLER = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
@@ -2853,6 +2870,7 @@
           el('div', { sinif: 'gorev-alt' }, [el('span', { sinif: 'gorev-tarih', metin: gorevTarihMetni(g) }), el('span', { metin: 'Sorumlu: ' + (g.sorumlu || '?') }),
             g.durum !== 'Açık' ? el('span', { metin: g.durum }) : null, rozet]),
           g.tnot ? el('div', { sinif: 'gorev-son-not', metin: 'Son not: ' + g.tnot }) : null,
+          yorumBlogu(g),
           g.izleyebilir ? el('div', { sinif: 'dugmeler' }, [izleDugmesi(g, rozet, null)]) : null]));
       });
       if (s.rehberlik.kararlar.length) {
@@ -3284,6 +3302,15 @@
     return b;
   }
   function gorevKarti(g) { return gKart(g, true); }   // toplantı ekranı da aynı kartı kullanır
+  /** Görevdeki notlar (linkler tıklanır); yoksa null — gKart ve Rehberlik toplantısı listesi kullanır */
+  function yorumBlogu(g) {
+    const yorumlar = (g.gecmis || []).filter(function (x) { return x.tur === 'yorum' && x.m; });
+    if (!yorumlar.length) return null;
+    return el('div', { sinif: 'gk-durum' }, [el('div', { sinif: 'not', metin: 'Notları görevin sorumluları (' + (g.sorumlu || '?') + ') ve takip edenler görür.' })].concat(yorumlar.map(function (x) {
+      return el('div', {}, [el('div', { sinif: 'gk-durum-ust', metin: 'Not · ' + x.kim + ' · ' + gorevTarihKisa(x.z) }), linkliMetin(x.m)]);
+    })));
+  }
+
   /** sahip: düğmeler görünür · bitti: "Son bitenler" (soluk, "Geri al") */
   function gKart(g, sahip, bitti) {
     const onay = g.durum === 'Onay bekliyor', kapali = g.durum === 'Tamamlandı';
@@ -3326,10 +3353,8 @@
       kart.appendChild(kutu);
     }
     // Notlar (takip eden / izleyen yazar; durumu değiştirmez) ve toplu görevde kim ne durumda
-    const yorumlar = (g.gecmis || []).filter(function (x) { return x.tur === 'yorum' && x.m; });
-    if (yorumlar.length) kart.appendChild(el('div', { sinif: 'gk-durum' }, [el('div', { sinif: 'not', metin: 'Notları görevin sorumluları (' + (g.sorumlu || '?') + ') ve takip edenler görür.' })].concat(yorumlar.map(function (x) {
-      return el('div', {}, [el('div', { sinif: 'gk-durum-ust', metin: 'Not · ' + x.kim + ' · ' + gorevTarihKisa(x.z) }), linkliMetin(x.m)]);
-    }))));
+    const yb = yorumBlogu(g);
+    if (yb) kart.appendChild(yb);
     if (g.kisiler && g.kisiler.length) {
       const ac = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Kim ne durumda (' + g.kisiler.length + ') ▾' });
       const liste = el('div', { sinif: 'gk-gecmis', hidden: '' }, g.kisiler.map(function (x) {
