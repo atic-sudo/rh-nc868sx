@@ -3418,12 +3418,15 @@
     }
     const yaz = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Durum yaz' });
     yaz.onclick = function () { durumEditoru(g, kart, dug, '', false); };
+    // 7 Kas: toplu görevin sahibi (ör. mentorlara bölünmüş görevde rehber / akademik mesul) not ekler → bütün sorumlulara düşer
+    const sYorum = g.toplu && !bitti ? el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Not ekle' }) : null;
+    if (sYorum) sYorum.onclick = function () { yorumEditoru(g, kart, dug); };
     const bit = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Bitti' });
     bit.onclick = function () {
       const not = el('textarea', { sinif: 'gorev-not-girdi', rows: '2', placeholder: 'Bitti notu (isteğe bağlı): ör. liste gönderildi', maxlength: '300' });
       const kaydet = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Bitti olarak kaydet' });
       const vazgec = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Vazgeç' });
-      vazgec.onclick = function () { not.remove(); dug.replaceChildren(yaz, bit); };
+      vazgec.onclick = function () { not.remove(); dug.replaceChildren.apply(dug, [sYorum, yaz, bit].filter(Boolean)); };
       kaydet.onclick = function () {
         kaydet.disabled = true;
         const geri = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Geri al' });
@@ -3434,6 +3437,7 @@
       };
       dug.before(not); dug.replaceChildren(vazgec, kaydet); not.focus();
     };
+    if (sYorum) dug.appendChild(sYorum);
     dug.appendChild(yaz); dug.appendChild(bit);
     kart.appendChild(dug);
     return kart;
