@@ -1051,8 +1051,17 @@
       return;
     }
 
-    // Müşahit: yatılı misafirleri (sohbetçi / Kur'an hocası) onun işi (5 Kas)
-    if (musahit()) ic.appendChild(satir({ k: 'yatili', ikon: 'misafir', baslik: 'Yatılı misafirleri', alt: "Sohbetçi ve Kur'an hocası ata · gönüllü çağrısı", url: '#', tikla: misafirlerAc }));
+    // Müşahit (9 Kas): sade ana sayfa — org sorumlusu gibi yatılılar: misafir ataması + bütün programlar + kendi görevleri
+    if (musahit()) {
+      ic.textContent = '';
+      takvimOzet();
+      ic.appendChild(satir({ k: 'yatili', ikon: 'misafir', baslik: 'Yatılı misafirleri', alt: "Sohbetçi ve Kur'an hocası ata · gönüllü çağrısı", url: '#', tikla: misafirlerAc }));
+      ic.appendChild(satir({ ikon: 'takvim', baslik: 'Yatılı programları', alt: 'Bütün grupların yatılıları · Program ile akışı gör', url: '#', tikla: function () { yatiliAc('rez'); } }));
+      ic.appendChild(satir({ k: 'gorev', ikon: 'onay', baslik: 'Görevlerim', alt: 'Size verilen görevler · bitince ✓', url: '#', tikla: gorevlerAc }));
+      sayacGuncelle(v);
+      $('altBilgi').textContent = '';
+      return;
+    }
 
     // Satırlar
     ic.appendChild(v.raporGonderildi
