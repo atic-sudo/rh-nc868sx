@@ -59,6 +59,11 @@
       -webkit-font-smoothing: antialiased; line-height: 1.4;
     }
     main { max-width: 480px; margin: 0 auto; padding: calc(18px + env(safe-area-inset-top)) 18px calc(32px + env(safe-area-inset-bottom)); }
+    /* 16 Kas: sayfa yana kaymasın. Uzun, boşluksuz bir metin (ör. bir link) kartı taşırınca sağda boş alan açılıyordu.
+       Güvenlik ağı: taşan kısım kesilir (clip: yapışkan sekmeleri bozmaz). Kullanıcı metni olan yerlerde uzun kelime satıra bölünür. */
+    html { overflow-x: hidden; }
+    body, main { overflow-x: clip; }
+    .rp-is, .tk-ad, .konu-ad, .satir .alt, .kim, .alt-bilgi, .gorev-metin, .bilgi, .rp-t-ad, .rp-g-ust > span, .not { overflow-wrap: anywhere; min-width: 0; }
     svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
     [hidden] { display: none !important; }
     a { color: inherit; }
@@ -155,6 +160,15 @@
       animation: kos .7s steps(7) infinite; }
     @keyframes kos { to { -webkit-mask-position: -728px 0; mask-position: -728px 0; } }
     @media (prefers-reduced-motion: reduce) { .yukleniyor:not(button)::before { animation: none; } }
+    /* Günün sözü (16 Kas): yalnız yükleniyor ekranında, atın altında. sozler.json yoksa hiçbir şey görünmez. */
+    .soz { text-align: center; max-width: 340px; margin: 0 auto; }
+    .soz .soz-ar { font-family: "Geeza Pro", "Noto Naskh Arabic", "Amiri", "Traditional Arabic", serif; font-size: 22px; line-height: 1.9; color: var(--yazi); }
+    .soz .soz-tr { font-size: 16px; line-height: 1.5; color: var(--yazi); }
+    .soz .soz-ar + .soz-tr { font-size: 14.5px; margin-top: 6px; }
+    .soz .soz-k { font-size: 12px; color: var(--soluk); margin-top: 6px; letter-spacing: .02em; }
+    .yukleniyor .soz { margin-top: 26px; opacity: 0; animation: sozGel .5s ease .15s forwards; }
+    @keyframes sozGel { to { opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) { .yukleniyor .soz { animation: none; opacity: 1; } }
 
     /* Kurulum */
     .kart { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 20px; padding: 18px; }
@@ -1752,6 +1766,50 @@
       } catch (e) {}
     }, 1500);
   }
+  // ---------- Günün sözü (16 Kas) ----------
+  // sozler.json: [{ ar, tr, kaynak }] — ehil birinin onayladığı liste; dosya yoksa / boşsa hiçbir şey gösterilmez.
+  // Her gün tek söz (gün boyu aynı): yalnız yükleniyor ekranında, atın altında (yükleme ≥ 0,6 sn sürerse).
+  const SOZ_ARAPCA = false;   // şimdilik yalnız Türkçe + kaynak; true yapılırsa Arapça metin de üstte görünür (veride duruyor)
+  let SOZLER = [];
+  try { SOZLER = window.SOZLER_ON || JSON.parse(localStorage.getItem('sozler') || '[]') || []; } catch (e) {}
+  function gununSozu() {
+    if (!Array.isArray(SOZLER) || !SOZLER.length) return null;
+    const d = new Date(), gun = Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) / 864e5);
+    return SOZLER[gun % SOZLER.length];
+  }
+  function sozKutusu() {
+    const x = gununSozu();
+    if (!x || !x.tr) return null;
+    return el('div', { sinif: 'soz' }, [
+      SOZ_ARAPCA && x.ar ? el('div', { sinif: 'soz-ar', dir: 'rtl', lang: 'ar', metin: x.ar }) : null,
+      el('div', { sinif: 'soz-tr', metin: x.tr }),
+      x.kaynak ? el('div', { sinif: 'soz-k', metin: x.kaynak }) : null]);
+  }
+  function sozYukleyiciye(n) {   // "Yükleniyor…" 0,6 sn'den uzun sürerse atın altında belirir (kısa yüklemede yanıp sönmez)
+    if (!n || n.tagName === 'BUTTON' || n.dataset.soz) return;
+    n.dataset.soz = '1';
+    setTimeout(function () { if (!n.isConnected || n.querySelector('.soz')) return; const s = sozKutusu(); if (s) n.appendChild(s); }, 600);
+  }
+  try {
+    new MutationObserver(function (ms) {
+      ms.forEach(function (m) { m.addedNodes.forEach(function (n) {
+        if (n.nodeType !== 1) return;
+        if (n.classList.contains('yukleniyor')) sozYukleyiciye(n);
+        else if (n.querySelector) n.querySelectorAll('.yukleniyor').forEach(sozYukleyiciye);
+      }); });
+    }).observe(document.body, { childList: true, subtree: true });
+    document.querySelectorAll('.yukleniyor').forEach(sozYukleyiciye);
+  } catch (e) {}
+  (async function () {
+    if (window.SOZLER_ON) return;
+    try {
+      const r = await fetch('sozler.json');
+      if (!r.ok) return;
+      const v = await r.json();
+      if (Array.isArray(v)) { SOZLER = v.filter(function (x) { return x && x.tr; }); try { localStorage.setItem('sozler', JSON.stringify(SOZLER)); } catch (e) {} }
+    } catch (e) {}
+  })();
+
   let yenileNo = 0;
   async function yenile() {
     if (DERS_LINK) { dersSecimModu(); return; }   // veli/öğrenci ders saati seçimi (kod yok)
