@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex, nofollow">
   <title>Rehberlik</title>
   <link rel="manifest" href="manifest.webmanifest">
@@ -63,6 +63,10 @@
        Güvenlik ağı: taşan kısım kesilir (clip: yapışkan sekmeleri bozmaz). Kullanıcı metni olan yerlerde uzun kelime satıra bölünür. */
     html { overflow-x: hidden; }
     body, main { overflow-x: clip; }
+    @supports not (overflow: clip) { body, main { overflow-x: hidden; } }
+    /* 16 Kas (3): ASIL SEBEP bulundu (ekran kaydı) — iPhone, yazı boyu 16 px'ten küçük bir kutuya dokununca sayfayı kendiliğinden büyütüyor
+       ve öyle bırakıyor; sayfa o yüzden sağa taşıp yana kayıyordu. Dokunmatik ekranda bütün yazı kutuları 16 px (+ viewport maximum-scale=1). */
+    @media (pointer: coarse) { input, textarea, select { font-size: 16px !important; } }
     .rp-is, .tk-ad, .konu-ad, .satir .alt, .kim, .alt-bilgi, .gorev-metin, .bilgi, .rp-t-ad, .rp-g-ust > span, .not { overflow-wrap: anywhere; min-width: 0; }
     svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
     [hidden] { display: none !important; }
@@ -127,6 +131,7 @@
                   background: var(--kart); border: 1px solid var(--cizgi); border-radius: 999px; padding: 7px 14px; font-size: 13px; font-weight: 600; color: var(--soluk);
                   box-shadow: 0 4px 14px rgba(0, 0, 0, .10); pointer-events: none; }
     .cek-yenile.birak { color: var(--ana); } .cek-yenile.donus { transition: transform .22s ease; }
+    .cek-yenile.tamam { color: var(--yesil); border-color: var(--yesil); background: var(--yesil-zemin); }
     .cek-yenile i { display: none; width: 44px; height: 23px; background: var(--at-renk); -webkit-mask: url(at.png) 0 0 / 308px 23px no-repeat; mask: url(at.png) 0 0 / 308px 23px no-repeat; animation: kosK .7s steps(7) infinite; }
     .cek-yenile.calisiyor i { display: block; }
     @keyframes kosK { to { -webkit-mask-position: -308px 0; mask-position: -308px 0; } }
@@ -1858,9 +1863,13 @@
   function titre(guclu) {
     try {
       if (navigator.vibrate) { navigator.vibrate(guclu ? [12, 50, 18] : 8); return; }
-      const l = document.createElement('label'), i = document.createElement('input');
-      l.setAttribute('aria-hidden', 'true'); l.style.display = 'none'; i.type = 'checkbox'; i.setAttribute('switch', '');
-      l.appendChild(i); document.head.appendChild(l); l.click(); document.head.removeChild(l);
+      // 16 Kas (2): gizli (display:none) öğeyle iPhone'da his gelmedi → sayfada duran, ekran dışı gerçek bir anahtar kullanılır (iOS 18+ gerekir)
+      if (!titre.l) {
+        const l = document.createElement('label'), i = document.createElement('input');
+        l.setAttribute('aria-hidden', 'true'); l.style.cssText = 'position:fixed;left:-200px;top:0;width:60px;height:34px;opacity:.01;pointer-events:none';
+        i.type = 'checkbox'; i.setAttribute('switch', ''); i.tabIndex = -1; l.appendChild(i); document.body.appendChild(l); titre.l = l;
+      }
+      titre.l.click(); if (guclu) setTimeout(function () { try { titre.l.click(); } catch (e) {} }, 90);
     } catch (e) {}
   }
   document.addEventListener('click', function (ev) {
@@ -1876,7 +1885,7 @@
     const yazi = kutu.querySelector('span'), ESIK = 78;
     let y0 = null, dy = 0, cekiyor = false, calisiyor = false;
     const koy = function (px) { kutu.style.transform = 'translate(-50%, ' + (px - 70) + 'px)'; };
-    const kapat = function () { kutu.classList.add('donus'); koy(0); cekiyor = false; y0 = null; setTimeout(function () { kutu.classList.remove('donus', 'birak', 'calisiyor'); }, 240); };
+    const kapat = function () { kutu.classList.add('donus'); koy(0); cekiyor = false; y0 = null; setTimeout(function () { kutu.classList.remove('donus', 'birak', 'calisiyor', 'tamam'); }, 240); };
     document.addEventListener('touchstart', function (ev) {
       y0 = null;
       if (calisiyor || DEMO_KOC || $('pano').hidden || window.scrollY > 0 || ev.touches.length !== 1) return;
@@ -1901,8 +1910,14 @@
       if (dy < ESIK) { kapat(); return; }
       calisiyor = true; cekiyor = false; y0 = null;
       kutu.classList.add('donus', 'calisiyor'); kutu.classList.remove('birak'); yazi.textContent = 'Yenileniyor…'; koy(78); titre();
-      try { takvimZamani = 0; onceYukleZaman = 0; await yenile(); } catch (e) {}
-      calisiyor = false; kapat();
+      let oldu = true;
+      try { takvimZamani = 0; onceYukleZaman = 0; await yenile(); oldu = !/Bağlantı/.test($('altBilgi').textContent + $('icerik').textContent.slice(0, 60)); } catch (e) { oldu = false; }
+      // 16 Kas (2): bittiği belli olsun — kısa bir "Güncellendi ✓ 15:42" (ya da bağlantı yoksa uyarı), sonra kapanır
+      const sa = new Date(), saat = ('0' + sa.getHours()).slice(-2) + ':' + ('0' + sa.getMinutes()).slice(-2);
+      kutu.classList.remove('calisiyor'); kutu.classList.toggle('tamam', oldu);
+      yazi.textContent = oldu ? 'Güncellendi ✓ ' + saat : 'Bağlantı yok · güncellenemedi';
+      if (oldu) titre(true);
+      setTimeout(function () { calisiyor = false; kapat(); }, oldu ? 1300 : 1900);
     };
     document.addEventListener('touchend', bitir); document.addEventListener('touchcancel', function () { if (cekiyor) kapat(); y0 = null; });
   })();
