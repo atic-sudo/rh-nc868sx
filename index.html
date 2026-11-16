@@ -749,12 +749,10 @@
     details.detay-kutu > summary { cursor: pointer; font-weight: 600; color: var(--ana-etiket); padding: 10px 4px; }
     button.gonder { width: 100%; margin-top: 6px; font: inherit; font-size: 17px; font-weight: 700; padding: 15px; border-radius: 14px; cursor: pointer;
       background: var(--rapor-zemin); color: var(--rapor-baslik); border: 1px solid var(--rapor-cizgi); }
-    /* 16 Kas: "Google Docs'ta aç" gibi dış bağlantılar ekranın altında sabit bir hap olarak durur (içerik yüklenirken zıplamaz, uzun sayfada da hep elde) */
-    a.docs { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 14px); transform: translateX(-50%); z-index: 20; white-space: nowrap; max-width: calc(100% - 36px);
-             overflow: hidden; text-overflow: ellipsis; font-size: 14px; font-weight: 600; color: var(--ana); text-decoration: none; background: var(--kart); border: 1px solid var(--cizgi);
-             border-radius: 999px; padding: 10px 18px; box-shadow: 0 6px 18px rgba(0, 0, 0, .14); transition: transform .09s ease, filter .09s ease; }
-    a.docs:active { transform: translateX(-50%) scale(.96); filter: brightness(.95); }
-    section:has(a.docs:not([hidden])) { padding-bottom: 64px; }   /* son satır hapın altında kalmasın */
+    /* 16 Kas: "Docs'ta aç" gibi dış bağlantılar üst satırda, sağda (‹ Geri'nin karşısı) — alışılmış yer; içerik yüklenirken zıplamaz, hiçbir şeyin üstüne binmez */
+    a.docs { margin-left: auto; font-size: 15px; font-weight: 600; color: var(--ana); text-decoration: none; white-space: nowrap; padding: 6px 0 6px 12px; transition: opacity .09s ease; }
+    a.docs::after { content: ' ↗'; font-weight: 500; }
+    a.docs:active { opacity: .5; }
   </style>
 </head>
 <body>
@@ -805,7 +803,7 @@
     </div>
     <h1 class="okuma-baslik" id="okumaBaslik"></h1>
     <div class="okuma" id="okumaIcerik"></div>
-    <a class="docs" id="okumaDocs" target="_blank" rel="noopener" hidden>Google Docs'ta aç</a>
+    <a class="docs" id="okumaDocs" target="_blank" rel="noopener" hidden>Docs'ta aç</a>
   </section>
 
   <!-- Yatılı -->
@@ -818,7 +816,7 @@
     </div>
     <div id="yatiliIcerik"></div>
     <div id="misafirIcerik" hidden></div>
-    <a class="docs" id="yatiliDis" target="_blank" rel="noopener">Tabloyu Google Sheets'te aç</a>
+    <a class="docs" id="yatiliDis" target="_blank" rel="noopener">Tabloyu aç</a>
   </section>
 
   <!-- Grubum -->
@@ -826,7 +824,7 @@
     <div class="gezinti"><button class="geri" id="grubumGeri" type="button"></button></div>
     <h1 class="okuma-baslik" id="grubumBaslik">Grubum</h1>
     <div id="grubumIcerik"></div>
-    <a class="docs" id="grubumDis" target="_blank" rel="noopener">Notları düzenlemek için tabloyu aç</a>
+    <a class="docs" id="grubumDis" target="_blank" rel="noopener">Tabloyu aç</a>
   </section>
 
   <!-- Görevlerim: rehberlik toplantısında bu kişiye verilen görevler (Rehberlik Defteri) -->
@@ -834,7 +832,7 @@
     <div class="gezinti"><button class="geri" id="gorevlerGeri" type="button"></button></div>
     <h1 class="okuma-baslik" id="gorevlerBaslik">Görevlerim</h1>
     <div id="gorevlerIcerik"></div>
-    <a class="docs" id="gorevlerDefter" target="_blank" rel="noopener" hidden>Rehberlik Defteri'ni aç</a>
+    <a class="docs" id="gorevlerDefter" target="_blank" rel="noopener" hidden>Defteri aç</a>
   </section>
 
   <!-- Okuma takibi (rehber / org): ekipteki bütün öğrenciler, okumayanlar önce -->
@@ -872,7 +870,7 @@
     <h1 class="okuma-baslik">Toplantı notu</h1>
     <div class="alt-baslik2" id="toplantiAlt"></div>
     <div id="toplantiIcerik"></div>
-    <a class="docs" id="toplantiDis" target="_blank" rel="noopener">Google Docs'ta aç</a>
+    <a class="docs" id="toplantiDis" target="_blank" rel="noopener">Docs'ta aç</a>
   </section>
 
   <!-- Yatılı programı -->
@@ -1926,6 +1924,14 @@
     };
     document.addEventListener('touchend', bitir); document.addEventListener('touchcancel', function () { if (cekiyor) kapat(); y0 = null; });
   })();
+
+  // 16 Kas: dış bağlantılar (a.docs) kendi ekranının üst satırına, sağa taşınır
+  document.querySelectorAll('section > a.docs').forEach(function (a) { const g = a.parentNode.querySelector('.gezinti'); if (g) g.insertBefore(a, g.querySelector('.dil')); });   // dil düğmesi varsa onun soluna
+  function docsUste(a, bolum) {
+    const g = $(bolum).querySelector('.gezinti');
+    g.querySelectorAll('a.docs.dinamik').forEach(function (x) { x.remove(); });
+    if (a) { a.classList.add('dinamik'); g.appendChild(a); }
+  }
 
   let yenileNo = 0;
   async function yenile() {
@@ -3404,7 +3410,7 @@
         : await islem('&islem=gorevToplantiNotu&anahtar=' + encodeURIComponent(anahtar));
       if (!n.ok) { $('okumaIcerik').innerHTML = '<p class="bos">Bu toplantının notu bulunamadı.</p>'; return; }
       $('okumaIcerik').innerHTML = n.html || '<p class="bos">Not boş.</p>';   // sunucuda kaçırılarak üretiliyor (metinHtml_)
-      if (n.duzenle && n.url) { $('okumaDocs').href = n.url; $('okumaDocs').textContent = "Google Docs'ta düzenle"; $('okumaDocs').hidden = false; }
+      if (n.duzenle && n.url) { $('okumaDocs').href = n.url; $('okumaDocs').textContent = "Düzenle"; $('okumaDocs').hidden = false; }
     } catch (e) { $('okumaIcerik').innerHTML = '<p class="bos">Bağlantı kurulamadı. Tekrar deneyin.</p>'; }
   }
 
@@ -5384,7 +5390,7 @@
       }
       d.appendChild(sat);
     });
-    if (s.tablo) d.appendChild(el('a', { sinif: 'docs', href: s.tablo, target: '_blank', rel: 'noopener', metin: 'Koç eklemek / düzenlemek için tabloyu aç' }));
+    docsUste(s.tablo ? el('a', { sinif: 'docs', href: s.tablo, target: '_blank', rel: 'noopener', metin: 'Koç tablosu' }) : null, 'dersler');
     return d;
   }
 
