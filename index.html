@@ -1737,8 +1737,9 @@
     setTimeout(async function () {
       try {
         if (['rehber', 'org', 'test', 'akademik', 'mentor', 'musahit'].indexOf(rol) >= 0) {
-          const g = await islem('&islem=gorevlerim');
-          if (g && g.ok && Array.isArray(g.gorevler) && !mentorGozu && grup === (depo.al('grup') || '')) onbellekYaz(gorevAnahtar(), Object.assign({}, g, { bilgi: '' }));
+          const g = await islem('&islem=gorevlerim&parca=is'), e = await islem('&islem=gorevlerim&parca=ek');
+          if (g && g.ok && Array.isArray(g.gorevler) && !mentorGozu && grup === (depo.al('grup') || ''))
+            onbellekYaz(gorevAnahtar(), Object.assign({}, onbellekAl(gorevAnahtar()) || {}, g, e && e.ok ? e : {}, { bilgi: '', parca: '' }));
         }
         if (rol === 'mentor') {
           const gr = await islem('&islem=grubum');
@@ -2929,12 +2930,28 @@
     if (eski) { gorevlerCiz(eski); eskiNotu($('gorevlerIcerik'), 'Son kayıtlı liste · güncelleniyor…'); }
     else $('gorevlerIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
     gorevlerYukle('&islem=gorevlerim', null, eski);
+    if (!toplantiModu) gorevEkYukle();
+  }
+  /** 16 Kas HIZ: Toplantılar / Notlarım / rehberlik gündemi ayrı ve arka planda gelir (parca=ek); gelince ilgili sekme yenilenir */
+  let gorevSon = null, gorevEkNo = 0;
+  async function gorevEkYukle() {
+    if (DEMO) return;
+    const no = ++gorevEkNo;
+    let e;
+    try { e = await islem('&islem=gorevlerim&parca=ek'); } catch (x) { return; }
+    if (no !== gorevEkNo || !e || !e.ok || toplantiModu || grupGozuModu) return;
+    gorevSon = Object.assign({}, gorevSon || {}, e, { parca: '' });
+    if (Array.isArray(gorevSon.gorevler)) onbellekYaz(gorevAnahtar(), Object.assign({}, gorevSon, { bilgi: '' }));
+    const ic = $('gorevlerIcerik'), sek = depo.al('gorevSekme') || 'is';
+    if ($('gorevler').hidden || !Array.isArray(gorevSon.gorevler) || sek === 'is' || kullaniciYaziyor(ic)) return;
+    gorevlerCiz(gorevSon);
   }
   function gorevAnahtar() { return 'gorev_' + (depo.al('grup') || ''); }
   /** eski: ekranda telefondaki kopya duruyorsa (gorevlerAc) */
   async function gorevlerYukle(ek, bilgiEl, eski) {
     let s;
     if (toplantiModu && ek) ek += '&ozet=' + encodeURIComponent(toplantiModu);
+    else if (ek && !grupGozuModu && /islem=gorev(lerim|Tamam|Iptal|Ekle|Not|Yorum|Onay|Red|Izle)\b/.test(ek) && !/parca=/.test(ek)) ek += '&parca=is';   // 16 Kas HIZ
     try { s = DEMO ? Object.assign({ toplantilar: DEMO_TOPLANTILAR(), defter2: DEMO_DEFTER() }, DEMO_GOREVLER(), { toplanti: toplantiModu ? DEMO_TOPLANTI_OZET() : null }) : await islem(ek); }
     catch (e) {
       if (eski) eskiNotu($('gorevlerIcerik'), 'Bağlantı yok · son kayıtlı liste gösteriliyor');
@@ -2943,6 +2960,12 @@
     }
     const ic = $('gorevlerIcerik');
     if (!s.ok) { ic.prepend(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s.hata] || 'Bir sorun oluştu.' })); window.scrollTo(0, 0); return; }
+    if (s.parca === 'is') {   // 16 Kas HIZ: hızlı parça → önceki Toplantılar / Notlarım verisi korunur, ek arka planda yenilenir
+      const once = gorevSon || (eski && typeof eski === 'object' ? eski : null) || onbellekAl(gorevAnahtar()) || {};
+      s = Object.assign({}, once, s, { parca: '' });
+      if (!/islem=gorevlerim/.test(ek)) gorevEkYukle();
+    }
+    if (!toplantiModu && !s.grupGozu) gorevSon = s;
     if (!DEMO && !toplantiModu && !s.grupGozu && Array.isArray(s.gorevler)) onbellekYaz(gorevAnahtar(), Object.assign({}, s, { bilgi: '' }));
     if (eski && kullaniciYaziyor(ic)) { eskiNotu(ic, 'Liste güncellendi.', function () { gorevlerCiz(s); }); return; }
     gorevlerCiz(s, bilgiEl);
@@ -3083,9 +3106,11 @@
           yardim('Toplantı notunda "cc @kişi" ile takip eden yapılırsınız: görürsünüz, durum yazarsınız, sorumlu bitirince onaylarsınız. Başka bir görevi izlemek için aşağıdaki listede ya da Toplantılar\'da bir toplantıya dokunup "Takip et" deyin: buraya düşer, bitince e-posta gelir (onay sizde değil). Toplu görevlerde her mentor kendi görevini kapatır.');
         }
       } else if (secili === 'top') {
-        toplantilarCiz(alan, s);
+        if (!s.toplantilar && !DEMO) alan.appendChild(el('div', { sinif: 'yukleniyor', metin: 'Yükleniyor…' }));   // 16 Kas: parca=ek bekleniyor
+        else toplantilarCiz(alan, s);
       } else if (secili === 'not') {
-        notDefteriCiz(alan, s);
+        if (!s.defter2 && !DEMO) alan.appendChild(el('div', { sinif: 'yukleniyor', metin: 'Yükleniyor…' }));
+        else notDefteriCiz(alan, s);
       }
     };
     ic.appendChild(bar);
