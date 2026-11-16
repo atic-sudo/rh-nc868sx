@@ -749,7 +749,12 @@
     details.detay-kutu > summary { cursor: pointer; font-weight: 600; color: var(--ana-etiket); padding: 10px 4px; }
     button.gonder { width: 100%; margin-top: 6px; font: inherit; font-size: 17px; font-weight: 700; padding: 15px; border-radius: 14px; cursor: pointer;
       background: var(--rapor-zemin); color: var(--rapor-baslik); border: 1px solid var(--rapor-cizgi); }
-    a.docs { display: block; text-align: center; margin-top: 26px; font-size: 14px; color: var(--soluk); }
+    /* 16 Kas: "Google Docs'ta aç" gibi dış bağlantılar ekranın altında sabit bir hap olarak durur (içerik yüklenirken zıplamaz, uzun sayfada da hep elde) */
+    a.docs { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 14px); transform: translateX(-50%); z-index: 20; white-space: nowrap; max-width: calc(100% - 36px);
+             overflow: hidden; text-overflow: ellipsis; font-size: 14px; font-weight: 600; color: var(--ana); text-decoration: none; background: var(--kart); border: 1px solid var(--cizgi);
+             border-radius: 999px; padding: 10px 18px; box-shadow: 0 6px 18px rgba(0, 0, 0, .14); transition: transform .09s ease, filter .09s ease; }
+    a.docs:active { transform: translateX(-50%) scale(.96); filter: brightness(.95); }
+    section:has(a.docs:not([hidden])) { padding-bottom: 64px; }   /* son satır hapın altında kalmasın */
   </style>
 </head>
 <body>
