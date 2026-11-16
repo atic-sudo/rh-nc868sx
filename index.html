@@ -19,7 +19,7 @@
     :root {
       --bg: #f7f9f8; --kart: #ffffff; --cizgi: #e4ebe8; --yazi: #1f2a28; --soluk: #5d6966; --ok: #7f8b87;
       --ikon-zemin: #f0f4f2; --ikon: #5f6d69;
-      --at-renk: #e2956b;
+      --siluet: #cdd8d4; --at-renk: #e2956b;
       --r-e-gun: #4f8fd0; --r-e-yat: #1f4e9c; --r-k-gun: #e27aae; --r-k-yat: #b0306e; --r-ortak: #ee8434;
       --r-rehberlik: #1e6b3e; --r-mentor-top: #5fb468; --r-seminer: #8a5cc7; --r-kamp: #d9a521; --r-diger: #9aa3a0; --r-dogum: #1fa5a0;
       --r-zorunlu: #d23b2f; --r-secili: #2b3331;
@@ -36,7 +36,7 @@
     @media (prefers-color-scheme: dark) {
       :root {
         --nd-zemin: #232a28; --nd-kenar: #343d3a; --nd-cizgi: rgba(220,230,225,.07); --nd-yazi: #e6ece9;
-        --at-renk: #fdeee4;
+        --siluet: #3a4744; --at-renk: #fdeee4;
         --r-e-gun: #7fb6ea; --r-e-yat: #6e97e0; --r-k-gun: #f29ac4; --r-k-yat: #e06aa3; --r-ortak: #f5a05e;
         --r-rehberlik: #4fae74; --r-mentor-top: #8fd694; --r-seminer: #b08de8; --r-kamp: #f0c75a; --r-diger: #8c9692; --r-dogum: #5fd0c8;
         --r-zorunlu: #ff6b5e; --r-secili: #e7eeeb;
@@ -118,7 +118,7 @@
     /* "Bitti" anı: kart yeşile döner, ✓ belirir, sonra kapanır (kayıt arkada sürer) */
     .gorev-kart.bitti-an { position: relative; overflow: hidden; border-left-color: var(--yesil); background: var(--yesil-zemin); transition: background .2s ease, border-color .2s ease;
                            animation: bittiKapan .32s ease .7s forwards; }
-    .gorev-kart.bitti-an::after { content: '✓ Bitti'; position: absolute; right: 14px; bottom: 12px; font-weight: 700; font-size: 15px; color: var(--yesil); animation: bittiIsaret .28s cubic-bezier(.2, 1.4, .4, 1); }
+    .bitti-isaret { display: inline-block; font-weight: 700; font-size: 15px; color: var(--yesil); padding: 7px 2px; margin-left: auto; transform-origin: right center; animation: bittiIsaret .28s cubic-bezier(.2, 1.4, .4, 1); }   /* düğmelerin yerinde durur: karttaki yazıyla üst üste binmez */
     @keyframes bittiIsaret { from { transform: scale(.3); opacity: 0; } }
     @keyframes bittiKapan { to { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; margin-bottom: 0; border-top-width: 0; border-bottom-width: 0; } }
     /* Aşağı çekip yenile (ana sayfa) */
@@ -184,7 +184,16 @@
       -webkit-mask: url(at.png) 0 0 / 728px 54px no-repeat; mask: url(at.png) 0 0 / 728px 54px no-repeat;
       animation: kos .7s steps(7) infinite; }
     @keyframes kos { to { -webkit-mask-position: -728px 0; mask-position: -728px 0; } }
-    @media (prefers-reduced-motion: reduce) { .yukleniyor:not(button)::before { animation: none; } }
+    /* 16 Kas: atın arkasında dünya şehirleri yavaşça akar (siluet.png: 12 şehir; ~15 px/sn, tam tur 97 sn; şehirler dolgudan 1,22 kat büyük; kenarlarda solar).
+       --sg: akış saate bağlı başlar → her yüklemede şerit kaldığı yerden devam eder. siluet.png yoksa yalnız at görünür. */
+    .yukleniyor:not(button) { position: relative; }
+    .yukleniyor:not(button)::before { position: relative; z-index: 1; }
+    .yukleniyor:not(button)::after { content: ''; position: absolute; top: 33px; left: 0; right: 0; margin: 0 auto; width: min(320px, 100%); height: 61px; background: var(--siluet);
+      -webkit-mask: url(siluet.png) 0 100% / auto 61px repeat-x, linear-gradient(90deg, transparent, #000 24%, #000 76%, transparent);
+      mask: url(siluet.png) 0 100% / auto 61px repeat-x, linear-gradient(90deg, transparent, #000 24%, #000 76%, transparent);
+      -webkit-mask-composite: source-in; mask-composite: intersect; animation: sehir 97s linear infinite; animation-delay: var(--sg, 0s); }
+    @keyframes sehir { to { -webkit-mask-position: -1451.67px 100%, 0 0; mask-position: -1451.67px 100%, 0 0; } }
+    @media (prefers-reduced-motion: reduce) { .yukleniyor:not(button)::before, .yukleniyor:not(button)::after { animation: none; } }
     /* Günün sözü (16 Kas): yalnız yükleniyor ekranında, atın altında. sozler.json yoksa hiçbir şey görünmez. */
     .soz { text-align: center; max-width: 340px; margin: 0 auto; }
     .soz .soz-ar { font-family: "Geeza Pro", "Noto Naskh Arabic", "Amiri", "Traditional Arabic", serif; font-size: 22px; line-height: 1.9; color: var(--yazi); }
@@ -523,6 +532,7 @@
     .not-kart { border-left-color: var(--rozet-yazi); } .not-metin { white-space: pre-wrap; font-weight: 500; }
     .not-dug { gap: 14px; flex-wrap: wrap; } .rp-tur dl { margin: 8px 0 0; }
     .okt-ozet { font-size: 15px; font-weight: 600; margin: 0 0 10px; }
+    #okumaTakipIcerik > .secimler { margin-bottom: 12px; }   /* 16 Kas: süzgeç düğmeleri ilk karta değmesin */
     .sp-satir { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 15px; } .sp-satir + .sp-satir { border-top: 1px solid var(--cizgi); }
     .sp-no { width: 22px; height: 22px; border-radius: 99px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; background: var(--ikon-zemin); color: var(--soluk); flex: none; }
     .sp-satir.ilk .sp-no { background: var(--rozet); color: var(--rozet-yazi); } .sp-satir.ilk .sp-ad, .sp-satir.ilk b { font-weight: 700; }
@@ -1818,6 +1828,7 @@
   function sozYukleyiciye(n) {   // "Yükleniyor…" 0,6 sn'den uzun sürerse atın altında belirir (kısa yüklemede yanıp sönmez)
     if (!n || n.tagName === 'BUTTON' || n.dataset.soz) return;
     n.dataset.soz = '1';
+    n.style.setProperty('--sg', '-' + ((Date.now() / 1000) % 97).toFixed(2) + 's');   // şehir şeridi kaldığı yerden
     setTimeout(function () { if (!n.isConnected || n.querySelector('.soz')) return; const s = sozKutusu(); if (s) n.appendChild(s); }, 600);
   }
   try {
@@ -3770,7 +3781,7 @@
         const b = el('div', { sinif: 'bilgi' }, [document.createTextNode('“' + g.gorev + '” bitti. '), geri]);
         // 16 Kas: anında tepki — kart hemen yeşile dönüp kapanır, kayıt arkada yapılır; olmazsa liste geri gelir
         const notMetni = not.value.trim(), hizli = !toplantiModu;
-        if (hizli) { not.remove(); dug.replaceChildren(); kart.style.maxHeight = kart.offsetHeight + 'px'; kart.classList.add('bitti-an'); titre(true); }
+        if (hizli) { not.remove(); dug.replaceChildren(el('span', { sinif: 'bitti-isaret', metin: '✓ Bitti' })); kart.style.maxHeight = kart.offsetHeight + 'px'; kart.classList.add('bitti-an'); titre(true); }
         if (DEMO) { demoGorev.gorevler = demoGorev.gorevler.filter(function (x) { return x !== g; }); setTimeout(function () { gorevlerYukle('', b); }, hizli ? 1100 : 0); return; }
         const tamam = await gorevlerYukle('&islem=gorevTamam&no=' + encodeURIComponent(g.no) + '&not=' + encodeURIComponent(notMetni), b);
         if (!tamam && hizli && gorevSon) {
