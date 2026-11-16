@@ -1401,6 +1401,7 @@
     catch (e) { if (!rehberSon) $('icerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; return; }
     if (!s || !s.ok) { $('icerik').prepend(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s && s.hata] || 'Özet yüklenemedi.' })); return; }
     depo.yaz('rehberPano_' + ekip, JSON.stringify(s));
+    if (ekip !== (depo.al('rehberEkip') || 'hepsi')) return;   // 16 Kas: bu arada başka ekip seçildi
     if (sonVeri === v && !mentorGozu && !$('pano').hidden) rehberCiz(v, s);
   }
   /** Okuma takibi: ekipteki öğrenciler, son iki haftada okuma girilmeyenler önce (RehberPano.gs rehberOkuma_) */
@@ -1715,6 +1716,7 @@
     grup: 'Grup bulunamadı.',
   };
 
+  let yenileNo = 0;
   async function yenile() {
     if (DERS_LINK) { dersSecimModu(); return; }   // veli/öğrenci ders saati seçimi (kod yok)
     if (AILE_LINK) { aileModu(); return; }   // aile kayıt linki: veli bilgisi + öğrenci e-postası (kod yok)
@@ -1744,10 +1746,12 @@
     if (!kod) { goster('kurulum'); return; }
     if (kisiRolu() === 'koc') { kocModu(); return; }   // ders koçu: yalnız Derslerim
     goster('pano');
+    const no = ++yenileNo;   // 16 Kas: gruplar arası hızlı geçişte eski grubun geç gelen cevabı ekrana yazılmasın
     const onceki = grup && depo.al('sonVeri_' + grup);
-    if (onceki) { try { ciz(JSON.parse(onceki)); } catch (e) {} }
+    if (onceki) { try { ciz(JSON.parse(onceki)); $('altBilgi').textContent = grup + ' · son kayıtlı bilgi, güncelleniyor…'; } catch (e) {} }
     try {
       const s = await veriCek(grup, kod);
+      if (no !== yenileNo || grup !== (depo.al('grup') || '')) return;   // bu arada başka gruba geçildi → bu cevap atılır
       if (!s.ok) {
         depo.sil('kod'); depo.sil('kisi');
         $('kurulumHata').textContent = HATALAR[s.hata] || 'Bir sorun oluştu.';
