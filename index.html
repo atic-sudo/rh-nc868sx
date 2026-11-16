@@ -111,6 +111,26 @@
     a.satir:active, .rp-grup:active, .bugun-kart:active, .takvim-kutu:active { transform: scale(.975); filter: brightness(.96); }
     button:not(:disabled):active, a.cip:active, .cip-ic:active, [role="button"]:active { transform: scale(.95); filter: brightness(.94); }
     button.baglanti:active, button.baglanti-kucuk:active, button.geri:active { transform: none; filter: none; opacity: .5; }
+    /* 16 Kas: ekran geçişi — yeni ekran sağdan, ana sayfaya dönüş soldan hafifçe kayarak gelir */
+    section.gir-ileri { animation: girIleri .2s ease-out; } section.gir-geri { animation: girGeri .2s ease-out; }
+    @keyframes girIleri { from { opacity: 0; transform: translateX(26px); } }
+    @keyframes girGeri { from { opacity: 0; transform: translateX(-18px); } }
+    /* "Bitti" anı: kart yeşile döner, ✓ belirir, sonra kapanır (kayıt arkada sürer) */
+    .gorev-kart.bitti-an { position: relative; overflow: hidden; border-left-color: var(--yesil); background: var(--yesil-zemin); transition: background .2s ease, border-color .2s ease;
+                           animation: bittiKapan .32s ease .7s forwards; }
+    .gorev-kart.bitti-an::after { content: '✓ Bitti'; position: absolute; right: 14px; bottom: 12px; font-weight: 700; font-size: 15px; color: var(--yesil); animation: bittiIsaret .28s cubic-bezier(.2, 1.4, .4, 1); }
+    @keyframes bittiIsaret { from { transform: scale(.3); opacity: 0; } }
+    @keyframes bittiKapan { to { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; margin-bottom: 0; border-top-width: 0; border-bottom-width: 0; } }
+    /* Aşağı çekip yenile (ana sayfa) */
+    body { overscroll-behavior-y: contain; }
+    .cek-yenile { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 8px); z-index: 50; transform: translate(-50%, -70px); display: flex; align-items: center; gap: 8px;
+                  background: var(--kart); border: 1px solid var(--cizgi); border-radius: 999px; padding: 7px 14px; font-size: 13px; font-weight: 600; color: var(--soluk);
+                  box-shadow: 0 4px 14px rgba(0, 0, 0, .10); pointer-events: none; }
+    .cek-yenile.birak { color: var(--ana); } .cek-yenile.donus { transition: transform .22s ease; }
+    .cek-yenile i { display: none; width: 44px; height: 23px; background: var(--at-renk); -webkit-mask: url(at.png) 0 0 / 308px 23px no-repeat; mask: url(at.png) 0 0 / 308px 23px no-repeat; animation: kosK .7s steps(7) infinite; }
+    .cek-yenile.calisiyor i { display: block; }
+    @keyframes kosK { to { -webkit-mask-position: -308px 0; mask-position: -308px 0; } }
+    @media (prefers-reduced-motion: reduce) { section.gir-ileri, section.gir-geri { animation: none; } .gorev-kart.bitti-an { animation-duration: .01s; } }
     @media (prefers-reduced-motion: reduce) { a.satir:active, .rp-grup:active, .bugun-kart:active, .takvim-kutu:active, button:not(:disabled):active, a.cip:active, .cip-ic:active { transform: none; } }
     /* Günübirlik + Yatılı yan yana kareler */
     .ikili { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
@@ -1725,7 +1745,12 @@
   }
 
   function goster(bolum) {
-    ['kurulum', 'pano', 'okuma', 'medya', 'yatili', 'grubum', 'gorevler', 'okumaTakip', 'dersler', 'bulusma', 'takvim', 'toplanti', 'program', 'yardim', 'rapor'].forEach(function (b) { $(b).hidden = b !== bolum; });
+    const BOLUMLER = ['kurulum', 'pano', 'okuma', 'medya', 'yatili', 'grubum', 'gorevler', 'okumaTakip', 'dersler', 'bulusma', 'takvim', 'toplanti', 'program', 'yardim', 'rapor'];
+    const acik = BOLUMLER.filter(function (b) { return !$(b).hidden; })[0];
+    BOLUMLER.forEach(function (b) { $(b).hidden = b !== bolum; });
+    if (acik && acik !== bolum && acik !== 'kurulum') {   // 16 Kas: ekran geçişi (ana sayfaya dönüş = geri)
+      const sec = $(bolum); sec.classList.remove('gir-ileri', 'gir-geri'); void sec.offsetWidth; sec.classList.add(bolum === 'pano' ? 'gir-geri' : 'gir-ileri');
+    }
     if (bolum !== 'medya') $('medyaKutu').textContent = '';   // video arkada çalmaya devam etmesin
     window.scrollTo(0, 0);
   }
@@ -1819,9 +1844,9 @@
   // Android: kısa titreşim (Vibration API). iPhone: resmî titreşim yok; iOS 17.4+ Safari'de gizli bir "anahtar" kutusuna
   // dokunulmuş gibi yapmak hafif bir tık verir (desteklemeyen cihazda hiçbir şey olmaz). Yalnız gerçek dokunuşta çalışır.
   document.addEventListener('touchstart', function () {}, { passive: true });   // iOS'ta :active (basma hissi) için gerekli
-  function titre() {
+  function titre(guclu) {
     try {
-      if (navigator.vibrate) { navigator.vibrate(8); return; }
+      if (navigator.vibrate) { navigator.vibrate(guclu ? [12, 50, 18] : 8); return; }
       const l = document.createElement('label'), i = document.createElement('input');
       l.setAttribute('aria-hidden', 'true'); l.style.display = 'none'; i.type = 'checkbox'; i.setAttribute('switch', '');
       l.appendChild(i); document.head.appendChild(l); l.click(); document.head.removeChild(l);
@@ -1831,6 +1856,45 @@
     const t = ev.target && ev.target.closest && ev.target.closest('a.satir, button, a.cip, .cip-ic, .takvim-kutu, .rp-grup, .bugun-kart, [role="button"], [role="tab"]');
     if (t && !t.disabled && ev.isTrusted) titre();
   }, true);
+  document.addEventListener('animationend', function (ev) { if (ev.target.tagName === 'SECTION') ev.target.classList.remove('gir-ileri', 'gir-geri'); });
+
+  // ---------- Aşağı çekip yenile (16 Kas): yalnız ana sayfada, sayfa en üstteyken ----------
+  (function () {
+    const kutu = el('div', { sinif: 'cek-yenile', 'aria-hidden': 'true' }, [el('i', {}), el('span', { metin: '' })]);
+    document.body.appendChild(kutu);
+    const yazi = kutu.querySelector('span'), ESIK = 78;
+    let y0 = null, dy = 0, cekiyor = false, calisiyor = false;
+    const koy = function (px) { kutu.style.transform = 'translate(-50%, ' + (px - 70) + 'px)'; };
+    const kapat = function () { kutu.classList.add('donus'); koy(0); cekiyor = false; y0 = null; setTimeout(function () { kutu.classList.remove('donus', 'birak', 'calisiyor'); }, 240); };
+    document.addEventListener('touchstart', function (ev) {
+      y0 = null;
+      if (calisiyor || DEMO_KOC || $('pano').hidden || window.scrollY > 0 || ev.touches.length !== 1) return;
+      if (ev.target.closest && ev.target.closest('select, input, textarea')) return;
+      y0 = ev.touches[0].clientY; dy = 0;
+    }, { passive: true });
+    document.addEventListener('touchmove', function (ev) {
+      if (y0 === null) return;
+      dy = ev.touches[0].clientY - y0;
+      if (dy <= 0 || window.scrollY > 0) { if (cekiyor) kapat(); else y0 = null; return; }
+      if (dy < 10 && !cekiyor) return;
+      cekiyor = true;
+      if (ev.cancelable) ev.preventDefault();
+      kutu.classList.remove('donus');
+      const gec = dy >= ESIK;
+      kutu.classList.toggle('birak', gec);
+      yazi.textContent = gec ? 'Bırakın, yenilensin' : 'Yenilemek için çekin';
+      koy(Math.min(dy * .6, 86));
+    }, { passive: false });
+    const bitir = async function () {
+      if (!cekiyor) { y0 = null; return; }
+      if (dy < ESIK) { kapat(); return; }
+      calisiyor = true; cekiyor = false; y0 = null;
+      kutu.classList.add('donus', 'calisiyor'); kutu.classList.remove('birak'); yazi.textContent = 'Yenileniyor…'; koy(78); titre();
+      try { takvimZamani = 0; onceYukleZaman = 0; await yenile(); } catch (e) {}
+      calisiyor = false; kapat();
+    };
+    document.addEventListener('touchend', bitir); document.addEventListener('touchcancel', function () { if (cekiyor) kapat(); y0 = null; });
+  })();
 
   let yenileNo = 0;
   async function yenile() {
@@ -3035,11 +3099,11 @@
     try { s = DEMO ? Object.assign({ toplantilar: DEMO_TOPLANTILAR(), defter2: DEMO_DEFTER() }, DEMO_GOREVLER(), { toplanti: toplantiModu ? DEMO_TOPLANTI_OZET() : null }) : await islem(ek); }
     catch (e) {
       if (eski) eskiNotu($('gorevlerIcerik'), 'Bağlantı yok · son kayıtlı liste gösteriliyor');
-      else $('gorevlerIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.';
-      return;
+      else if (!/islem=gorevTamam&no=/.test(ek) || toplantiModu || !gorevSon) $('gorevlerIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.';
+      return false;
     }
     const ic = $('gorevlerIcerik');
-    if (!s.ok) { ic.prepend(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s.hata] || 'Bir sorun oluştu.' })); window.scrollTo(0, 0); return; }
+    if (!s.ok) { ic.prepend(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s.hata] || 'Bir sorun oluştu.' })); window.scrollTo(0, 0); return false; }
     if (s.parca === 'is') {   // 16 Kas HIZ: hızlı parça → önceki Toplantılar / Notlarım verisi korunur, ek arka planda yenilenir
       const once = gorevSon || (eski && typeof eski === 'object' ? eski : null) || onbellekAl(gorevAnahtar()) || {};
       s = Object.assign({}, once, s, { parca: '' });
@@ -3047,8 +3111,9 @@
     }
     if (!toplantiModu && !s.grupGozu) gorevSon = s;
     if (!DEMO && !toplantiModu && !s.grupGozu && Array.isArray(s.gorevler)) onbellekYaz(gorevAnahtar(), Object.assign({}, s, { bilgi: '' }));
-    if (eski && kullaniciYaziyor(ic)) { eskiNotu(ic, 'Liste güncellendi.', function () { gorevlerCiz(s); }); return; }
+    if (eski && kullaniciYaziyor(ic)) { eskiNotu(ic, 'Liste güncellendi.', function () { gorevlerCiz(s); }); return true; }
     gorevlerCiz(s, bilgiEl);
+    return true;
   }
   function gorevlerCiz(s, bilgiEl) {
     const ic = $('gorevlerIcerik');
@@ -3698,13 +3763,21 @@
       const kaydet = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Bitti olarak kaydet' });
       const vazgec = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Vazgeç' });
       vazgec.onclick = function () { not.remove(); dug.replaceChildren.apply(dug, [sYorum, yaz, bit].filter(Boolean)); };
-      kaydet.onclick = function () {
+      kaydet.onclick = async function () {
         kaydet.disabled = true;
         const geri = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Geri al' });
         geri.onclick = function () { gorevlerYukle('&islem=gorevTamam&geri=1&no=' + encodeURIComponent(g.no)); };
         const b = el('div', { sinif: 'bilgi' }, [document.createTextNode('“' + g.gorev + '” bitti. '), geri]);
-        if (DEMO) { demoGorev.gorevler = demoGorev.gorevler.filter(function (x) { return x !== g; }); gorevlerYukle('', b); return; }
-        gorevlerYukle('&islem=gorevTamam&no=' + encodeURIComponent(g.no) + '&not=' + encodeURIComponent(not.value.trim()), b);
+        // 16 Kas: anında tepki — kart hemen yeşile dönüp kapanır, kayıt arkada yapılır; olmazsa liste geri gelir
+        const notMetni = not.value.trim(), hizli = !toplantiModu;
+        if (hizli) { not.remove(); dug.replaceChildren(); kart.style.maxHeight = kart.offsetHeight + 'px'; kart.classList.add('bitti-an'); titre(true); }
+        if (DEMO) { demoGorev.gorevler = demoGorev.gorevler.filter(function (x) { return x !== g; }); setTimeout(function () { gorevlerYukle('', b); }, hizli ? 1100 : 0); return; }
+        const tamam = await gorevlerYukle('&islem=gorevTamam&no=' + encodeURIComponent(g.no) + '&not=' + encodeURIComponent(notMetni), b);
+        if (!tamam && hizli && gorevSon) {
+          gorevlerCiz(gorevSon);
+          $('gorevlerIcerik').prepend(el('div', { sinif: 'bilgi uyari', metin: 'Kaydedilemedi; görev hâlâ açık. Bağlantınızı kontrol edip tekrar deneyin.' }));
+          window.scrollTo(0, 0);
+        }
       };
       dug.before(not); dug.replaceChildren(vazgec, kaydet); not.focus();
     };
