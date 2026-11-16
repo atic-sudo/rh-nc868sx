@@ -1115,7 +1115,9 @@
                            durum: y.durum, durumSinif: y.durum === 'Onay bekliyor' ? 'bekliyor' : '', tikla: yatiliAc })));
     ic.appendChild(satir({ ikon: 'kisiler', baslik: 'Grubum', alt: 'Öğrenciler · Durum · Katılım', url: v.grubumUrl || '#', tikla: grubumAc }));
     if (kisiRolu() === 'mentor' || mentorGozu) ic.appendChild(satir({ ikon: 'kitap', baslik: 'Okuma şampiyonları', alt: 'Ayın ilk 5\'i · okuyan grup · rozetler', url: '#', tikla: sampiyonAc }));
-    if (['rehber', 'org', 'test', 'akademik', 'mentor'].indexOf(kisiRolu()) >= 0)
+    if (mentorGozu) ic.appendChild(satir({ k: 'gorev', ikon: 'onay', baslik: 'Görevler', url: '#', alt: v.grup + ' mentorunun görevleri · salt okunur',
+      tikla: function () { gorevlerAc({ grup: v.grup }); } }));   // 11 Kas: rehber grubun ekranında o grubun görevlerini görür
+    else if (['rehber', 'org', 'test', 'akademik', 'mentor'].indexOf(kisiRolu()) >= 0)
       ic.appendChild(satir({ k: 'gorev', ikon: 'onay', baslik: 'Görevlerim', url: '#', tikla: gorevlerAc,
         alt: kisiRolu() === 'mentor' ? 'Toplantılarda verilen görevler · kararlar' : ['rehber', 'org'].indexOf(kisiRolu()) >= 0 ? 'Görevlerim · ekip görevleri · görev / karar ekle' : 'Rehberlik toplantısından · bitince ✓' }));
     ic.appendChild(satir({ k: 'ders', ikon: 'kitap', baslik: 'Ders desteği', url: '#', tikla: dersAc,
@@ -2858,10 +2860,17 @@
   let gorevFormDoldur = null, gorevSayfaNotlar = [];   // açık Görev / Karar formunu doldurur (toplantı ekranı, Grup turu → Görev ver)
   let gorevOnMetin = '', gorevOnTur = '', gorevNotSatir = '';   // nottan / istekten çevirme: form bu metin ve türle açılır     // rapordaki istekten "Göreve çevir" → form bu metinle açılır
   let toplantiModu = null;   // "Toplantıyı aç": seçenek id (ör. "m:K Lise") → grup turu + o günün kayıtları + hazır form
+  let grupGozuModu = null;
   function gorevlerAc(o) {
     toplantiModu = o && o.ozet ? o.ozet : null;
+    grupGozuModu = o && o.grup ? o.grup : null;
     history.pushState({ alt: 'gorevler' }, ''); goster('gorevler');
-    $('gorevlerBaslik').textContent = toplantiModu ? 'Toplantı' : 'Görevler';
+    $('gorevlerBaslik').textContent = toplantiModu ? 'Toplantı' : grupGozuModu ? grupGozuModu + ' · görevler' : 'Görevler';
+    if (grupGozuModu) {
+      $('gorevlerIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+      gorevlerYukle(DEMO ? '' : '&islem=gorevGrup&gozGrup=' + encodeURIComponent(grupGozuModu));
+      return;
+    }
     const eski = !DEMO && !toplantiModu && onbellekAl(gorevAnahtar());
     if (eski) { gorevlerCiz(eski); eskiNotu($('gorevlerIcerik'), 'Son kayıtlı liste · güncelleniyor…'); }
     else $('gorevlerIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
@@ -2880,13 +2889,25 @@
     }
     const ic = $('gorevlerIcerik');
     if (!s.ok) { ic.prepend(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s.hata] || 'Bir sorun oluştu.' })); window.scrollTo(0, 0); return; }
-    if (!DEMO && !toplantiModu && Array.isArray(s.gorevler)) onbellekYaz(gorevAnahtar(), Object.assign({}, s, { bilgi: '' }));
+    if (!DEMO && !toplantiModu && !s.grupGozu && Array.isArray(s.gorevler)) onbellekYaz(gorevAnahtar(), Object.assign({}, s, { bilgi: '' }));
     if (eski && kullaniciYaziyor(ic)) { eskiNotu(ic, 'Liste güncellendi.', function () { gorevlerCiz(s); }); return; }
     gorevlerCiz(s, bilgiEl);
   }
   function gorevlerCiz(s, bilgiEl) {
     const ic = $('gorevlerIcerik');
     ic.textContent = '';
+    if (DEMO && grupGozuModu && !s.grupGozu) s = { ok: true, grupGozu: grupGozuModu, mentor: 'Örnek Mentor', gorevler: s.gorevler || [], bitenler: [] };
+    if (s.grupGozu) {   // 11 Kas: rehber → grubun mentor görevleri (salt okunur; düğme yok)
+      $('gorevlerDefter').hidden = true;
+      ic.appendChild(el('p', { sinif: 'not', metin: s.grupGozu + (s.mentor ? ' · ' + s.mentor : ' · mentor yok') + ' — mentorun Görevlerim ekranında gördükleri. Salt okunur.' }));
+      if (!s.gorevler.length) ic.appendChild(el('p', { sinif: 'bos', metin: 'Açık görev yok.' }));
+      s.gorevler.forEach(function (g) { ic.appendChild(gKart(Object.assign({}, g, { izleyebilir: false, takip: false, izliyor: false }), false)); });
+      if ((s.bitenler || []).length) {
+        ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Son bitenler' }));
+        s.bitenler.forEach(function (g) { ic.appendChild(gKart(Object.assign({}, g, { izleyebilir: false, takip: false, izliyor: false }), false, true)); });
+      }
+      return;
+    }
     if (bilgiEl) ic.appendChild(bilgiEl);
     else if (s.bilgi) ic.appendChild(el('div', { sinif: 'bilgi', metin: s.bilgi }));
     $('gorevlerDefter').href = s.defter || '#'; $('gorevlerDefter').hidden = !s.defter;
