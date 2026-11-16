@@ -1409,7 +1409,9 @@
   function okumaTakipAc() {
     history.pushState({ alt: 'okumaTakip' }, ''); goster('okumaTakip');
     $('okumaTakipBaslik').textContent = 'Okuma takibi';
-    $('okumaTakipIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    const eski = !DEMO && onbellekAl('okuma_' + (depo.al('rehberEkip') || 'hepsi'));   // 16 Kas HIZ: önce kayıtlı kopya
+    if (eski) { okumaTakipCiz(eski); eskiNotu($('okumaTakipIcerik'), 'Son kayıtlı bilgi · güncelleniyor…'); }
+    else $('okumaTakipIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
     okumaTakipYukle(false);
   }
   async function okumaTakipYukle(yenileMi) {
@@ -1422,8 +1424,14 @@
           { grup: 'E10', ad: 'Örnek Öğrenci 3', kitap: 'Çağ ve Nesil', sayfa: 120, toplam: 220, aySayfa: 90, ayDk: 150, son: '2026-10-19', gun: 2, okuyor: true, bitenAy: [] },
           { grup: 'E10', ad: 'Örnek Öğrenci 4', kitap: '', sayfa: '', toplam: '', aySayfa: 60, ayDk: 80, son: '2026-10-20', gun: 1, okuyor: true, bitenAy: ['Kayıp Şehir'] }] }
         : await islem('&islem=rehberPano&detay=okuma&ekip=' + encodeURIComponent(ekip) + (yenileMi ? '&yenile=1' : ''));
-    } catch (e) { ic.textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; return; }
-    if (!s || !s.ok) { ic.textContent = HATA_METNI[s && s.hata] || 'Okuma bilgisi yüklenemedi.'; return; }
+    } catch (e) { if (ic.querySelector('.okt-ozet')) eskiNotu(ic, 'Bağlantı yok · son kayıtlı bilgi gösteriliyor'); else ic.textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; return; }
+    if (!s || !s.ok) { if (ic.querySelector('.okt-ozet')) eskiNotu(ic, HATA_METNI[s && s.hata] || 'Güncellenemedi.'); else ic.textContent = HATA_METNI[s && s.hata] || 'Okuma bilgisi yüklenemedi.'; return; }
+    if (!DEMO) onbellekYaz('okuma_' + ekip, s);
+    if (ekip !== (depo.al('rehberEkip') || 'hepsi') || $('okumaTakipBaslik').textContent !== 'Okuma takibi') return;   // bu arada başka ekran / ekip
+    okumaTakipCiz(s);
+  }
+  function okumaTakipCiz(s) {
+    const ic = $('okumaTakipIcerik');
     ic.textContent = '';
     const o = s.ozet;
     ic.appendChild(el('p', { sinif: 'okt-ozet', metin: o.okuyan + '/' + o.toplam + ' öğrenci son ' + s.gunSiniri + ' günde okudu · bu ay ' + o.sayfa + ' sayfa' + (o.biten ? ' · ' + o.biten + ' kitap bitti' : '') }));
@@ -1716,6 +1724,33 @@
     grup: 'Grup bulunamadı.',
   };
 
+  /**
+   * 16 Kas HIZ: ana sayfa açıldıktan sonra sık açılan ekranların verisi arka planda alınıp telefona kaydedilir
+   * (Görevler; mentor: Grubum; rehber/org: Haftalık raporlar). Kişi dokunduğunda ekran kayıtlı kopyayla anında açılır.
+   * En fazla 5 dakikada bir; grup gözüyle bakarken yapılmaz.
+   */
+  let onceYukleZaman = 0;
+  function onceYukle() {
+    if (DEMO || mentorGozu || Date.now() - onceYukleZaman < 300000) return;
+    onceYukleZaman = Date.now();
+    const rol = kisiRolu(), grup = depo.al('grup') || '';
+    setTimeout(async function () {
+      try {
+        if (['rehber', 'org', 'test', 'akademik', 'mentor', 'musahit'].indexOf(rol) >= 0) {
+          const g = await islem('&islem=gorevlerim');
+          if (g && g.ok && Array.isArray(g.gorevler) && !mentorGozu && grup === (depo.al('grup') || '')) onbellekYaz(gorevAnahtar(), Object.assign({}, g, { bilgi: '' }));
+        }
+        if (rol === 'mentor') {
+          const gr = await islem('&islem=grubum');
+          if (gr && gr.ok && gr.grup) onbellekYaz('grubum_' + gr.grup, gr);
+        }
+        if (rol === 'rehber' || rol === 'org') {
+          const ekip = depo.al('rehberEkip') || 'hepsi', r = await islem('&islem=rehberPano&detay=raporlar&ekip=' + encodeURIComponent(ekip));
+          if (r && r.ok) onbellekYaz('raporlar_' + ekip, r);
+        }
+      } catch (e) {}
+    }, 1500);
+  }
   let yenileNo = 0;
   async function yenile() {
     if (DERS_LINK) { dersSecimModu(); return; }   // veli/öğrenci ders saati seçimi (kod yok)
@@ -1761,6 +1796,7 @@
       kaydet(s);
       if (!s.v) { kocModu(); return; }
       ciz(s.v);
+      onceYukle();
     } catch (e) {
       if (onceki) $('altBilgi').textContent = 'Bağlantı yok · son kayıtlı bilgi gösteriliyor';
       else $('icerik').textContent = 'Bağlantı kurulamadı. İnternetinizi kontrol edip tekrar açın.';
@@ -1974,7 +2010,12 @@
     const mis = sekme === 'misafir';
     $('yatiliIcerik').hidden = mis; $('yatiliDis').hidden = mis; $('misafirIcerik').hidden = !mis;
     if (mis) { $('misafirIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>'; misafirYukle('&islem=misafirListe'); }
-    else { $('yatiliIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>'; yatiliYukle('&islem=yatili'); }
+    else {
+      const eski = !DEMO && onbellekAl('yatili_' + (depo.al('grup') || ''));   // 16 Kas HIZ: önce kayıtlı kopya
+      if (eski) { yatiliCiz(eski); eskiNotu($('yatiliIcerik'), 'Son kayıtlı liste · güncelleniyor…'); }
+      else $('yatiliIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+      yatiliYukle('&islem=yatili');
+    }
   }
   $('yatiliSekme').addEventListener('click', function (ev) { const s = ev.target.dataset && ev.target.dataset.sekme; if (s) yatiliSekmeSec(s); });
 
@@ -1988,8 +2029,9 @@
         if (s.hata !== 'yatiliYok' && ek !== '&islem=yatili') setTimeout(function () { yatiliYukle('&islem=yatili'); }, 1800);
         return;
       }
+      if (!DEMO) onbellekYaz('yatili_' + (depo.al('grup') || ''), s);
       yatiliCiz(s);
-    } catch (e) { $('yatiliIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; }
+    } catch (e) { if ($('yatiliIcerik').querySelector('.onb-not')) eskiNotu($('yatiliIcerik'), 'Bağlantı yok · son kayıtlı liste gösteriliyor'); else $('yatiliIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; }
   }
 
   function yatiliCiz(s) {
@@ -2078,7 +2120,7 @@
   async function takvimGetir() {
     if (takvimVeri && Date.now() - takvimZamani < 120000) return takvimVeri;
     const s = DEMO ? DEMO_TAKVIM() : await islem('&islem=takvim');
-    if (s && s.ok) { takvimVeri = s; takvimZamani = Date.now(); }
+    if (s && s.ok) { takvimVeri = s; takvimZamani = Date.now(); if (!DEMO) onbellekYaz('takvim', s); }
     return s;
   }
 
@@ -2114,8 +2156,11 @@
 
   function takvimAc() {
     history.pushState({ alt: 'takvim' }, ''); goster('takvim');
-    $('takvimIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
-    takvimGetir().then(takvimCiz).catch(function () { $('takvimIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; });
+    const eski = !DEMO && !takvimVeri && onbellekAl('takvim');   // 16 Kas HIZ: önce kayıtlı kopya
+    if (eski) { takvimCiz(eski); eskiNotu($('takvimIcerik'), 'Son kayıtlı takvim · güncelleniyor…'); }
+    else if (!takvimVeri) $('takvimIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    takvimGetir().then(function (s) { if (!(eski && (!s || !s.ok))) takvimCiz(s); })
+      .catch(function () { if (eski) eskiNotu($('takvimIcerik'), 'Bağlantı yok · son kayıtlı takvim'); else $('takvimIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; });
   }
 
   function takvimCiz(s) {
@@ -2518,7 +2563,9 @@
   // ---------- Grubum ----------
   function grubumAc() {
     history.pushState({ alt: 'grubum' }, ''); goster('grubum');
-    $('grubumIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    const eski = !DEMO && onbellekAl('grubum_' + (depo.al('grup') || ''));   // 16 Kas HIZ: önce kayıtlı kopya
+    if (eski) { grubumCiz(eski); eskiNotu($('grubumIcerik'), 'Son kayıtlı liste · güncelleniyor…'); }
+    else $('grubumIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
     grubumYukle('&islem=grubum');
   }
 
@@ -2528,12 +2575,15 @@
       const s = await islem(ek);
       if (!s.ok) {
         const h = el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s.hata] || 'Bir sorun oluştu.' });
-        if (ek === '&islem=grubum') { $('grubumIcerik').textContent = ''; $('grubumIcerik').appendChild(h); }
+        if (ek === '&islem=grubum' && !$('grubumIcerik').querySelector('.onb-not')) { $('grubumIcerik').textContent = ''; $('grubumIcerik').appendChild(h); }
         else { $('grubumIcerik').prepend(h); setTimeout(function () { h.remove(); }, 4000); }
         return;
       }
+      if (!DEMO && s.grup) onbellekYaz('grubum_' + s.grup, s);
+      if (!DEMO && s.grup && depo.al('grup') && s.grup !== depo.al('grup')) return;   // bu arada başka gruba geçildi
+      if (ek === '&islem=grubum' && kullaniciYaziyor($('grubumIcerik'))) { eskiNotu($('grubumIcerik'), 'Liste güncellendi.', function () { grubumCiz(s); }); return; }
       grubumCiz(s);
-    } catch (e) { $('grubumIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; }
+    } catch (e) { if ($('grubumIcerik').querySelector('.onb-not')) eskiNotu($('grubumIcerik'), 'Bağlantı yok · son kayıtlı liste gösteriliyor'); else $('grubumIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; }
   }
 
   function grubumCiz(s) {
