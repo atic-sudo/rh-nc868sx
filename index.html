@@ -2353,9 +2353,12 @@
 
   function takvimAc() {
     history.pushState({ alt: 'takvim' }, ''); goster('takvim');
-    const eski = !DEMO && !takvimVeri && onbellekAl('takvim');   // 16 Kas HIZ: önce kayıtlı kopya
-    if (eski) { takvimCiz(eski); eskiNotu($('takvimIcerik'), 'Son kayıtlı takvim · güncelleniyor…'); }
-    else if (!takvimVeri) $('takvimIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    // 17 Kas: ana sayfa takvimi zaten çektiyse (takvimVeri) ekran boş kalıyordu — hiç spinner yok, sunucu bekleniyordu.
+    // Artık: elde veri varsa (bellekte ya da telefonda) hemen çizilir; yoksa koşan at görünür.
+    const taze = takvimVeri && Date.now() - takvimZamani < 120000;
+    const eski = takvimVeri || (!DEMO && onbellekAl('takvim'));
+    if (eski) { takvimCiz(eski); if (!taze) eskiNotu($('takvimIcerik'), 'Son kayıtlı takvim · güncelleniyor…'); }
+    else $('takvimIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
     takvimGetir().then(function (s) { if (!(eski && (!s || !s.ok))) takvimCiz(s); })
       .catch(function () { if (eski) eskiNotu($('takvimIcerik'), 'Bağlantı yok · son kayıtlı takvim'); else $('takvimIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; });
   }
