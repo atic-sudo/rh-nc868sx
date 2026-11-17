@@ -2862,9 +2862,10 @@
     };
     if (!s.kayit) {
       if (dolu === akt.length && akt.length) return kutu;
-      const ac = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Aile kayıt linki oluştur' });
+      // 17 Kas: link yoksa / süresi dolduysa tek düğme — link oluşur ve "Henüz yazmayanlar" listesi açılır
+      const ac = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Eksik e-postaları iste (' + (akt.length - dolu) + ')' });
       ac.onclick = function () { istek('', ac); };
-      kutu.appendChild(el('p', { sinif: 'not', metin: (ortaokul ? 'Linki veli WhatsApp grubuna atın' : 'Linki öğrenci WhatsApp grubuna atın') + '; her aile kendi adına dokunup bilgilerini yazar. Kim yazdıysa adının yanında "Veli ✓" görünür.' }));
+      kutu.appendChild(el('p', { sinif: 'not', metin: (akt.length - dolu) + ' öğrencinin velisinin e-postası eksik (zorunlu). Dokunun: aile linki oluşur ve yazmayanlara tek tek gönderebileceğiniz liste açılır.' }));
       kutu.appendChild(el('div', { sinif: 'dugmeler' }, [ac]));
       return kutu;
     }
@@ -2884,7 +2885,7 @@
     yeni.onclick = function () { if (confirm('Eski link çalışmaz olacak. Yeni link oluşturulsun mu?')) istek('&yeni=1', yeni); };
     const kapat = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Linki kapat' });
     kapat.onclick = function () { if (confirm('Link kapatılsın mı? Açan aileler bilgi yazamaz.')) istek('&kapat=1', kapat); };
-    kutu.appendChild(el('p', { sinif: 'not', metin: 'Link ' + tarih + ' tarihine kadar açık. ' + (ortaokul ? 'Veli' : 'Öğrenci') + ' WhatsApp grubuna atın. Kayıtlı bilgi linkte görünmez; kayıtlı ad kilitlidir, düzeltmeyi buradan yaparsınız.' }));
+    kutu.appendChild(el('p', { sinif: 'not', metin: 'Link ' + tarih + ' tarihine kadar açık. İsterseniz ' + (ortaokul ? 'veli' : 'öğrenci') + ' WhatsApp grubuna da atın. Kayıtlı bilgi linkte görünmez; kayıtlı ad kilitlidir, düzeltmeyi buradan yaparsınız.' }));
     kutu.appendChild(el('div', { sinif: 'dugmeler' }, [paylas]));
     // 17 Kas: grupta tıklamayanlara KİŞİYE ÖZEL mesaj — e-postası eksik her öğrenci için ayrı "Gönder" (WhatsApp'ta o kişiyi seçersiniz)
     const eksikler = akt.filter(function (o) { const v = (s.veli || {})[o.ad]; return !(v && v.veli && v.veli.eposta); });
