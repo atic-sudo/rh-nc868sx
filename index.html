@@ -894,6 +894,32 @@
       #pano .pano-ust { background: linear-gradient(180deg, rgba(14, 38, 32, .82) 0%, rgba(14, 38, 32, .35) 38%, rgba(14, 38, 32, 0) 60%, rgba(28, 35, 33, 0) 78%, var(--bg) 100%), url(gece.jpg) 40% 27% / auto 381px no-repeat, #12332b; }
       #pano.rehber-ev .pano-ust { background: linear-gradient(180deg, rgba(14, 38, 32, .82) 0%, rgba(14, 38, 32, .35) 42%, rgba(14, 38, 32, 0) 66%), url(gece.jpg) 2% 6% / auto 381px no-repeat, #12332b; }
     }
+    #grupAlan { display: flex; align-items: center; gap: 12px; } #grupAlan button.geri { padding: 6px 0; }
+
+    /* ===== ÜST BAR (17 Kas): iç ekranlar + rehberin grup ekranı — manzara yalnız kişinin kendi ana sayfasında ===== */
+    .ust-bar, #pano.grup-goz .pano-ust { position: sticky; top: 0; z-index: 30; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px;
+      background: linear-gradient(180deg, #2f6657 0%, #26554a 100%); color: #fff; margin: calc(-18px - env(safe-area-inset-top)) -18px 18px; padding: calc(12px + env(safe-area-inset-top)) 14px 14px;
+      border-radius: 0 0 22px 22px; box-shadow: 0 6px 18px rgba(20, 45, 38, .22); }
+    @media (prefers-color-scheme: dark) { .ust-bar, #pano.grup-goz .pano-ust { background: linear-gradient(180deg, #2a5a4d 0%, #21463c 100%); box-shadow: 0 6px 18px rgba(0, 0, 0, .4); } }
+    .ust-bar button.geri, #pano.grup-goz .pano-ust button.geri { width: 40px; height: 40px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 0; gap: 0;
+      background: rgba(255, 255, 255, .15); color: #fff; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22); }
+    .ust-bar button.geri svg, #pano.grup-goz .pano-ust button.geri svg { width: 22px; height: 22px; }
+    .ust-bar .ub-orta { min-width: 0; }
+    .ust-bar h1, #pano.grup-goz .pano-ust h1 { font-size: 21px !important; font-weight: 700; letter-spacing: -.01em; color: #fff !important; margin: 0 !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ust-bar .alt-baslik2, .ust-bar .tarih, #pano.grup-goz .pano-ust .tarih { font-size: 13.5px !important; color: rgba(255, 255, 255, .8) !important; margin: 1px 0 0 !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ust-bar .gezinti { margin: 0; gap: 10px; justify-content: flex-end; }
+    .ust-bar .gezinti:empty { display: none; }
+    .ust-bar a.docs { color: #fff; font-size: 14px; padding: 6px 0 6px 6px; opacity: .95; }
+    .sekmeler { top: calc(env(safe-area-inset-top) + 66px); }
+    /* rehberin grup ekranı: aynı bar (manzara ve takvim kutusu yok) */
+    #pano.grup-goz .pano-ust { padding-bottom: 14px; }
+    #pano.grup-goz .pano-ust::after { display: none; }
+    #pano.grup-goz .ust-satir, #pano.grup-goz #grupAlan, #pano.grup-goz .pano-bas { display: contents; }
+    #pano.grup-goz .pano-ust button.geri { order: 1; } #pano.grup-goz .pano-bas > div { order: 2; min-width: 0; } #pano.grup-goz .grup-sec { order: 3; }
+    #pano.grup-goz #dersRozet, #pano.grup-goz .takvim-kutu { display: none !important; }
+    #pano.grup-goz .pano-ust .grup-sec { background: rgba(255, 255, 255, .15); border-color: rgba(255, 255, 255, .22); color: #fff; }
+    #pano.grup-goz .pano-ust .grup-sec .grup { color: #fff; } #pano.grup-goz .pano-ust .grup-sec select { color: #fff; }
+    #pano.grup-goz #icerik { margin-top: 0 !important; }
 </style>
 </head>
 <body>
@@ -1184,7 +1210,7 @@
 
   function ciz(v) {
     sonVeri = v;
-    $('pano').classList.toggle('rehber-ev', rehberEvi(v));   // rehber ana sayfası: koyu yeşil üst bant (mentor ekranından ayırt edilsin)
+    $('pano').classList.toggle('rehber-ev', rehberEvi(v)); $('pano').classList.toggle('grup-goz', !!mentorGozu);   // grup ekranı: manzara yerine üst bar   // rehber ana sayfası: koyu yeşil üst bant (mentor ekranından ayırt edilsin)
     if (rehberEvi(v)) { rehberCiz(v); return; }   // rehber / org: kendi ana sayfası
     grupAlaniCiz(v);
     const rozet = $('dersRozet');
@@ -1194,11 +1220,6 @@
 
     const ic = $('icerik');
     ic.textContent = '';
-    if (mentorGozu) {   // rehber bir grubun mentor ekranında
-      const d = el('button', { sinif: 'rp-don', type: 'button' }, [ikon('sol'), el('span', { metin: 'Rehber ana sayfası' }), el('span', { sinif: 'rp-don-alt', metin: v.grup + ' · mentor gözüyle' })]);
-      d.onclick = rehberDon;
-      ic.appendChild(d);
-    }
 
     // Bugün yatılı
     if (v.yatiliBugun) {
@@ -1403,8 +1424,8 @@
     let ad = '';
     try { ad = String((JSON.parse(depo.al('kisi') || 'null') || {}).ad || '').split(/\s+/)[0]; } catch (e) {}
     if (DEMO) ad = DEMO_MENTOR ? 'Ahmet' : 'Tuğrul';
-    $('selam').textContent = ad ? 'Merhaba ' + ad : 'Merhaba';
-    $('tarih').textContent = 'Bu hafta · ' + v.hafta.replace(/\s*–\s*/, '–');
+    $('selam').textContent = mentorGozu ? v.grup + ' · ' + v.ekip : ad ? 'Merhaba ' + ad : 'Merhaba';
+    $('tarih').textContent = (mentorGozu ? 'Mentor ekranı · ' : 'Bu hafta · ') + v.hafta.replace(/\s*–\s*/, '–');
   }
   function rozetKoy(k, n) {
     const a = document.querySelector('#icerik [data-k="' + k + '"] .ikon-kutu');
@@ -1934,6 +1955,7 @@
   }
   /** Ekibim → o grubun mentor ekranı */
   function mentorGozuAc(grup) {
+    if (!mentorGozu) history.pushState({ alt: 'mentorGozu' }, '');
     mentorGozu = true;
     depo.yaz('grup', grup);
     $('icerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
@@ -1951,9 +1973,14 @@
     try { kisi = JSON.parse(depo.al('kisi') || 'null'); } catch (e) {}
     if (DEMO) kisi = DEMO_MENTOR ? { ad: 'Örnek Mentor', rol: 'mentor', gruplar: ['E10'] } : { ad: 'Örnek Rehber', rol: 'rehber', gruplar: ['E10', 'E11', 'E12'] };
     const gruplar = (kisi && kisi.gruplar) || [];
+    if (mentorGozu) {   // 17 Kas: rehber bir grubun ekranında → standart gezinti: solda geri, başlıkta grup adı
+      const geri = el('button', { sinif: 'geri', type: 'button', 'aria-label': 'Ekibime dön' }, [ikon('sol')]);
+      geri.onclick = function () { history.back(); };
+      alan.appendChild(geri);
+    }
     // Akademik: hangi ekiplerin Ders Koçu Rehberi olduğu görünsün (ör. "Akademik · E ders koçu rehberi")
     const dg = (kisi && kisi.dkrGruplar) || [], dEkip = ['E', 'K'].filter(function (h) { return dg.some(function (g) { return g.charAt(0) === h; }); }).join(' + ');
-    const etiket = el('span', { sinif: 'grup', metin: v.akademik ? 'Akademik' + (dEkip ? ' · ' + dEkip + ' ders koçu rehberi' : '') : v.grup + ' · ' + v.ekip });
+    const etiket = el('span', { sinif: 'grup', metin: v.akademik ? 'Akademik' + (dEkip ? ' · ' + dEkip + ' ders koçu rehberi' : '') : mentorGozu ? 'Grup değiştir' : v.grup + ' · ' + v.ekip });
     if (gruplar.length < 2 || v.akademik) { alan.appendChild(etiket); }
     else {
       const sec = el('select', { 'aria-label': 'Grup seç' });
@@ -2136,6 +2163,18 @@
     document.addEventListener('touchend', bitir); document.addEventListener('touchcancel', function () { if (cekiyor) kapat(); y0 = null; });
   })();
 
+  // 17 Kas: ÜST BAR — her iç ekranda sayfadan bağımsız koyu yeşil şerit: [←] [başlık / alt başlık] [eylem]; kaydırınca üstte kalır
+  document.querySelectorAll('main > section').forEach(function (sec) {
+    const g = sec.querySelector(':scope > .gezinti'), h = sec.querySelector(':scope > h1') || sec.querySelector(':scope > .rapor-bas h1');
+    if (!g || !h) return;
+    const geri = g.querySelector('button.geri'), sonraki = h.nextElementSibling;
+    const alt = sonraki && (sonraki.classList.contains('alt-baslik2') || sonraki.classList.contains('tarih')) ? sonraki : null;
+    const bar = el('header', { sinif: 'ust-bar' });
+    sec.insertBefore(bar, g);
+    if (geri) bar.appendChild(geri);
+    bar.appendChild(el('div', { sinif: 'ub-orta' }, [h, alt].filter(Boolean)));
+    bar.appendChild(g);
+  });
   // 16 Kas: dış bağlantılar (a.docs) kendi ekranının üst satırına, sağa taşınır
   document.querySelectorAll('section > a.docs').forEach(function (a) { const g = a.parentNode.querySelector('.gezinti'); if (g) g.insertBefore(a, g.querySelector('.dil')); });   // dil düğmesi varsa onun soluna
   function docsUste(a, bolum) {
@@ -2315,6 +2354,7 @@
     if (okumaDonus && !$('okuma').hidden) { goster(okumaDonus); okumaDonus = null; return; }   // kısa dersten programa dön
     okumaDonus = null;
     if ($('pano').hidden && $('kurulum').hidden) { goster('pano'); yenile(); }
+    else if (mentorGozu && !$('pano').hidden) rehberDon();   // grup ekranından rehber ana sayfasına
   });
 
   // ---------- Yatılı ----------
