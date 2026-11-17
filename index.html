@@ -26,6 +26,9 @@
       --ana: #2c5a51; --ana-etiket: #3e6c62; --ana-zemin: #eef6f3; --ana-cizgi: #d7e7e1; --rozet: #e3f1ec; --rozet-yazi: #2f6d60;
       --rapor-zemin: #fcefe6; --rapor-cizgi: #f6dccb; --rapor-baslik: #8a4a2c; --rapor-alt: #8c5537;
       --rapor-ikon-zemin: #f7dcc8; --rapor-ikon: #ad552b;
+      /* 17 Kas: modül paleti — yalnız ikon kutularında (kartlar beyaz kalır): zemin (-z) + ikon (-i) */
+      --m-gorev-z: #e5f2e8; --m-gorev-i: #2f7a4a; --m-gundem-z: #e6eef8; --m-gundem-i: #2f5f9a; --m-grubum-z: #efe9f7; --m-grubum-i: #6a4a9a;
+      --m-prog-z: #fbf1d9; --m-prog-i: #8a6412; --m-okuma-z: #e2f3f1; --m-okuma-i: #1f6f6a; --m-ders-z: #f8e8ee; --m-ders-i: #9a3f62;
       --yesil: #2f7a4a; --yesil-zemin: #e5f2e8; --kirmizi: #a3281f;
       --sec-zemin: #eef2f0; --sec-yazi: #4f5b58;
       --sec-geldi: #bfe3d5; --sec-geldi-yazi: #163a31;
@@ -45,6 +48,8 @@
         --ana: #b9e3d4; --ana-etiket: #9fc4b8; --ana-zemin: #2a3934; --ana-cizgi: #3a4f48; --rozet: #263f38; --rozet-yazi: #9fd2c3;
         --rapor-zemin: #4a3a31; --rapor-cizgi: #5e483b; --rapor-baslik: #f3d2bf; --rapor-alt: #d6b09a;
         --rapor-ikon-zemin: #6b4c3b; --rapor-ikon: #f3c7a8;
+        --m-gorev-z: #24402f; --m-gorev-i: #8fd6a6; --m-gundem-z: #22344a; --m-gundem-i: #9cc3f0; --m-grubum-z: #33294a; --m-grubum-i: #c3aee8;
+        --m-prog-z: #40351a; --m-prog-i: #e6c878; --m-okuma-z: #1d3b39; --m-okuma-i: #8fd3cc; --m-ders-z: #45263a; --m-ders-i: #eaa6c2;
         --yesil: #8fd6a6; --yesil-zemin: #24402f; --kirmizi: #f19a92;
         --sec-zemin: #2f3936; --sec-yazi: #b4c1bd;
         --sec-geldi: #a3d4c3; --sec-geldi-yazi: #14251f;
@@ -115,10 +120,123 @@
     .not-govde ul.alt-madde { margin: 4px 0 2px; padding-left: 22px; list-style: circle; } .not-govde ul.alt-madde li { margin: 2px 0; }
     .kisa { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--sat, 3); line-clamp: var(--sat, 3); overflow: hidden; }
     .eksik-liste { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
+    /* Karşılama + rehber bandı: rehber / org ana sayfasında üst kısım koyu yeşil; mentor ekranı açık kalır */
+    :root { --bant: #2c5a51; --bant-yazi: #ffffff; --bant-soluk: rgba(255, 255, 255, .78); }
+    @media (prefers-color-scheme: dark) { :root { --bant: #23473f; } }
+    #pano.rehber-ev .pano-ust { background: var(--bant); margin: calc(-18px - env(safe-area-inset-top)) -18px 20px; padding: calc(18px + env(safe-area-inset-top)) 18px 4px; border-radius: 0 0 26px 26px; }
+    #pano.rehber-ev .pano-ust h1 { color: var(--bant-yazi); } #pano.rehber-ev .pano-ust .tarih, #pano.rehber-ev .pano-ust .grup { color: var(--bant-soluk); }
+    #pano.rehber-ev .pano-ust .grup-sec { background: rgba(255, 255, 255, .14); border-color: rgba(255, 255, 255, .25); color: #fff; }
+    #pano.rehber-ev .pano-ust .grup-sec select { color: #fff; }
+    /* Bu haftanın önceliği: sayfadaki TEK vurgulu kart */
+    a.satir.oncelik { background: var(--rapor-zemin); border: 1.5px solid var(--rapor-cizgi); padding: 16px; min-height: 88px; box-shadow: 0 8px 22px rgba(173, 85, 43, .12); margin-bottom: 4px; }
+    a.satir.oncelik .on-etiket { display: block; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--rapor-alt); margin-bottom: 2px; }
+    a.satir.oncelik .baslik { font-size: 19px; color: var(--rapor-baslik); } a.satir.oncelik .alt { color: var(--rapor-alt); }
+    a.satir.oncelik .ikon-kutu { background: var(--rapor-ikon-zemin); color: var(--rapor-ikon); } a.satir.oncelik .sag-ok { color: var(--rapor-ikon); }
+    a.satir.oncelik.tamam { background: var(--yesil-zemin); border-color: transparent; box-shadow: none; }
+    a.satir.oncelik.tamam .on-etiket, a.satir.oncelik.tamam .baslik, a.satir.oncelik.tamam .alt { color: var(--yesil); }
+    a.satir.oncelik.tamam .ikon-kutu { background: transparent; color: var(--yesil); } a.satir.oncelik.tamam .sag-ok { display: none; }
+
+    /* ===== TASLAK 2 — görsel dil: gölgeli kartlar, manzaralı karşılama, tek güçlü vurgu ===== */
+    :root { --golge: 0 1px 2px rgba(20, 45, 38, .05), 0 8px 22px rgba(20, 45, 38, .07); --kahraman: linear-gradient(180deg, #e1efe8 0%, #f1eee2 46%, #f8e3d0 78%, var(--bg) 100%);
+            --kahraman-siluet: rgba(44, 90, 81, .20); --vurgu-kart: linear-gradient(135deg, #327263 0%, #224a40 100%); }
+    @media (prefers-color-scheme: dark) { :root { --golge: none; --kahraman: linear-gradient(180deg, #1f302b 0%, #272e2a 50%, #3a2f27 80%, var(--bg) 100%); --kahraman-siluet: rgba(185, 227, 212, .13);
+            --vurgu-kart: linear-gradient(135deg, #2f6a5c 0%, #1f4239 100%); } }
+    /* Karşılama alanı (mentor): gökyüzü geçişi + şehir silueti */
+    #pano .pano-ust { position: relative; overflow: hidden; background: var(--kahraman); margin: calc(-18px - env(safe-area-inset-top)) -18px 0; padding: calc(18px + env(safe-area-inset-top)) 18px 118px; }
+    #pano .pano-ust::after { content: ''; position: absolute; left: 0; right: 0; bottom: 50px; height: 58px; background: var(--kahraman-siluet);
+      -webkit-mask: url(siluet.png) -620px 100% / auto 58px repeat-x; mask: url(siluet.png) -620px 100% / auto 58px repeat-x; pointer-events: none; }
+    #pano .pano-bas { margin-bottom: 0; } #pano h1 { font-size: 31px; letter-spacing: -.02em; }
+    #pano .takvim-kutu { background: rgba(255, 255, 255, .78); border: 1px solid rgba(255, 255, 255, .9); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); box-shadow: var(--golge); position: relative; z-index: 1; }
+    @media (prefers-color-scheme: dark) { #pano .takvim-kutu { background: rgba(40, 50, 46, .72); border-color: rgba(255, 255, 255, .10); } }
+    /* Rehber: aynı yapı, koyu yeşil */
+    #pano.rehber-ev .pano-ust { background: linear-gradient(150deg, #327263 0%, #1f4239 100%); margin-bottom: 20px; padding-bottom: 66px; border-radius: 0 0 30px 30px; }
+    #pano.rehber-ev .pano-ust::after { background: rgba(255, 255, 255, .13); bottom: 0; }
+    /* Öncelik kartı: karşılamanın üstüne biner; koyu yeşil, beyaz yazı */
+    #pano:not(.rehber-ev) #icerik { position: relative; margin-top: -52px; }
+    a.satir.oncelik { background: var(--vurgu-kart); border: 0; border-radius: 22px; padding: 18px 16px; min-height: 92px; box-shadow: 0 14px 30px rgba(31, 66, 57, .30); margin-bottom: 14px; }
+    a.satir.oncelik .on-etiket { color: rgba(255, 255, 255, .78); } a.satir.oncelik .baslik { color: #fff; font-size: 20px; } a.satir.oncelik .alt { color: rgba(255, 255, 255, .82); }
+    a.satir.oncelik .ikon-kutu { background: rgba(255, 255, 255, .16); color: #fff; } a.satir.oncelik .sag-ok { color: #fff; } a.satir.oncelik .sayi { display: none; }
+    a.satir.oncelik.tamam { background: var(--kart); box-shadow: var(--golge); } a.satir.oncelik.tamam .on-etiket { color: var(--soluk); }
+    a.satir.oncelik.tamam .baslik, a.satir.oncelik.tamam .alt { color: var(--yesil); } a.satir.oncelik.tamam .ikon-kutu { background: var(--yesil-zemin); color: var(--yesil); }
+    /* Kartlar: çerçeve yerine gölge; ikon kutuları tek yeşil ton; başlıklar büyük ve koyu */
+    #pano a.satir:not(.oncelik), #pano .konu-kart, #pano .rp-grup, #pano .rp-is, #pano .rp-toplanti { box-shadow: var(--golge); }
+    @media (prefers-color-scheme: light) { #pano a.satir:not(.oncelik):not(.rapor) { border-color: transparent; } #pano .konu-kart { border-color: transparent; } }
+    #pano a.satir { border-radius: 20px; }
+    #pano a.satir:not(.oncelik) .ikon-kutu { background: var(--ana-zemin); color: var(--ana); }
+    #pano .ana-bas, #pano.rehber-ev .hs-baslik { font-size: 17px; font-weight: 700; letter-spacing: -.005em; text-transform: none; color: var(--yazi); margin: 22px 2px 10px; }
+    #pano .form-kutu { background: var(--kart); box-shadow: var(--golge); }
+
+    /* ===== TASLAK 3 — kabartma: üstten ışık alan kartlar, basılabilir düğmeler, aynı aileden ikon tonları ===== */
+    :root {
+      --k-zemin: linear-gradient(180deg, #ffffff 0%, #f5f9f7 100%);
+      --k-golge: inset 0 1px 0 rgba(255, 255, 255, .95), inset 0 -1px 0 rgba(20, 45, 38, .05), 0 1px 1px rgba(20, 45, 38, .05), 0 4px 10px rgba(20, 45, 38, .05), 0 16px 30px rgba(20, 45, 38, .08);
+      --k-kenar: rgba(20, 45, 38, .06);
+      --t-zemin: linear-gradient(180deg, #ffffff 0%, #eef3f0 100%); --t-golge: inset 0 1px 0 #fff, 0 1px 2px rgba(20, 45, 38, .10), 0 3px 7px rgba(20, 45, 38, .06); --t-kenar: #dbe5e0;
+      --i-gorev: linear-gradient(150deg, #e0eddc, #c9dcc2); --i-gorev-c: #3d6b34;
+      --i-gundem: linear-gradient(150deg, #dfeaf5, #c7d9ec); --i-gundem-c: #35608f;
+      --i-grubum: linear-gradient(150deg, #f1ebdc, #e3d9c0); --i-grubum-c: #6f6134;
+      --i-prog: linear-gradient(150deg, #f6e0d6, #ecc8b8); --i-prog-c: #9a4a2c;
+      --i-okuma: linear-gradient(150deg, #f6eecf, #eadfb2); --i-okuma-c: #7a6216;
+      --i-ders: linear-gradient(150deg, #d6ebe8, #bcdcd8); --i-ders-c: #2a6a66;
+      --i-golge: inset 0 1px 0 rgba(255, 255, 255, .85), inset 0 -1px 0 rgba(20, 45, 38, .06), 0 2px 5px rgba(20, 45, 38, .10);
+    }
+    @media (prefers-color-scheme: dark) { :root {
+      --k-zemin: linear-gradient(180deg, #2c3533 0%, #252d2b 100%);
+      --k-golge: inset 0 1px 0 rgba(255, 255, 255, .07), inset 0 -1px 0 rgba(0, 0, 0, .25), 0 2px 4px rgba(0, 0, 0, .25), 0 12px 24px rgba(0, 0, 0, .28);
+      --k-kenar: rgba(255, 255, 255, .05);
+      --t-zemin: linear-gradient(180deg, #364340 0%, #2c3634 100%); --t-golge: inset 0 1px 0 rgba(255, 255, 255, .09), 0 1px 2px rgba(0, 0, 0, .35), 0 3px 7px rgba(0, 0, 0, .22); --t-kenar: rgba(255, 255, 255, .07);
+      --i-gorev: linear-gradient(150deg, #2f4630, #263a28); --i-gorev-c: #a9d6a0; --i-gundem: linear-gradient(150deg, #27384d, #1f2e40); --i-gundem-c: #a3c4ec;
+      --i-grubum: linear-gradient(150deg, #46432e, #393626); --i-grubum-c: #ddd49a; --i-prog: linear-gradient(150deg, #4e3529, #402b21); --i-prog-c: #f0b99c;
+      --i-okuma: linear-gradient(150deg, #4a4326, #3c361f); --i-okuma-c: #ead789; --i-ders: linear-gradient(150deg, #24423f, #1c3634); --i-ders-c: #92d6cf;
+      --i-golge: inset 0 1px 0 rgba(255, 255, 255, .10), inset 0 -1px 0 rgba(0, 0, 0, .25), 0 2px 5px rgba(0, 0, 0, .30);
+    } }
+    /* Kartlar */
+    #pano a.satir:not(.oncelik), #pano .konu-kart, #pano .rp-grup, #pano .rp-is, #pano .rp-toplanti, #pano .form-kutu { background: var(--k-zemin); border: 1px solid var(--k-kenar); box-shadow: var(--k-golge); }
+    #pano .konu-kart { background: linear-gradient(180deg, #f3faf6 0%, #e7f2ed 100%); }
+    @media (prefers-color-scheme: dark) { #pano .konu-kart { background: linear-gradient(180deg, #2f3f3a 0%, #283632 100%); } }
+    #pano a.satir:not(.oncelik):active, #pano .rp-grup:active { box-shadow: inset 0 2px 5px rgba(20, 45, 38, .12), 0 1px 1px rgba(20, 45, 38, .04); transform: translateY(1px) scale(.992); filter: none; }
+    /* İkon kutuları: kabartmalı, modüle göre aynı aileden ton */
+    #pano a.satir:not(.oncelik) .ikon-kutu { background: var(--i-gorev); color: var(--i-gorev-c); box-shadow: var(--i-golge); border-radius: 14px; }
+    #pano a.satir[data-k="gundem"] .ikon-kutu, #pano a.satir[data-k="raporlar"] .ikon-kutu { background: var(--i-gundem); color: var(--i-gundem-c); }
+    #pano a.satir[data-k="grubum"] .ikon-kutu { background: var(--i-grubum); color: var(--i-grubum-c); }
+    #pano a.satir[data-k="bulusma"] .ikon-kutu, #pano a.satir[data-k="yatili"] .ikon-kutu, #pano a.satir[data-k="rapor"]:not(.oncelik) .ikon-kutu { background: var(--i-prog); color: var(--i-prog-c); }
+    #pano a.satir[data-k="sampiyon"] .ikon-kutu, #pano a.satir[data-k="okuma"] .ikon-kutu { background: var(--i-okuma); color: var(--i-okuma-c); }
+    #pano a.satir[data-k="ders"] .ikon-kutu { background: var(--i-ders); color: var(--i-ders-c); }
+    /* Öncelik kartı: parlak üst kenar + derin gölge */
+    a.satir.oncelik { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .26), inset 0 -2px 0 rgba(0, 0, 0, .12), 0 2px 4px rgba(20, 50, 43, .22), 0 18px 34px rgba(31, 66, 57, .34); }
+    a.satir.oncelik .ikon-kutu { background: linear-gradient(150deg, rgba(255, 255, 255, .26), rgba(255, 255, 255, .10)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 2px 6px rgba(0, 0, 0, .18); border-radius: 14px; }
+    a.satir.oncelik:active { transform: translateY(1px) scale(.992); box-shadow: inset 0 3px 8px rgba(0, 0, 0, .25); filter: none; }
+    /* Ok: küçük yuvarlak, kabartmalı düğme */
+    #pano a.satir .sag-ok { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--t-zemin); border: 1px solid var(--t-kenar); box-shadow: var(--t-golge); color: var(--ana); }
+    #pano a.satir.oncelik .sag-ok { background: linear-gradient(180deg, rgba(255, 255, 255, .28), rgba(255, 255, 255, .12)); border-color: rgba(255, 255, 255, .22); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 2px 5px rgba(0, 0, 0, .2); color: #fff; }
+    #pano a.satir .sag-ok svg { width: 16px; height: 16px; }
+    #pano .ikili a.satir .sag-ok, #pano .kucuk-sira a.satir .sag-ok { display: none; }
+    /* Tuş gibi düğmeler: konu çipleri, Program, takvim kutusu */
+    #pano .cip, #pano .cip-ic, #pano button.kucuk { background: var(--t-zemin); border: 1px solid var(--t-kenar); box-shadow: var(--t-golge); }
+    #pano .cip:active, #pano .cip-ic:active, #pano button.kucuk:active { box-shadow: inset 0 2px 4px rgba(20, 45, 38, .18); transform: translateY(1px); filter: none; }
+    #pano .takvim-kutu { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 2px 4px rgba(20, 45, 38, .06), 0 12px 24px rgba(20, 45, 38, .10); }
+
+    /* ===== TASLAK 4 — karşılama alanında İstanbul manzarası: gündüz (açık tema, mentor) · gece (koyu tema ve rehber) ===== */
+    #pano .pano-ust { background: linear-gradient(180deg, rgba(250, 243, 236, .86) 0%, rgba(250, 243, 236, .35) 34%, rgba(250, 243, 236, 0) 55%, rgba(247, 249, 248, 0) 80%, var(--bg) 100%), url(gunduz.jpg) 66% 78% / auto 118% no-repeat, #f3e6da;
+                      padding-bottom: 150px; }
+    #pano .pano-ust::after { display: none; }
+    #pano:not(.rehber-ev) #icerik { margin-top: -30px; } #pano:not(.rehber-ev) #icerik:has(> a.satir.oncelik) { margin-top: -62px; }
+    @media (prefers-color-scheme: dark) {
+      #pano .pano-ust { background: linear-gradient(180deg, rgba(14, 38, 32, .78) 0%, rgba(14, 38, 32, .25) 36%, rgba(14, 38, 32, 0) 56%, rgba(28, 35, 33, 0) 80%, var(--bg) 100%), url(gece.jpg) 46% 78% / auto 118% no-repeat, #12332b; }
+    }
+    #pano.rehber-ev .pano-ust { background: linear-gradient(180deg, rgba(14, 38, 32, .80) 0%, rgba(14, 38, 32, .30) 40%, rgba(14, 38, 32, 0) 62%), url(gece.jpg) 46% 82% / auto 120% no-repeat, #12332b; padding-bottom: 120px; border-radius: 0 0 30px 30px; }
+    /* Ana sayfa (mentor): başlıklar + "Daha fazla" altında küçük kutular */
+    .ana-bas { margin: 18px 4px 8px; }
+    .kucuk-sira { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .kucuk-sira > :only-child { grid-column: 1 / -1; }
+    .kucuk-sira a.satir { margin: 0; min-height: 0; padding: 10px 12px; gap: 10px; border-radius: 16px; }
+    .kucuk-sira a.satir .ikon-kutu { width: 34px; height: 34px; border-radius: 10px; }
+    .kucuk-sira a.satir .baslik { font-size: 15px; line-height: 1.25; }
+    .kucuk-sira a.satir .alt, .kucuk-sira a.satir .sag-ok { display: none; }
     .form-sira { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
     .form-sira > :only-child { grid-column: 1 / -1; }
     .form-kutu { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left; font: inherit; color: var(--yazi); cursor: pointer;
-                 background: transparent; border: 1.5px dashed var(--ana-cizgi); border-radius: 16px; padding: 11px 12px 12px; min-width: 0; }
+                 background: var(--ikon-zemin); border: 0; border-radius: 16px; padding: 11px 12px 12px; min-width: 0; }   /* 17 Kas: kesik çizgi yok — düz, soluk zemin */
     .form-kutu .fk-ust { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--ana-etiket); }
     .form-kutu .fk-baslik { font-size: 14.5px; font-weight: 650; line-height: 1.25; }
     .form-kutu .fk-alt { font-size: 12.5px; color: var(--soluk); line-height: 1.3; }
@@ -541,7 +659,7 @@
     .rp-cip.kirmizi { color: var(--r-zorunlu); border-color: var(--r-zorunlu); font-weight: 600; }
     .rp-saat { text-align: center; margin-top: 10px; }
     .rp-don { display: flex; align-items: center; gap: 8px; width: 100%; font: inherit; font-size: 15px; font-weight: 600; color: var(--ana); cursor: pointer;
-      background: var(--ana-zemin); border: 1px dashed var(--ana); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; }
+      background: var(--ana-zemin); border: 1px solid var(--ana-cizgi); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; }
     .rp-don .i { width: 18px; height: 18px; } .rp-don-alt { margin-left: auto; font-weight: 400; font-size: 13px; color: var(--soluk); }
     .rp-tur summary { cursor: pointer; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; } .rp-tur summary span { flex: 1; min-width: 0; }
     .rp-gv { flex: none; padding: 4px 10px; font-size: 13px; }
@@ -764,7 +882,19 @@
     a.docs { margin-left: auto; font-size: 15px; font-weight: 600; color: var(--ana); text-decoration: none; white-space: nowrap; padding: 6px 0 6px 12px; transition: opacity .09s ease; }
     a.docs::after { content: ' ↗'; font-weight: 500; }
     a.docs:active { opacity: .5; }
-  </style>
+      #pano:not(.rehber-ev) h1 { color: var(--ana); font-weight: 700; }   /* 17 Kas: selam simsiyah değil, uygulamanın yeşili (Tuğrul: A) */
+    /* ===== TASLAK 5 — manzara temaya bağlı (açık → gündüz, koyu → gece), iki rolde de; kısa yükseklik.
+       Rol farkı: mentor = Süleymaniye, manzara sayfaya karışır ve öncelik kartı üstüne biner · rehber = Ayasofya, yuvarlak köşeli bant ===== */
+    #pano .pano-ust { padding-bottom: 100px; background: linear-gradient(180deg, rgba(250, 243, 236, .92) 0%, rgba(250, 243, 236, .55) 36%, rgba(250, 243, 236, 0) 58%, rgba(247, 249, 248, 0) 78%, var(--bg) 100%), url(gunduz.jpg) 60% 27% / auto 381px no-repeat, #f3e6da; }
+    #pano.rehber-ev .pano-ust { padding-bottom: 74px; margin-bottom: 20px; border-radius: 0 0 30px 30px;
+      background: linear-gradient(180deg, rgba(250, 243, 236, .92) 0%, rgba(250, 243, 236, .55) 42%, rgba(250, 243, 236, 0) 66%), url(gunduz.jpg) 24% 6% / auto 381px no-repeat, #f3e6da; }
+    #pano.rehber-ev .pano-ust h1 { color: var(--ana); font-weight: 700; } #pano.rehber-ev .pano-ust .tarih, #pano.rehber-ev .pano-ust .grup { color: var(--soluk); }
+    #pano.rehber-ev .pano-ust .grup-sec { color: var(--ana-etiket); background: var(--ana-zemin); border-color: var(--ana-cizgi); } #pano.rehber-ev .pano-ust .grup-sec select { color: inherit; }
+    @media (prefers-color-scheme: dark) {
+      #pano .pano-ust { background: linear-gradient(180deg, rgba(14, 38, 32, .82) 0%, rgba(14, 38, 32, .35) 38%, rgba(14, 38, 32, 0) 60%, rgba(28, 35, 33, 0) 78%, var(--bg) 100%), url(gece.jpg) 40% 27% / auto 381px no-repeat, #12332b; }
+      #pano.rehber-ev .pano-ust { background: linear-gradient(180deg, rgba(14, 38, 32, .82) 0%, rgba(14, 38, 32, .35) 42%, rgba(14, 38, 32, 0) 66%), url(gece.jpg) 2% 6% / auto 381px no-repeat, #12332b; }
+    }
+</style>
 </head>
 <body>
 <main>
@@ -785,14 +915,16 @@
 
   <!-- Pano -->
   <section id="pano" hidden>
+    <div class="pano-ust">
     <div class="ust-satir"><span id="grupAlan"></span><span class="rozet" id="dersRozet" hidden></span></div>
     <div class="pano-bas">
-      <div><h1>Bu hafta</h1><div class="tarih" id="tarih"></div></div>
+      <div><h1 id="selam">Merhaba</h1><div class="tarih" id="tarih"></div></div>
       <button class="takvim-kutu" id="takvimKutu" type="button" hidden>
         <span class="tk-ust" id="takvimKutuUst"></span>
         <span class="tk-zaman" id="takvimKutuZaman"></span>
         <span class="tk-ad" id="takvimKutuAd">Yaklaşan etkinlikler</span>
       </button>
+    </div>
     </div>
     <div id="icerik"><div class="yukleniyor">Yükleniyor…</div></div>
     <div class="alt-bilgi" id="altBilgi"></div>
@@ -996,6 +1128,8 @@
     ay: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
     misafir: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/>',
     onay: '<path d="M20 6 9 17l-5-5"/>',
+    kupa: '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
+    madalya: '<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>',
     ciftTik: '<path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/>',
     mesaj: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M13 8H7"/><path d="M17 12H7"/>',
     listeArti: '<path d="M11 12H3"/><path d="M16 6H3"/><path d="M16 18H3"/><path d="M18 9v6"/><path d="M21 12h-6"/>',
@@ -1050,12 +1184,13 @@
 
   function ciz(v) {
     sonVeri = v;
+    $('pano').classList.toggle('rehber-ev', rehberEvi(v));   // rehber ana sayfası: koyu yeşil üst bant (mentor ekranından ayırt edilsin)
     if (rehberEvi(v)) { rehberCiz(v); return; }   // rehber / org: kendi ana sayfası
     grupAlaniCiz(v);
     const rozet = $('dersRozet');
     rozet.hidden = !(v.konu && v.konu.ders);
     if (v.konu && v.konu.ders) rozet.textContent = v.konu.ders + '. Ders';
-    $('tarih').textContent = v.hafta.replace(/\s*–\s*/, '–') + ' ' + new Date().getFullYear();
+    selamYaz(v);
 
     const ic = $('icerik');
     ic.textContent = '';
@@ -1139,7 +1274,7 @@
     ic.appendChild(v.raporGonderildi
       ? satir({ k: 'rapor', ikon: 'kalem', baslik: 'Haftalık rapor', alt: (v.raporGonderildi === 'gecen' ? 'Geçen haftanınki gönderildi' : 'Bu hafta gönderildi') + ' · düzeltmek için dokun', url: '#', durum: 'Gönderildi', tikla: raporAc })
       : satir({ k: 'rapor', ikon: 'kalem', baslik: 'Haftalık rapor', alt: 'Buluşmadan sonra · 2 dk', url: '#', sinif: 'rapor', tikla: raporAc }));
-    ic.appendChild(satir({ ikon: 'belge', baslik: 'Gündem',   // 17 Kas: mentorların deyişiyle "gündem" = rehberlikten gelenler
+    ic.appendChild(satir({ k: 'gundem', ikon: 'belge', baslik: 'Gündem',   // 17 Kas: mentorların deyişiyle "gündem" = rehberlikten gelenler
       alt: v.toplanti ? 'Rehberlikten gelenler · ' + v.toplanti.tarih + ' haftası' : 'Bu hafta için gündem henüz yok', url: v.toplanti && v.toplanti.url,
       tikla: v.toplanti ? toplantiAc : null }));
     // 16 Kas: iki form, modüllerden ayrı görünür — yan yana, kesik çerçeveli "paylaş" kutuları (modül değil: öğrenciye / adaya gönderilecek bağlantı)
@@ -1187,8 +1322,8 @@
     }
     (v.bulusma ? ikili : ic).appendChild(kare(satir({ k: 'yatili', ikon: 'takvim', baslik: 'Yatılı', alt: v.bulusma ? y.metin.replace(/ · /g, '\n') : y.metin, url: v.yatiliUrl || '#', ekDugme: programDugme,
                            durum: y.durum, durumSinif: y.durum === 'Onay bekliyor' ? 'bekliyor' : '', tikla: yatiliAc })));
-    ic.appendChild(satir({ ikon: 'kisiler', baslik: 'Grubum', alt: 'Öğrenciler · Durum · Katılım', url: v.grubumUrl || '#', tikla: grubumAc }));
-    if (kisiRolu() === 'mentor' || mentorGozu) ic.appendChild(satir({ ikon: 'kitap', baslik: 'Okuma şampiyonları', alt: 'Ayın ilk 5\'i · okuyan grup · rozetler', url: '#', tikla: sampiyonAc }));
+    ic.appendChild(satir({ k: 'grubum', ikon: 'kisiler', baslik: 'Grubum', alt: 'Öğrenciler · Durum · Katılım', url: v.grubumUrl || '#', tikla: grubumAc }));
+    if (kisiRolu() === 'mentor' || mentorGozu) ic.appendChild(satir({ k: 'sampiyon', ikon: 'madalya', baslik: 'Okuma şampiyonları', alt: 'Ayın ilk 5\'i · okuyan grup · rozetler', url: '#', tikla: sampiyonAc }));
     if (mentorGozu) ic.appendChild(satir({ k: 'gorev', ikon: 'onay', baslik: 'Görevler', url: '#', alt: v.grup + ' mentorunun görevleri · salt okunur',
       tikla: function () { gorevlerAc({ grup: v.grup }); } }));   // 11 Kas: rehber grubun ekranında o grubun görevlerini görür
     else if (['rehber', 'org', 'test', 'akademik', 'mentor'].indexOf(kisiRolu()) >= 0)
@@ -1197,6 +1332,7 @@
     ic.appendChild(satir({ k: 'ders', ikon: 'kitap', baslik: 'Ders desteği', url: '#', tikla: dersAc,
       alt: dersRehberiMi() ? 'Talepler · koç ataması · onay' : kisiRolu() === 'akademik' ? 'Tüm talepler · süreç takibi' : 'Zorlanan öğrenciye ders koçu · süreci takip et' }));
 
+    anaSayfaDuzenle(ic, v);
     sayacGuncelle(v);
     const alt = $('altBilgi');
     alt.textContent = '';
@@ -1211,6 +1347,64 @@
   function kisiRolu() {
     if (DEMO) return DEMO_MENTOR ? 'mentor' : /rol=org/.test(location.search) ? 'org' : /rol=mesul/.test(location.search) ? 'akademik' : 'rehber';
     try { return (JSON.parse(depo.al('kisi') || 'null') || {}).rol || ''; } catch (e) { return ''; }
+  }
+  /**
+   * 17 Kas: mentor ana sayfası sade — üç başlık altında: BU HAFTA (rapor · görevler · gündem) → GRUBUM (grubum · günübirlik / yatılı)
+   * → DAHA FAZLA (okuma şampiyonları · ders desteği küçük kutular + formlar). Satırlar aynı; yalnız sıra ve boyut değişir.
+   * Görevlerim ve Grubum satırlarının alt yazısı telefondaki son veriden sayı gösterir (açık görev · eksik veli e-postası).
+   */
+  function anaSayfaDuzenle(ic, v) {
+    const bul = function (k) { return ic.querySelector(':scope > a.satir[data-k="' + k + '"]'); };
+    const rapor = bul('rapor'), gorev = bul('gorev'), gundem = bul('gundem'), grubum = bul('grubum'), sampiyon = bul('sampiyon'), ders = bul('ders');
+    const ikili = ic.querySelector(':scope > .ikili'), yatiliTek = bul('yatili'), formlar = ic.querySelector(':scope > .form-sira');
+    if (!rapor || !grubum) return;
+    const bas = function (m) { return el('div', { sinif: 'hs-baslik ana-bas', metin: m }); };
+    // Bu haftanın önceliği: tek belirgin kart — rapor verilmediyse rapor; verildiyse açık görev; o da yoksa eksik veli e-postası; hiçbiri yoksa "tamam"
+    let gSay = 0, eksik = 0;
+    try {
+      const gv = DEMO ? DEMO_GOREVLER() : onbellekAl(gorevAnahtar()); if (gv && Array.isArray(gv.gorevler) && !mentorGozu) gSay = gv.gorevler.length;
+      const gr0 = DEMO ? null : onbellekAl('grubum_' + v.grup);
+      if (gr0 && Array.isArray(gr0.ogrenciler)) eksik = gr0.ogrenciler.filter(function (o) { const x = (gr0.veli || {})[o.ad]; return o.durum !== 'Ayrıldı' && !(x && x.veli && x.veli.eposta); }).length;
+    } catch (e) {}
+    const etiketle = function (a, tamam) {
+      a.classList.add('oncelik'); if (tamam) a.classList.add('tamam');
+      a.querySelector('.orta').prepend(el('span', { sinif: 'on-etiket', metin: tamam ? 'Bu hafta' : 'Bu haftanın önceliği' }));
+      return a;
+    };
+    let oncelik;
+    if (!v.raporGonderildi) { oncelik = etiketle(rapor); rapor.classList.remove('rapor'); rapor.querySelector('.baslik').textContent = 'Haftalık raporu doldur'; }
+    else if (gSay) oncelik = etiketle(satir({ ikon: 'onay', baslik: gSay + ' açık göreviniz var', alt: 'Görevlerim’i açın · bitince işaretleyin', url: '#', tikla: gorevlerAc }));
+    else if (eksik) oncelik = etiketle(satir({ ikon: 'kisiler', baslik: eksik + ' veli e-postası eksik', alt: 'Grubum → Henüz yazmayanlar → Gönder', url: '#', tikla: grubumAc }));
+    else oncelik = etiketle(satir({ ikon: 'tamam', baslik: 'Her şey tamam', alt: 'Rapor gönderildi · açık göreviniz yok', url: '' }), true);
+    const sira = [oncelik, bas('Bu hafta'), oncelik === rapor ? null : rapor, gorev, gundem, bas('Grubum'), grubum, ikili && ikili.childNodes.length ? ikili : null, yatiliTek].filter(Boolean);
+    const kucuk = [sampiyon, ders].filter(Boolean);
+    if (kucuk.length || formlar) sira.push(bas('Daha fazla'));
+    if (kucuk.length) sira.push(el('div', { sinif: 'kucuk-sira' }, kucuk));
+    if (formlar) sira.push(formlar);
+    if (ikili && !ikili.childNodes.length) ikili.remove();
+    sira.forEach(function (n) { ic.appendChild(n); });
+    const konuK = ic.querySelector(':scope > .konu-kart'); if (konuK) ic.insertBefore(oncelik, konuK);   // öncelik en üstte
+    // Sayılar (telefondaki son kopyadan; yoksa varsayılan yazı kalır)
+    try {
+      if (!DEMO && gorev && !mentorGozu) {
+        const g = onbellekAl(gorevAnahtar());
+        if (g && Array.isArray(g.gorevler)) gorev.querySelector('.alt').textContent = g.gorevler.length ? g.gorevler.length + ' açık görev' : 'Açık göreviniz yok ✓';
+      }
+      const gr = DEMO ? null : onbellekAl('grubum_' + v.grup);
+      if (gr && Array.isArray(gr.ogrenciler)) {
+        const akt = gr.ogrenciler.filter(function (o) { return o.durum !== 'Ayrıldı'; });
+        const eksik = akt.filter(function (o) { const x = (gr.veli || {})[o.ad]; return !(x && x.veli && x.veli.eposta); }).length;
+        grubum.querySelector('.alt').textContent = akt.length + ' öğrenci' + (eksik ? ' · ' + eksik + ' veli e-postası eksik' : ' · veli e-postaları tamam ✓');
+      }
+    } catch (e) {}
+  }
+  /** Üst başlık: "Merhaba <ad>" + "Bu hafta · 5–11 Ekim" */
+  function selamYaz(v) {
+    let ad = '';
+    try { ad = String((JSON.parse(depo.al('kisi') || 'null') || {}).ad || '').split(/\s+/)[0]; } catch (e) {}
+    if (DEMO) ad = DEMO_MENTOR ? 'Ahmet' : 'Tuğrul';
+    $('selam').textContent = ad ? 'Merhaba ' + ad : 'Merhaba';
+    $('tarih').textContent = 'Bu hafta · ' + v.hafta.replace(/\s*–\s*/, '–');
   }
   function rozetKoy(k, n) {
     const a = document.querySelector('#icerik [data-k="' + k + '"] .ikon-kutu');
@@ -1301,7 +1495,7 @@
     const ic = $('icerik');
     grupAlaniCiz(v);
     $('dersRozet').hidden = true;
-    $('tarih').textContent = v.hafta.replace(/\s*–\s*/, '–') + ' ' + new Date().getFullYear();
+    selamYaz(v);
     $('altBilgi').textContent = '';
     if (!s) {
       let c = null;
@@ -1457,12 +1651,12 @@
     // 4. Kısayollar
     ic.appendChild(satir({ k: 'gorev', ikon: 'onay', baslik: 'Görevlerim', alt: 'Size verilenler · ekip görevleri · görev / karar ekle', url: '#', tikla: function () { gorevlerAc(); } }));
     const okT = (s.ekibim || []).reduce(function (a, g) { if (g.okuma) { a.o += g.okuma.okuyan; a.t += g.okuma.toplam; } return a; }, { o: 0, t: 0 });
-    ic.appendChild(satir({ ikon: 'kitap', baslik: 'Okuma takibi', url: '#', tikla: okumaTakipAc,
+    ic.appendChild(satir({ k: 'okuma', ikon: 'kitap', baslik: 'Okuma takibi', url: '#', tikla: okumaTakipAc,
       alt: okT.t ? okT.o + '/' + okT.t + ' öğrenci son iki haftada okudu · kimin okumadığını görün' : 'Öğrenci öğrenci kitap ve sayfa' }));
     ic.appendChild(satir({ k: 'ders', ikon: 'kitap', baslik: 'Ders desteği', url: '#', tikla: dersAc,
       alt: dersRehberiMi() ? 'Talepler · koç ataması · onay' : 'Ekibin talepleri · süreç takibi' }));
     const yeniRap = yeniRaporSay(s.raporIdler);
-    ic.appendChild(satir({ ikon: 'belge', baslik: 'Haftalık raporlar', alt: yeniRap ? yeniRap + ' yeni rapor · son gelenler en üstte' : 'Son gelenler · haftaya göre', url: '#', tikla: raporlarAc, durum: yeniRap ? yeniRap + ' yeni' : '' }));
+    ic.appendChild(satir({ k: 'raporlar', ikon: 'belge', baslik: 'Haftalık raporlar', alt: yeniRap ? yeniRap + ' yeni rapor · son gelenler en üstte' : 'Son gelenler · haftaya göre', url: '#', tikla: raporlarAc, durum: yeniRap ? yeniRap + ' yeni' : '' }));
     const yen = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Yenile' });
     yen.onclick = function () { yen.disabled = true; rehberYukle(v, true); };
     ic.appendChild(el('p', { sinif: 'not rp-saat' }, [document.createTextNode('Özet ' + (s.saat || '') + ' itibarıyla (birkaç dakikada bir tazelenir). '), yen]));
