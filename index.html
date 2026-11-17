@@ -112,6 +112,7 @@
               background: var(--kart); border: 1px solid var(--cizgi); border-radius: 18px; padding: 14px; margin-bottom: 10px; min-height: 72px; }
     /* 16 Kas: basma hissi — dokunulan şey hafifçe küçülür ve koyulaşır, bırakınca geri gelir (büyük kartlar az, küçük düğmeler biraz daha çok) */
     /* Form paylaşma kutuları (ana sayfa): modül satırlarından farklı — yan yana, kesik çerçeve, zeminsiz */
+    .kisa { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--sat, 3); line-clamp: var(--sat, 3); overflow: hidden; }
     .eksik-liste { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
     .form-sira { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
     .form-sira > :only-child { grid-column: 1 / -1; }
@@ -2788,6 +2789,34 @@
     } catch (e) { if ($('grubumIcerik').querySelector('.onb-not')) eskiNotu($('grubumIcerik'), 'Bağlantı yok · son kayıtlı liste gösteriliyor'); else $('grubumIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; }
   }
 
+  /** Öğrenci notları formu: Hedefler · Ders durumu · Davranış / gözlem · Notlar → Grup Takip tablosu (POST; içerik URL'ye girmez) */
+  function ogrNotFormu(o, on, nd, s) {
+    nd.hidden = true;
+    const ALAN = [['hedefler', 'Hedefler', 'Bu dönem için hedefi'], ['ders', 'Ders durumu', 'Okul, zorlandığı / iyi olduğu dersler'],
+                  ['davranis', 'Davranış / gözlem', 'Gruptaki hâli, dikkatinizi çekenler'], ['notlar', 'Notlar', 'Aile, sağlık, özel durum…']];
+    const kutu = el('div', { sinif: 'ekle-form veli-form' }), ta = {};
+    ALAN.forEach(function (a) {
+      const t = el('textarea', { rows: '2', sinif: 'gorev-not-girdi', maxlength: '1500', placeholder: a[2] }); t.value = o[a[0]] || ''; ta[a[0]] = t;
+      kutu.appendChild(el('div', { sinif: 'gk-durum-ust', style: 'margin-top:8px', metin: a[1] })); kutu.appendChild(t);
+    });
+    const mesaj = el('p', { sinif: 'not', metin: 'Yalnız siz ve rehberiniz görür. Veli iletişim bilgisi buraya yazılmaz.' });
+    const kaydet = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Kaydet' }), vazgec = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Vazgeç' });
+    vazgec.onclick = function () { kutu.remove(); nd.hidden = false; };
+    kaydet.onclick = async function () {
+      kaydet.disabled = true; mesaj.textContent = 'Kaydediliyor…';
+      const g = { kod: depo.al('kod'), grup: s.grup, islem: 'ogrenciNot', satir: o.satir, ad: o.ad };
+      ALAN.forEach(function (a) { g[a[0]] = ta[a[0]].value.trim(); });
+      try {
+        const r = DEMO ? { ok: true } : await (await fetch(VERI_URL, { method: 'POST', body: JSON.stringify(g) })).json();
+        if (!r.ok) { kaydet.disabled = false; mesaj.textContent = HATA_METNI[r.hata] || 'Kaydedilemedi. Tekrar deneyin.'; return; }
+        ALAN.forEach(function (a) { o[a[0]] = g[a[0]]; });
+        if (!DEMO && s.grup) onbellekYaz('grubum_' + s.grup, s);
+        grubumCiz(s);
+      } catch (e) { kaydet.disabled = false; mesaj.textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; }
+    };
+    kutu.appendChild(mesaj); kutu.appendChild(el('div', { sinif: 'dugmeler' }, [vazgec, kaydet]));
+    on.appendChild(kutu); ta.hedefler.focus();
+  }
   function grubumCiz(s) {
     $('grubumBaslik').textContent = 'Grubum · ' + s.grup;
     $('grubumDis').href = s.url;
@@ -2807,7 +2836,7 @@
           ayrildi ? o.ad + ' tekrar aktif yapılsın mı?' : o.ad + ' "Ayrıldı" olarak işaretlensin mi? Formdan çıkar, geçmiş yoklaması korunur.');
       };
       const vd = (s.veli || {})[o.ad] || {};
-      const kayitli = !!(vd.veli && (vd.veli.eposta || vd.veli.tel));
+      const kayitli = !!(vd.veli && vd.veli.eposta);   // 17 Kas: ✓ = veli e-postası var
       const veliDugme = ayrildi ? null : el('button', { sinif: 'veli-rozet' + (kayitli ? ' tamam' : ''), type: 'button',
         metin: kayitli ? 'Veli ✓' : 'Veli +', 'aria-expanded': 'false' });
       const on = el('div', { sinif: 'ogr' + (ayrildi ? ' ayrildi' : '') }, [
@@ -2822,6 +2851,11 @@
         const dl = el('dl');
         notlar.forEach(function (n) { dl.appendChild(el('dt', { metin: n[0] })); dl.appendChild(el('dd', { metin: n[1] })); });
         on.appendChild(el('details', {}, [el('summary', { metin: 'Notlar' }), dl]));
+      }
+      if (!ayrildi && !saltOkunur()) {   // 17 Kas: notlar uygulamadan yazılır (Grup Takip B–E)
+        const nd = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: notlar.length ? 'Notları düzenle' : '+ Not ekle' });
+        nd.onclick = function () { ogrNotFormu(o, on, nd, s); };
+        on.appendChild(el('div', {}, [nd]));
       }
       const kap = el('div', { sinif: 'kaydir' }, [el('div', { sinif: 'arka' }, [islemDugme]), on]);
       kaydirmaKur(on);
@@ -3720,12 +3754,31 @@
   }
   function gorevKarti(g) { return gKart(g, true); }   // toplantı ekranı da aynı kartı kullanır
   /** Görevdeki notlar (linkler tıklanır); yoksa null — gKart ve Rehberlik toplantısı listesi kullanır */
+  /** 17 Kas: uzun metin kartı boğmasın — ilk birkaç satır görünür, "Devamını göster" ile açılır (bağlantılar açılınca tıklanır) */
+  function kisalt(dugum, uzunluk, satir, esik) {
+    if (uzunluk <= (esik || 150)) return dugum;
+    dugum.classList.add('kisa'); dugum.style.setProperty('--sat', satir || 3);
+    const b = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Devamını göster' });
+    b.onclick = function () { const k = dugum.classList.toggle('kisa'); b.textContent = k ? 'Devamını göster' : 'Daha az göster'; };
+    return el('div', {}, [dugum, b]);
+  }
+  /** Görev notları: yalnız SON not görünür (kısaltılmış); öncekiler "Önceki notlar (n)" altında kapalı durur */
   function yorumBlogu(g) {
     const yorumlar = (g.gecmis || []).filter(function (x) { return x.tur === 'yorum' && x.m; });
     if (!yorumlar.length) return null;
-    return el('div', { sinif: 'gk-durum' }, [el('div', { sinif: 'not', metin: 'Notları görevin sorumluları (' + (g.sorumlu || '?') + ') ve takip edenler görür.' })].concat(yorumlar.map(function (x) {
-      return el('div', {}, [el('div', { sinif: 'gk-durum-ust', metin: 'Not · ' + x.kim + ' · ' + gorevTarihKisa(x.z) }), linkliMetin(x.m)]);
-    })));
+    const tek = function (x, kisa) {
+      const m = linkliMetin(x.m);
+      return el('div', {}, [el('div', { sinif: 'gk-durum-ust', metin: 'Not · ' + x.kim + ' · ' + gorevTarihKisa(x.z) }), kisa ? kisalt(m, x.m.length, 3, 170) : m]);
+    };
+    const son = yorumlar[yorumlar.length - 1], onceki = yorumlar.slice(0, -1), kutu = el('div', { sinif: 'gk-durum' }, [tek(son, true)]);
+    if (onceki.length) {
+      const liste = el('div', { hidden: '' }, onceki.map(function (x) { return tek(x, false); }).concat(
+        [el('div', { sinif: 'not', metin: 'Notları görevin sorumluları (' + (g.sorumlu || '?') + ') ve takip edenler görür.' })]));
+      const ac = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Önceki notlar (' + onceki.length + ') ▾' });
+      ac.onclick = function () { liste.hidden = !liste.hidden; ac.textContent = 'Önceki notlar (' + onceki.length + ') ' + (liste.hidden ? '▾' : '▴'); };
+      kutu.appendChild(el('div', {}, [ac])); kutu.appendChild(liste);
+    }
+    return kutu;
   }
 
   /** sahip: düğmeler görünür · bitti: "Son bitenler" (soluk, "Geri al") */
@@ -3743,7 +3796,7 @@
     const izRozet = el('span', { sinif: 'gk-etiket tk', metin: 'Takip ediyorsunuz' });
     if (g.takip || g.izleyebilir) { izRozet.hidden = !(g.takip || g.izliyor); alt.push(izRozet); }
     if (!g.takip && g.takipciler && !bitti) alt.push(el('span', { metin: '· Takip: ' + g.takipciler }));
-    kart.appendChild(el('div', { sinif: 'gorev-metin', metin: g.gorev }));
+    kart.appendChild(kisalt(el('div', { sinif: 'gorev-metin', metin: g.gorev }), String(g.gorev || '').length, 3, 150));
     kart.appendChild(el('div', { sinif: 'gorev-alt' }, alt));
     // Son durum (geçmişiyle); eski kayıtlarda yalnız metin
     const gec = (g.gecmis || []).filter(function (x) { return x.tur !== 'bitti' && x.tur !== 'yorum'; }), son = gec[gec.length - 1];
