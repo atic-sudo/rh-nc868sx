@@ -111,6 +111,14 @@
     a.satir { display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--yazi);
               background: var(--kart); border: 1px solid var(--cizgi); border-radius: 18px; padding: 14px; margin-bottom: 10px; min-height: 72px; }
     /* 16 Kas: basma hissi — dokunulan şey hafifçe küçülür ve koyulaşır, bırakınca geri gelir (büyük kartlar az, küçük düğmeler biraz daha çok) */
+    /* Form paylaşma kutuları (ana sayfa): modül satırlarından farklı — yan yana, kesik çerçeve, zeminsiz */
+    .form-sira { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .form-sira > :only-child { grid-column: 1 / -1; }
+    .form-kutu { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left; font: inherit; color: var(--yazi); cursor: pointer;
+                 background: transparent; border: 1.5px dashed var(--ana-cizgi); border-radius: 16px; padding: 11px 12px 12px; min-width: 0; }
+    .form-kutu .fk-ust { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--ana-etiket); }
+    .form-kutu .fk-baslik { font-size: 14.5px; font-weight: 650; line-height: 1.25; }
+    .form-kutu .fk-alt { font-size: 12.5px; color: var(--soluk); line-height: 1.3; }
     a.satir, button, a.cip, .cip-ic, .takvim-kutu, .rp-grup, .bugun-kart, [role="button"], [role="tab"] { transition: transform .09s ease, filter .09s ease, opacity .09s ease; }
     a.satir:active, .rp-grup:active, .bugun-kart:active, .takvim-kutu:active { transform: scale(.975); filter: brightness(.96); }
     button:not(:disabled):active, a.cip:active, .cip-ic:active, [role="button"]:active { transform: scale(.95); filter: brightness(.94); }
@@ -1131,20 +1139,26 @@
     ic.appendChild(satir({ ikon: 'belge', baslik: 'Toplantı notu',
       alt: v.toplanti ? v.toplanti.tarih + ' haftası · gündem ve görevler' : 'Henüz toplantı notu yok', url: v.toplanti && v.toplanti.url,
       tikla: v.toplanti ? toplantiAc : null }));
-    if (DERS_BILGI_FORMU && !saltOkunur()) ic.appendChild(satir({ ikon: 'kitap', baslik: 'Student Course Information Form', alt: 'Akademik rehberlik · öğrencilere gönderin', url: '#',
-      tikla: function () {
-        paylas(['📚 Sevgili öğrenciler,', '',
+    // 16 Kas: iki form, modüllerden ayrı görünür — yan yana, kesik çerçeveli "paylaş" kutuları (modül değil: öğrenciye / adaya gönderilecek bağlantı)
+    if ((DERS_BILGI_FORMU || DERS_KOCU_FORMU) && !saltOkunur()) {
+      const formKutu = function (ust, baslik, alt, mesaj) {
+        const b = el('button', { type: 'button', sinif: 'form-kutu' }, [el('span', { sinif: 'fk-ust', metin: ust }), el('span', { sinif: 'fk-baslik', metin: baslik }), el('span', { sinif: 'fk-alt', metin: alt })]);
+        b.onclick = function () { paylas(mesaj); };
+        return b;
+      };
+      const kutular = [];
+      if (DERS_BILGI_FORMU) kutular.push(formKutu('Form · paylaş ↗', 'Student Course Information', 'Öğrencilere gönderin',
+        ['📚 Sevgili öğrenciler,', '',
           'Akademik destek ve ders koçluğunu planlayabilmemiz için bu yıl aldığınız dersleri öğrenmek istiyoruz. ' +
           'Lütfen okul ders programınıza bakarak aşağıdaki formu doldurun (2–3 dakika). 2. dönem dersleriniz henüz belli değilse o kısmı boş bırakabilirsiniz.', '',
-          DERS_BILGI_FORMU, '', 'Teşekkürler 🙏'].join('\n'));
-      } }));
-    if (DERS_KOCU_FORMU && !saltOkunur()) ic.appendChild(satir({ ikon: 'kitap', baslik: 'Academic Coach Registration Form', alt: 'Akademik rehberlik · ders koçu adaylarına gönderin', url: '#',
-      tikla: function () {
-        paylas(['📘 Merhaba,', '',
+          DERS_BILGI_FORMU, '', 'Teşekkürler 🙏'].join('\n')));
+      if (DERS_KOCU_FORMU) kutular.push(formKutu('Form · paylaş ↗', 'Academic Coach Registration', 'Ders koçu adaylarına gönderin',
+        ['📘 Merhaba,', '',
           'Öğrencilerimize ders desteği verecek ders koçlarını belirliyoruz. Ders anlatabileceğiniz konular ve uygun olduğunuz zamanlar için ' +
           'lütfen aşağıdaki formu doldurun (birkaç dakika).', '',
-          DERS_KOCU_FORMU, '', 'Teşekkürler 🙏'].join('\n'));
-      } }));
+          DERS_KOCU_FORMU, '', 'Teşekkürler 🙏'].join('\n')));
+      ic.appendChild(el('div', { sinif: 'form-sira' }, kutular));
+    }
     takvimOzet();
     const ikili = el('div', { sinif: 'ikili' });
     ic.appendChild(ikili);
