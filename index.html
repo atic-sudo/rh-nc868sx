@@ -2035,7 +2035,7 @@
     $('okumaDocs').hidden = !docsUrl;
     if ($('okuma').hidden) { history.pushState({ okuma: true }, ''); goster('okuma'); }
 
-    if (DEMO) { $('okumaIcerik').innerHTML = '<h3>Bölüm 1: Deizm Nedir?</h3><p>Örnek metin. Gerçek uygulamada haftanın metni burada, telefona uygun biçimde görünür; Google Docs açmaya gerek kalmaz.</p><p>Üstteki TR / EN düğmeleriyle dil değiştirilir. Metnin altında slayt ve video bağlantıları da bulunur.</p><h3>Bölüm 2: Tartışma soruları</h3><p>1. Örnek soru bir?<br>2. Örnek soru iki?</p>'; return; }
+    if (DEMO) { $('okumaIcerik').innerHTML = '<h3>Bölüm 1: Doğruluk nedir?</h3><p>Örnek metin. Gerçek uygulamada haftanın metni burada, telefona uygun biçimde görünür; Google Docs açmaya gerek kalmaz.</p><p>Üstteki TR / EN düğmeleriyle dil değiştirilir. Metnin altında slayt ve video bağlantıları da bulunur.</p><h3>Bölüm 2: Tartışma soruları</h3><p>1. Örnek soru bir?<br>2. Örnek soru iki?</p>'; return; }
     const anahtar = 'metin_' + grup + '_' + dil + '_' + docsUrl;
     const kayitli = depo.al(anahtar);
     $('okumaIcerik').innerHTML = kayitli || '<p class="yukleniyor">Yükleniyor…</p>';
@@ -4120,7 +4120,7 @@
 
   function DEMO_GUNUBIRLIK() {
     const a = [['18:00','18:10','Geliş, karşılama','sabit-sure',''],['18:10','18:25','Ödev / ezber kontrolü','sabit-sure',''],['18:25','18:39','Oyun / etkinlik','esnek',''],
-      ['18:39','19:04','Akşam namazı + tesbihat','namaz',''],['19:04','19:14','Kısa ders','sabit-sure',''],['19:14','19:54','Haftanın konusu','sabit-sure','Deizm'],
+      ['18:39','19:04','Akşam namazı + tesbihat','namaz',''],['19:04','19:14','Kısa ders','sabit-sure',''],['19:14','19:54','Haftanın konusu','sabit-sure','Doğruluk ve güvenilirlik'],
       ['19:54','20:24','İkram','sabit-sure','İkram: Ahmet ailesi'],['20:24','20:39','Yatsı namazı + tesbihat','namaz',''],['20:39','20:54','Davranış köşesi','sabit-sure',''],
       ['20:54','21:00','Kapanış: dua, gelecek hafta, duyurular','esnek','']];
     return { ok: true, tip: 'gunubirlik', grup: 'E10', ekip: 'E Lise', gun1: '2026-10-17', yer: 'KM', daire: '', namazDersi: '#kisa', demoSimdi: '2026-10-17T19:30',
@@ -4977,11 +4977,11 @@
       tur: { gecen: '', ihtiyac: '' },
       gorevler: [
         { satir: 1, gorev: 'Yatılı için veli izin formlarını topla', sorumlu: 'E10', tarih: '14 Eki', tamam: false },
-        { satir: 2, gorev: 'Kahoot sorularını hazırla (Deizm)', sorumlu: 'E11', tarih: '12 Eki', tamam: true },
+        { satir: 2, gorev: 'Kahoot sorularını hazırla (Doğruluk ve güvenilirlik)', sorumlu: 'E11', tarih: '12 Eki', tamam: true },
         { satir: 3, gorev: 'Kitap okuma listesini güncelle', sorumlu: 'Tüm mentorlar', tarih: '', tamam: false },
       ],
       html: '<h3>1. Rehberlik toplantısından aktarılanlar</h3><ul><li>Yatılılarda misafir programı netleşti.</li></ul>' +
-            '<h3>3. Haftanın gündemi</h3><ul><li>Deizm konusunu tartışma sorusuyla açın.</li><li>Yoklamayı buluşma sonunda girin.</li></ul>' +
+            '<h3>3. Haftanın gündemi</h3><ul><li>Doğruluk konusunu tartışma sorusuyla açın.</li><li>Yoklamayı buluşma sonunda girin.</li></ul>' +
             '<h3>5. Yaklaşan etkinlikler</h3><ul><li>16 Ekim: ilk yatılı (Daire 5)</li></ul>' +
             '<h3>7. Gelişim köşesi</h3><p>Bu haftanın sorusu: "Bir gencin sorusunu cevaplamak yerine onu nasıl derinleştirirsiniz?"</p>' };
   }
@@ -4994,7 +4994,7 @@
   function DEMO_VERI() {
     const gonderildi = /gonderildi/.test(location.search);
     return { grup: 'E10', ekip: 'E Lise', hafta: '5 – 11 Ekim', raporGonderildi: gonderildi, raporUrl: '#r',
-      konu: { ad: 'Deizm', ders: 2, metin: '#tr', en: '#en', slayt: 'https://drive.google.com/file/d/ornek/view', video: 'https://youtu.be/aaaaaaaaaaa' },
+      konu: { ad: 'Doğruluk ve güvenilirlik', ders: 2, metin: '#tr', en: '#en', slayt: 'https://drive.google.com/file/d/ornek/view', video: 'https://youtu.be/aaaaaaaaaaa' },
       toplanti: { url: '#t', tarih: '5 Ekim' }, bulusma: { metin: 'Cumartesi 17 Ekim · 18:00 · KM', ikram: 'Ahmet', yatili: false, programVar: true }, yatiliUrl: '#y', yatiliSatir: 2, yatiliBugun: /bugun/.test(location.search) ? { satir: 2, daire: 'Daire 5' } : null, yatili: '16 Ekim Cuma · Daire 5 · ✅ onaylandı', grubumUrl: '#g' };
   }
 
