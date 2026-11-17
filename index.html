@@ -5030,7 +5030,8 @@
     ic.textContent = '';
     // 17 Kas: MENTOR için bu ekran yalnız "Gündem" (rehberlikten gelenler). Grup turu kutuları (rapordan zaten geliyor) ve
     // görev listesi (Görevlerim'de) mentorda yok; rehber bir grubun ekranına girince eskisi gibi hepsini görür.
-    if (kisiRolu() === 'mentor') {
+    const SADE_GUNDEM = true;   // 17 Kas (2): rehber de grubun ekranında mentorun gördüğünü görür (eski grup turu + görev listesi aşağıda, kapalı)
+    if (SADE_GUNDEM) {
       if (s.html) {
         const govde = el('div', { sinif: 'okuma not-govde' });
         govde.innerHTML = String(s.html).replace(/↪\uFE0F?\s*/g, '');   // sunucuda kaçırılarak üretilir; ok işareti telefonda emoji kutusu oluyordu
