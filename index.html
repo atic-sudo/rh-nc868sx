@@ -112,6 +112,7 @@
               background: var(--kart); border: 1px solid var(--cizgi); border-radius: 18px; padding: 14px; margin-bottom: 10px; min-height: 72px; }
     /* 16 Kas: basma hissi — dokunulan şey hafifçe küçülür ve koyulaşır, bırakınca geri gelir (büyük kartlar az, küçük düğmeler biraz daha çok) */
     /* Form paylaşma kutuları (ana sayfa): modül satırlarından farklı — yan yana, kesik çerçeve, zeminsiz */
+    .not-govde ul.alt-madde { margin: 4px 0 2px; padding-left: 22px; list-style: circle; } .not-govde ul.alt-madde li { margin: 2px 0; }
     .kisa { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--sat, 3); line-clamp: var(--sat, 3); overflow: hidden; }
     .eksik-liste { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
     .form-sira { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
@@ -5035,6 +5036,18 @@
       if (s.html) {
         const govde = el('div', { sinif: 'okuma not-govde' });
         govde.innerHTML = String(s.html).replace(/↪\uFE0F?\s*/g, '');   // sunucuda kaçırılarak üretilir; ok işareti telefonda emoji kutusu oluyordu
+        // 17 Kas: "Başlık: a · b · c" biçiminde aktarılan alt maddeler ekranda ALT ALTA, girintili liste olarak gösterilir
+        govde.querySelectorAll('li').forEach(function (li) {
+          const t = li.textContent, k = t.indexOf(': ');
+          if (k < 0 || t.indexOf(' · ', k) < 0) return;
+          const parca = t.slice(k + 2).split(' · ').map(function (x) { return x.trim(); }).filter(String);
+          if (parca.length < 2) return;
+          const etiket = li.querySelector('i, em') ? 'em' : 'span';
+          const sar = function (m) { const x = document.createElement(etiket); x.textContent = m; return x; };
+          li.textContent = '';
+          li.appendChild(sar(t.slice(0, k + 1)));
+          li.appendChild(el('ul', { sinif: 'alt-madde' }, parca.map(function (m) { return el('li', {}, [sar(m)]); })));
+        });
         ic.appendChild(govde);
       } else ic.appendChild(el('div', { sinif: 'bilgi', metin: 'Bu hafta rehberlikten gelen bir gündem yok.' }));
       ic.appendChild(el('p', { sinif: 'not', metin: 'Size verilen işler ana sayfadaki Görevlerim\'de; buluşma notlarınızı Haftalık rapor\'a yazın.' }));
