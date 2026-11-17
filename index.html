@@ -2386,7 +2386,7 @@
       ic.appendChild(el('div', { sinif: 'slot dikey renkli', style: 'border-left-color:var(--r-' + (o.renk === 'tatil' ? 'diger' : o.renk || 'diger') + ')' }, [
         el('div', { sinif: 'slot-ust' }, [el('span', { sinif: 'orta' }, [
           el('span', { sinif: 'baslik', metin: o.baslik }),
-          el('span', { sinif: 'alt', metin: olayZamani(o) + (o.yer ? ' · ' + o.yer : '') + (o.not ? '\n' + o.not : '') })])]),
+          el('span', { sinif: 'alt', metin: olayZamani(o) + (o.yer ? ' · ' + o.yer : '') }), o.not && !/^Uygulamadan:/.test(o.not) ? linkliMetin(o.not) : null].filter(Boolean))]),
         etiketler.length ? el('div', { sinif: 'takvim-etiket' }, etiketler) : null]));
     });
     // Telefon takvimi aboneliği (bir kez; değişiklikler kendiliğinden yansır)
@@ -2451,6 +2451,7 @@
     const tur = el('select', { 'aria-label': 'Tür' }); (s.turler || []).forEach(function (t) { tur.appendChild(el('option', { value: t, metin: t })); });
     const kimler = el('select', { 'aria-label': 'Kimler' }); (s.kimler || []).forEach(function (t) { kimler.appendChild(el('option', { value: t, metin: t })); });
     const yer = el('input', { type: 'text', placeholder: 'Yer (isteğe bağlı)', maxlength: '60' });
+    const notG = el('input', { type: 'text', placeholder: 'Not ya da bağlantı (https://…) · isteğe bağlı', maxlength: '500', autocomplete: 'off' });   // 17 Kas
     const zorunlu = el('input', { type: 'checkbox' });
     const kaydet = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Kaydet' }), vazgec = el('button', { sinif: 'kucuk', type: 'button', metin: 'Vazgeç' });
     vazgec.onclick = iptal;
@@ -2460,11 +2461,11 @@
       kaydet.disabled = true;
       const ek = '&islem=takvimEkle&tarih=' + iso + '&saat=' + encodeURIComponent(saat.value) + '&bitis=' + encodeURIComponent(bitis.value) +
         '&tur=' + encodeURIComponent(tur.value) + '&kimler=' + encodeURIComponent(kimler.value) + '&baslik=' + encodeURIComponent(baslik.value.trim()) +
-        '&yer=' + encodeURIComponent(yer.value.trim()) + '&zorunlu=' + (zorunlu.checked ? '1' : '0') + '&tekrar=' + encodeURIComponent(tekrar.value);
+        '&yer=' + encodeURIComponent(yer.value.trim()) + '&not=' + encodeURIComponent(notG.value.trim()) + '&zorunlu=' + (zorunlu.checked ? '1' : '0') + '&tekrar=' + encodeURIComponent(tekrar.value);
       takvimIslemYap(ek);
     };
     [baslik, el('div', { sinif: 'iki' }, [alan('Saat', saat), alan('Tekrar', tekrar)]), alan(bitisEtiket, bitis),
-     el('div', { sinif: 'iki' }, [alan('Tür', tur), alan('Kimler', kimler)]), yer,
+     el('div', { sinif: 'iki' }, [alan('Tür', tur), alan('Kimler', kimler)]), yer, notG,
      el('label', { sinif: 'onay' }, [zorunlu, document.createTextNode('Zorunlu')]),
      el('p', { sinif: 'not', metin: 'Saat boşsa tüm gün. Tekrar edenler her gün / hafta / ay ayrı görünür (en fazla 1 yıl); silince hepsi silinir.' }),
      el('div', { sinif: 'dugmeler' }, [vazgec, kaydet])]
@@ -2591,7 +2592,8 @@
         const ykAlan = el('div');
         if (yk) yk.onclick = function () { yoklamaAc(o, s, ykAlan); };
         gunListe.appendChild(el('div', { sinif: 'ay-olay' }, [el('i', { sinif: renkSinifi(o) + (o.zorunlu ? ' zorunlu-halka' : '') }),
-          el('span', {}, [el('b', { metin: o.baslik }), el('small', { metin: (o.tumGun ? 'Tüm gün' : o.bas.slice(11) + '–' + o.bit.slice(11)) + (o.yer ? ' · ' + o.yer : '') })]),
+          el('span', {}, [el('b', { metin: o.baslik }), el('small', { metin: (o.tumGun ? 'Tüm gün' : o.bas.slice(11) + '–' + o.bit.slice(11)) + (o.yer ? ' · ' + o.yer : '') }),
+            o.not && !/^Uygulamadan:/.test(o.not) ? linkliMetin(o.not) : null].filter(Boolean)),
           yk || sil, yk ? sil : null]));
         gunListe.appendChild(ykAlan);
       });
