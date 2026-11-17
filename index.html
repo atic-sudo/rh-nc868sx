@@ -1814,16 +1814,16 @@
     setTimeout(async function () {
       try {
         if (['rehber', 'org', 'test', 'akademik', 'mentor', 'musahit'].indexOf(rol) >= 0) {
-          const g = await islem('&islem=gorevlerim&parca=is'), e = await islem('&islem=gorevlerim&parca=ek');
+          const g = await islem('&islem=gorevlerim&parca=is&arka=1'), e = await islem('&islem=gorevlerim&parca=ek&arka=1');   // arka=1: kullanım sayacına girmez
           if (g && g.ok && Array.isArray(g.gorevler) && !mentorGozu && grup === (depo.al('grup') || ''))
             onbellekYaz(gorevAnahtar(), Object.assign({}, onbellekAl(gorevAnahtar()) || {}, g, e && e.ok ? e : {}, { bilgi: '', parca: '' }));
         }
         if (rol === 'mentor') {
-          const gr = await islem('&islem=grubum');
+          const gr = await islem('&islem=grubum&arka=1');
           if (gr && gr.ok && gr.grup) onbellekYaz('grubum_' + gr.grup, gr);
         }
         if (rol === 'rehber' || rol === 'org') {
-          const ekip = depo.al('rehberEkip') || 'hepsi', r = await islem('&islem=rehberPano&detay=raporlar&ekip=' + encodeURIComponent(ekip));
+          const ekip = depo.al('rehberEkip') || 'hepsi', r = await islem('&islem=rehberPano&detay=raporlar&arka=1&ekip=' + encodeURIComponent(ekip));
           if (r && r.ok) onbellekYaz('raporlar_' + ekip, r);
         }
       } catch (e) {}
@@ -3163,7 +3163,7 @@
     if (DEMO) return;
     const no = ++gorevEkNo;
     let e;
-    try { e = await islem('&islem=gorevlerim&parca=ek'); } catch (x) { return; }
+    try { e = await islem('&islem=gorevlerim&parca=ek&arka=1'); } catch (x) { return; }
     if (no !== gorevEkNo || !e || !e.ok || toplantiModu || grupGozuModu) return;
     gorevSon = Object.assign({}, gorevSon || {}, e, { parca: '' });
     if (Array.isArray(gorevSon.gorevler)) onbellekYaz(gorevAnahtar(), Object.assign({}, gorevSon, { bilgi: '' }));
