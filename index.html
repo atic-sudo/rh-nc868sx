@@ -112,6 +112,7 @@
               background: var(--kart); border: 1px solid var(--cizgi); border-radius: 18px; padding: 14px; margin-bottom: 10px; min-height: 72px; }
     /* 16 Kas: basma hissi — dokunulan şey hafifçe küçülür ve koyulaşır, bırakınca geri gelir (büyük kartlar az, küçük düğmeler biraz daha çok) */
     /* Form paylaşma kutuları (ana sayfa): modül satırlarından farklı — yan yana, kesik çerçeve, zeminsiz */
+    .eksik-liste { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
     .form-sira { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
     .form-sira > :only-child { grid-column: 1 / -1; }
     .form-kutu { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left; font: inherit; color: var(--yazi); cursor: pointer;
@@ -2885,6 +2886,28 @@
     kapat.onclick = function () { if (confirm('Link kapatılsın mı? Açan aileler bilgi yazamaz.')) istek('&kapat=1', kapat); };
     kutu.appendChild(el('p', { sinif: 'not', metin: 'Link ' + tarih + ' tarihine kadar açık. ' + (ortaokul ? 'Veli' : 'Öğrenci') + ' WhatsApp grubuna atın. Kayıtlı bilgi linkte görünmez; kayıtlı ad kilitlidir, düzeltmeyi buradan yaparsınız.' }));
     kutu.appendChild(el('div', { sinif: 'dugmeler' }, [paylas]));
+    // 17 Kas: grupta tıklamayanlara KİŞİYE ÖZEL mesaj — e-postası eksik her öğrenci için ayrı "Gönder" (WhatsApp'ta o kişiyi seçersiniz)
+    const eksikler = akt.filter(function (o) { const v = (s.veli || {})[o.ad]; return !(v && v.veli && v.veli.eposta); });
+    if (eksikler.length) {
+      kutu.appendChild(el('div', { sinif: 'veli-baslik', style: 'margin-top:12px' }, [el('span', { metin: 'Henüz yazmayanlar (' + eksikler.length + ')' })]));
+      kutu.appendChild(el('p', { sinif: 'not', metin: 'Dokunun, WhatsApp\'ta ' + (ortaokul ? 'velisini' : 'öğrenciyi ya da velisini') + ' seçip gönderin. Mesajda öğrencinin adı geçer, grup listesi geçmez.' }));
+      const liste = el('div', { sinif: 'eksik-liste' });
+      eksikler.forEach(function (o) {
+        const ilk = String(o.ad).split(/\s+/)[0];
+        const ozel = ortaokul
+          ? 'Merhaba, ' + ilk + '\'nın velisi olarak e-posta adresinizi henüz alamadık. Hatırlatmalar ve ders desteği bilgileri bu adrese gidecek. Linke dokunup ' + ilk + '\'nın adını seçin ve e-postanızı yazın (1 dakika):\n' + k.url
+          : 'Merhaba ' + ilk + ', velinin e-posta adresi bizde hâlâ eksik. Linke dokun, adını seç ve VELİNİN e-postasını yaz (1 dakika, zorunlu):\n' + k.url + '\nTeşekkürler 🙏';
+        const b = el('button', { sinif: 'kucuk', type: 'button', metin: o.ad + ' · Gönder' });
+        b.onclick = async function () {
+          try {
+            if (navigator.share) { await navigator.share({ text: ozel }); b.textContent = o.ad + ' · gönderildi ✓'; return; }
+            await navigator.clipboard.writeText(ozel); b.textContent = o.ad + ' · kopyalandı ✓';
+          } catch (e) { if (e && e.name !== 'AbortError') prompt('Kopyalayın:', ozel); }
+        };
+        liste.appendChild(b);
+      });
+      kutu.appendChild(liste);
+    }
     kutu.appendChild(el('div', {}, [yeni, document.createTextNode(' · '), kapat]));
     return kutu;
   }
