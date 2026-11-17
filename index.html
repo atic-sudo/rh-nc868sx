@@ -877,7 +877,7 @@
   <!-- Toplantı notu -->
   <section id="toplanti" hidden>
     <div class="gezinti"><button class="geri" id="toplantiGeri" type="button"></button></div>
-    <h1 class="okuma-baslik">Toplantı notu</h1>
+    <h1 class="okuma-baslik">Gündem</h1>
     <div class="alt-baslik2" id="toplantiAlt"></div>
     <div id="toplantiIcerik"></div>
     <a class="docs" id="toplantiDis" target="_blank" rel="noopener">Docs'ta aç</a>
@@ -1138,8 +1138,8 @@
     ic.appendChild(v.raporGonderildi
       ? satir({ k: 'rapor', ikon: 'kalem', baslik: 'Haftalık rapor', alt: (v.raporGonderildi === 'gecen' ? 'Geçen haftanınki gönderildi' : 'Bu hafta gönderildi') + ' · düzeltmek için dokun', url: '#', durum: 'Gönderildi', tikla: raporAc })
       : satir({ k: 'rapor', ikon: 'kalem', baslik: 'Haftalık rapor', alt: 'Buluşmadan sonra · 2 dk', url: '#', sinif: 'rapor', tikla: raporAc }));
-    ic.appendChild(satir({ ikon: 'belge', baslik: 'Toplantı notu',
-      alt: v.toplanti ? v.toplanti.tarih + ' haftası · gündem ve görevler' : 'Henüz toplantı notu yok', url: v.toplanti && v.toplanti.url,
+    ic.appendChild(satir({ ikon: 'belge', baslik: 'Gündem',   // 17 Kas: mentorların deyişiyle "gündem" = rehberlikten gelenler
+      alt: v.toplanti ? 'Rehberlikten gelenler · ' + v.toplanti.tarih + ' haftası' : 'Bu hafta için gündem henüz yok', url: v.toplanti && v.toplanti.url,
       tikla: v.toplanti ? toplantiAc : null }));
     // 16 Kas: iki form, modüllerden ayrı görünür — yan yana, kesik çerçeveli "paylaş" kutuları (modül değil: öğrenciye / adaya gönderilecek bağlantı)
     if ((DERS_BILGI_FORMU || DERS_KOCU_FORMU) && !saltOkunur()) {
@@ -3314,7 +3314,7 @@
   function gorevSekmeleri(ic, s) {
     const rol = kisiRolu(), mentor = rol === 'mentor', akademik = rol === 'akademik';
     const takipSay = (s.takip || []).length + (akademik ? 0 : (s.ekip || []).filter(function (x) { return x.acik; }).length);
-    const sek = mentor ? [['is', 'Görevlerim', s.gorevler.length], ['top', 'Toplantılar', 0], ['not', 'Notlarım', 0]]
+    const sek = mentor ? [['is', 'Görevlerim', s.gorevler.length], ['top', 'Toplantılar', 0]]   // 17 Kas: mentorda Notlarım kalktı (12 mentordan hiçbiri kullanmadı)
       : [['is', 'Görevlerim', s.gorevler.length], ['takip', 'Takip', takipSay], ['top', 'Toplantılar', 0], ['not', 'Notlarım', 0]];
     let secili = depo.al('gorevSekme') || 'is';
     if (!sek.some(function (x) { return x[0] === secili; })) secili = 'is';
@@ -5028,6 +5028,17 @@
     $('toplantiDis').href = s.url;
     const ic = $('toplantiIcerik');
     ic.textContent = '';
+    // 17 Kas: MENTOR için bu ekran yalnız "Gündem" (rehberlikten gelenler). Grup turu kutuları (rapordan zaten geliyor) ve
+    // görev listesi (Görevlerim'de) mentorda yok; rehber bir grubun ekranına girince eskisi gibi hepsini görür.
+    if (kisiRolu() === 'mentor') {
+      if (s.html) {
+        const govde = el('div', { sinif: 'okuma not-govde' });
+        govde.innerHTML = String(s.html).replace(/↪\uFE0F?\s*/g, '');   // sunucuda kaçırılarak üretilir; ok işareti telefonda emoji kutusu oluyordu
+        ic.appendChild(govde);
+      } else ic.appendChild(el('div', { sinif: 'bilgi', metin: 'Bu hafta rehberlikten gelen bir gündem yok.' }));
+      ic.appendChild(el('p', { sinif: 'not', metin: 'Size verilen işler ana sayfadaki Görevlerim\'de; buluşma notlarınızı Haftalık rapor\'a yazın.' }));
+      return;
+    }
 
     // Grup turu: yalnız bu grubun satırı
     const gecen = el('textarea', { id: 'turGecen', placeholder: 'Kısa bir özet: katılım, ilgi, öne çıkan bir an…' });
