@@ -274,8 +274,8 @@
     .cek-yenile.calisiyor i { display: block; }
     /* 18 Kas: iOS'ta sayfa aşağı çekilince üstte açılan boşluk — yeşil şeritle aynı renk dolar, içinde at; yeterince çekilince at koşar */
     .cek-serit { position: fixed; top: 0; left: 0; right: 0; height: 0; z-index: 29; pointer-events: none; }
-    .cek-serit.yesil { background: #2f6657; }
-    .cek-serit i { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 4px); z-index: 31; margin-left: -44px; width: 88px; height: 46px; background: var(--at-renk); -webkit-mask: url(at.png) 0 0 / 616px 46px no-repeat; mask: url(at.png) 0 0 / 616px 46px no-repeat; opacity: 0; transition: opacity .28s ease; }
+    .cek-serit.yesil { background: #2f6657; } .cek-serit.cek-at { z-index: 31; background: none !important; height: 0 !important; }
+    .cek-serit i { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 4px); z-index: 31; margin-left: -44px; width: 88px; height: 46px; background: var(--at-renk); -webkit-mask: url(at.png) 0 0 / 616px 46px no-repeat; mask: url(at.png) 0 0 / 616px 46px no-repeat; opacity: 0; transition: opacity .16s ease-out; }
     .cek-serit.acik i { animation: kosB .6s steps(7) infinite; }
     .cek-serit.yesil i { background: #fdeee4; }
     @keyframes kosB { to { -webkit-mask-position: -616px 0; mask-position: -616px 0; } }
@@ -2118,26 +2118,27 @@
     let y0 = null, dy = 0, cekiyor = false, calisiyor = false;
     // iOS: sayfa kendiliğinden esner (scrollY eksiye iner) — engellemeye çalışmak yerine boşluğu şeritle doldur; yenileme eşiği esneme miktarıyla ölçülür
     const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1), IOS_ESIK = 64;
-    const serit = el('div', { sinif: 'cek-serit', 'aria-hidden': 'true' }, [el('i', {})]);
-    document.body.appendChild(serit);
+    // at, şeridin DIŞINDA ayrı bir katman (üst barın üstünde): bar geri dönerken atı alttan kesmesin
+    const serit = el('div', { sinif: 'cek-serit', 'aria-hidden': 'true' }), atKap = el('div', { sinif: 'cek-serit cek-at', 'aria-hidden': 'true' }, [el('i', {})]);
+    document.body.appendChild(serit); document.body.appendChild(atKap);
     let enCok = 0;
     // 18 Kas (2): at görünür görünmez koşar; opaklık çekme miktarıyla yumuşakça artar, bırakınca yumuşakça söner.
     // Şerit, açılan boşluktan 80px UZUN tutulur (fazlası aynı renkteki üst barın altında kalır) → hızlı çekişte araya çizgi girmez.
     let seritKapa = 0;
     const seritCiz = function (d) {
-      const at = serit.firstChild;
+      const at = atKap.firstChild;
       if (d <= 0) {
-        if (serit.style.height !== '0px') { serit.style.height = '0px'; at.style.opacity = '0'; clearTimeout(seritKapa); seritKapa = setTimeout(function () { serit.classList.remove('acik'); }, 320); }
+        if (serit.style.height !== '0px') { serit.style.height = '0px'; at.style.opacity = '0'; clearTimeout(seritKapa); seritKapa = setTimeout(function () { serit.classList.remove('acik'); atKap.classList.remove('acik'); }, 260); }
         return;
       }
       clearTimeout(seritKapa);
       if (!serit.classList.contains('acik')) {
         const acik = [].filter.call(document.querySelectorAll('main > section'), function (x) { return !x.hidden; })[0];
         serit.classList.toggle('yesil', !!acik && (!!acik.querySelector(':scope > .ust-bar') || (acik.id === 'pano' && acik.classList.contains('grup-goz'))));
-        serit.classList.add('acik');
+        serit.classList.add('acik'); atKap.classList.add('acik'); atKap.classList.toggle('yesil', serit.classList.contains('yesil'));
       }
       serit.style.height = (Math.ceil(d) + (serit.classList.contains('yesil') ? 80 : 0)) + 'px';
-      const k = Math.min(1, d / IOS_ESIK);
+      const k = Math.max(0, Math.min(1, (d - 30) / 45));   // 30px'e kadar görünmez (başlığın üstüne binmesin), 75px'te tam
       at.style.opacity = (k * k * (3 - 2 * k)).toFixed(2);
       if (d > enCok) enCok = d;
     };
