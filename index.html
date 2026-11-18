@@ -274,8 +274,12 @@
     .cek-yenile.calisiyor i { display: block; }
     /* 18 Kas: iOS'ta sayfa aşağı çekilince üstte açılan boşluk — yeşil şeritle aynı renk dolar, içinde at; yeterince çekilince at koşar */
     .cek-serit { position: fixed; top: 0; left: 0; right: 0; height: 0; z-index: 29; pointer-events: none; }
+    /* 18 Kas (4): üst barın ÜSTÜNE yapışık yeşil uzantı — bar ile birlikte hareket eder, JS beklemez → çekişin ilk karesinde bile boşluk görünmez */
+    .ust-bar::before, #pano.grup-goz .pano-ust::before { content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 800px; background: #2f6657; pointer-events: none; }
+    #pano.grup-goz .pano-ust { overflow: visible; }
+    @media (prefers-color-scheme: dark) { .ust-bar::before, #pano.grup-goz .pano-ust::before { background: #2a5a4d; } }
     .cek-serit.yesil { background: #2f6657; } .cek-serit.cek-at { z-index: 31; background: none !important; height: 0 !important; }
-    .cek-serit.cek-at i { top: auto; bottom: calc(134px + env(safe-area-inset-bottom)); background: var(--at-renk) !important; }   /* 18 Kas (3): at ALTTA — sayfa sonunda yukarı çekince açılan boşlukta, sabit yerde */
+    .cek-serit.cek-at i { top: auto; bottom: calc(53px + env(safe-area-inset-bottom)); background: var(--at-renk) !important; }   /* 18 Kas (3): at ALTTA — sayfa sonunda yukarı çekince açılan boşlukta, sabit yerde */
     .cek-serit i { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 4px); z-index: 31; margin-left: -44px; width: 88px; height: 46px; background: var(--at-renk); -webkit-mask: url(at.png) 0 0 / 616px 46px no-repeat; mask: url(at.png) 0 0 / 616px 46px no-repeat; opacity: 0; transition: opacity .16s ease-out; }
     .cek-serit.acik i { animation: kosB .6s steps(7) infinite; }
     .cek-serit.yesil i { background: #fdeee4; }
@@ -2151,8 +2155,8 @@
       const at = atKap.firstChild, acik = [].filter.call(document.querySelectorAll('main > section'), function (x) { return !x.hidden; })[0];
       const tasma = window.scrollY + window.innerHeight - document.documentElement.scrollHeight;
       const bosluk = acik && tasma > 0 ? window.innerHeight - acik.getBoundingClientRect().bottom : 0;
-      const k = Math.max(0, Math.min(1, (bosluk - 172) / 44));
-      if (k > 0) { clearTimeout(atKapa); atKapa = 0; atKap.classList.add('acik'); at.style.opacity = (k * k * (3 - 2 * k)).toFixed(2); }
+      const k = Math.max(0, Math.min(1, (bosluk - 128) / 44));
+      if (k > 0) { clearTimeout(atKapa); atKapa = 0; atKap.classList.add('acik'); at.style.opacity = (.55 * k * k * (3 - 2 * k)).toFixed(2); }
       else if (atKap.classList.contains('acik') && !atKapa) { at.style.opacity = '0'; atKapa = setTimeout(function () { atKap.classList.remove('acik'); atKapa = 0; }, 240); }
     };
     const seritDongu = function () { seritCiz(-window.scrollY); altCiz(); if (Date.now() < seritSon) requestAnimationFrame(seritDongu); else seritSon = 0; };
