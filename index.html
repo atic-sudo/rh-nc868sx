@@ -275,6 +275,7 @@
     /* 18 Kas: iOS'ta sayfa aşağı çekilince üstte açılan boşluk — yeşil şeritle aynı renk dolar, içinde at; yeterince çekilince at koşar */
     .cek-serit { position: fixed; top: 0; left: 0; right: 0; height: 0; z-index: 29; pointer-events: none; }
     .cek-serit.yesil { background: #2f6657; } .cek-serit.cek-at { z-index: 31; background: none !important; height: 0 !important; }
+    .cek-serit.cek-at i { top: auto; bottom: calc(134px + env(safe-area-inset-bottom)); background: var(--at-renk) !important; }   /* 18 Kas (3): at ALTTA — sayfa sonunda yukarı çekince açılan boşlukta, sabit yerde */
     .cek-serit i { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 4px); z-index: 31; margin-left: -44px; width: 88px; height: 46px; background: var(--at-renk); -webkit-mask: url(at.png) 0 0 / 616px 46px no-repeat; mask: url(at.png) 0 0 / 616px 46px no-repeat; opacity: 0; transition: opacity .16s ease-out; }
     .cek-serit.acik i { animation: kosB .6s steps(7) infinite; }
     .cek-serit.yesil i { background: #fdeee4; }
@@ -2126,9 +2127,8 @@
     // Şerit, açılan boşluktan 80px UZUN tutulur (fazlası aynı renkteki üst barın altında kalır) → hızlı çekişte araya çizgi girmez.
     let seritKapa = 0, seritBindir = 0;
     const seritCiz = function (d) {
-      const at = atKap.firstChild;
       if (d <= 0) {
-        if (serit.style.height !== '0px') { serit.style.height = '0px'; at.style.opacity = '0'; clearTimeout(seritKapa); seritKapa = setTimeout(function () { serit.classList.remove('acik'); atKap.classList.remove('acik'); }, 260); }
+        if (serit.style.height !== '0px') { serit.style.height = '0px'; clearTimeout(seritKapa); seritKapa = setTimeout(function () { serit.classList.remove('acik'); }, 260); }
         return;
       }
       clearTimeout(seritKapa);
@@ -2138,16 +2138,24 @@
         // bindirme, barın gerçek yüksekliğinden hesaplanır: alttaki yuvarlak köşelere (22px) hiç ulaşmasın
         const bar = acik && (acik.querySelector(':scope > .ust-bar') || acik.querySelector('.pano-ust'));
         seritBindir = serit.classList.contains('yesil') && bar ? Math.max(0, Math.min(80, bar.offsetHeight - 34)) : 0;
-        serit.classList.add('acik'); atKap.classList.add('acik'); atKap.classList.toggle('yesil', serit.classList.contains('yesil'));
+        serit.classList.add('acik');
       }
       serit.style.height = (Math.ceil(d) + seritBindir) + 'px';
-      const k = Math.max(0, Math.min(1, (d - 30) / 45));   // 30px'e kadar görünmez (başlığın üstüne binmesin), 75px'te tam
-      at.style.opacity = (k * k * (3 - 2 * k)).toFixed(2);
       if (d > enCok) enCok = d;
     };
     // parmak ekrandayken ve bıraktıktan kısa süre sonra her karede ölç (scroll olayı hızlı çekişte geç kalıyor)
     let seritSon = 0;
-    const seritDongu = function () { seritCiz(-window.scrollY); if (Date.now() < seritSon) requestAnimationFrame(seritDongu); else seritSon = 0; };
+    // Alttaki at: açık ekranın içeriği ile ekranın altı arasındaki boşluk büyüdükçe belirir (at boşluğa sığınca), görünürken koşar
+    let atKapa = 0;
+    const altCiz = function () {
+      const at = atKap.firstChild, acik = [].filter.call(document.querySelectorAll('main > section'), function (x) { return !x.hidden; })[0];
+      const tasma = window.scrollY + window.innerHeight - document.documentElement.scrollHeight;
+      const bosluk = acik && tasma > 0 ? window.innerHeight - acik.getBoundingClientRect().bottom : 0;
+      const k = Math.max(0, Math.min(1, (bosluk - 172) / 44));
+      if (k > 0) { clearTimeout(atKapa); atKapa = 0; atKap.classList.add('acik'); at.style.opacity = (k * k * (3 - 2 * k)).toFixed(2); }
+      else if (atKap.classList.contains('acik') && !atKapa) { at.style.opacity = '0'; atKapa = setTimeout(function () { atKap.classList.remove('acik'); atKapa = 0; }, 240); }
+    };
+    const seritDongu = function () { seritCiz(-window.scrollY); altCiz(); if (Date.now() < seritSon) requestAnimationFrame(seritDongu); else seritSon = 0; };
     const seritBasla = function (ms) { const calisiyordu = seritSon > 0; seritSon = Date.now() + ms; if (!calisiyordu) requestAnimationFrame(seritDongu); };
     if (IOS) { document.addEventListener('touchmove', function () { seritBasla(1200); }, { passive: true }); document.addEventListener('touchend', function () { seritBasla(900); }, { passive: true }); }
     window.__seritCiz = seritCiz;
