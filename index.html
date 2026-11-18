@@ -2134,22 +2134,19 @@
     let enCok = 0;
     // 18 Kas (2): at görünür görünmez koşar; opaklık çekme miktarıyla yumuşakça artar, bırakınca yumuşakça söner.
     // Şerit, açılan boşluktan 80px UZUN tutulur (fazlası aynı renkteki üst barın altında kalır) → hızlı çekişte araya çizgi girmez.
-    let seritKapa = 0, seritBindir = 0;
+    let seritKapa = 0, seritBindir = 0, seritAktif = 0;
+    // 18 Kas (6): dolgu, parmak ekrana DEĞDİĞİ anda barın arkasına önceden yerleşir (yükseklik = bindirme) → çekişin ilk karesinde JS'in yetişmesi gerekmez
+    const seritHazirla = function () {
+      const acik = [].filter.call(document.querySelectorAll('main > section'), function (x) { return !x.hidden; })[0];
+      const yesil = !!acik && (!!acik.querySelector(':scope > .ust-bar') || (acik.id === 'pano' && acik.classList.contains('grup-goz')));
+      const bar = yesil && (acik.querySelector(':scope > .ust-bar') || acik.querySelector('.pano-ust'));
+      serit.classList.toggle('yesil', yesil);
+      seritBindir = bar ? Math.max(0, Math.min(80, bar.offsetHeight - 34)) : 0;
+      seritAktif = Infinity; serit.style.height = seritBindir + 'px';
+    };
     const seritCiz = function (d) {
-      if (d <= 0) {
-        if (serit.style.height !== '0px') { serit.style.height = '0px'; clearTimeout(seritKapa); seritKapa = setTimeout(function () { serit.classList.remove('acik'); }, 260); }
-        return;
-      }
-      clearTimeout(seritKapa);
-      if (!serit.classList.contains('acik')) {
-        const acik = [].filter.call(document.querySelectorAll('main > section'), function (x) { return !x.hidden; })[0];
-        serit.classList.toggle('yesil', !!acik && (!!acik.querySelector(':scope > .ust-bar') || (acik.id === 'pano' && acik.classList.contains('grup-goz'))));
-        // bindirme, barın gerçek yüksekliğinden hesaplanır: alttaki yuvarlak köşelere (22px) hiç ulaşmasın
-        const bar = acik && (acik.querySelector(':scope > .ust-bar') || acik.querySelector('.pano-ust'));
-        seritBindir = serit.classList.contains('yesil') && bar ? Math.max(0, Math.min(80, bar.offsetHeight - 34)) : 0;
-        serit.classList.add('acik');
-      }
-      serit.style.height = (Math.ceil(d) + seritBindir) + 'px';
+      serit.style.height = (Date.now() < seritAktif ? Math.max(0, Math.ceil(d)) + seritBindir : 0) + 'px';   // parmak kalkıp sayfa yerine oturunca dolgu tamamen kapanır (başka ekrana geçince artık kalmasın)
+      if (d <= 0) return;
       if (d > enCok) enCok = d;
     };
     // parmak ekrandayken ve bıraktıktan kısa süre sonra her karede ölç (scroll olayı hızlı çekişte geç kalıyor)
@@ -2167,6 +2164,9 @@
     };
     const seritDongu = function () { seritCiz(-window.scrollY); altCiz(); if (Date.now() < seritSon) requestAnimationFrame(seritDongu); else seritSon = 0; };
     const seritBasla = function (ms) { const calisiyordu = seritSon > 0; seritSon = Date.now() + ms; if (!calisiyordu) requestAnimationFrame(seritDongu); };
+    if (IOS) { document.addEventListener('touchstart', seritHazirla, { passive: true });
+      const birak = function () { seritAktif = Date.now() + 900; setTimeout(function () { if (Date.now() >= seritAktif) seritCiz(-window.scrollY); }, 960); };
+      document.addEventListener('touchend', birak, { passive: true }); document.addEventListener('touchcancel', birak, { passive: true }); }
     if (IOS) { document.addEventListener('touchmove', function () { seritBasla(1200); }, { passive: true }); document.addEventListener('touchend', function () { seritBasla(900); }, { passive: true }); }
     window.__seritCiz = seritCiz;
     window.addEventListener('scroll', function () { seritCiz(-window.scrollY); }, { passive: true });
