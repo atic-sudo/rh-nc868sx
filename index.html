@@ -272,6 +272,15 @@
     .cek-yenile.tamam { color: var(--yesil); border-color: var(--yesil); background: var(--yesil-zemin); }
     .cek-yenile i { display: none; width: 44px; height: 23px; background: var(--at-renk); -webkit-mask: url(at.png) 0 0 / 308px 23px no-repeat; mask: url(at.png) 0 0 / 308px 23px no-repeat; animation: kosK .7s steps(7) infinite; }
     .cek-yenile.calisiyor i { display: block; }
+    /* 18 Kas: iOS'ta sayfa aşağı çekilince üstte açılan boşluk — yeşil şeritle aynı renk dolar, içinde at; yeterince çekilince at koşar */
+    .cek-serit { position: fixed; top: 0; left: 0; right: 0; height: 0; z-index: 29; pointer-events: none; }
+    .cek-serit:not(.acik) i { display: none; }
+    .cek-serit.yesil { background: #2f6657; }
+    .cek-serit i { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 4px); z-index: 31; margin-left: -44px; width: 88px; height: 46px; background: var(--at-renk); -webkit-mask: url(at.png) 0 0 / 616px 46px no-repeat; mask: url(at.png) 0 0 / 616px 46px no-repeat; opacity: 0; }
+    .cek-serit.yesil i { background: #fdeee4; }
+    .cek-serit.kos i { opacity: 1; animation: kosB .6s steps(7) infinite; }
+    @keyframes kosB { to { -webkit-mask-position: -616px 0; mask-position: -616px 0; } }
+    @media (prefers-color-scheme: dark) { .cek-serit.yesil { background: #2a5a4d; } }
     @keyframes kosK { to { -webkit-mask-position: -308px 0; mask-position: -308px 0; } }
     @media (prefers-reduced-motion: reduce) { section.gir-ileri, section.gir-geri { animation: none; } .gorev-kart.bitti-an { animation-duration: .01s; } }
     @media (prefers-reduced-motion: reduce) { a.satir:active, .rp-grup:active, .bugun-kart:active, .takvim-kutu:active, button:not(:disabled):active, a.cip:active, .cip-ic:active { transform: none; } }
@@ -2108,13 +2117,30 @@
     document.body.appendChild(kutu);
     const yazi = kutu.querySelector('span'), ESIK = 78;
     let y0 = null, dy = 0, cekiyor = false, calisiyor = false;
+    // iOS: sayfa kendiliğinden esner (scrollY eksiye iner) — engellemeye çalışmak yerine boşluğu şeritle doldur; yenileme eşiği esneme miktarıyla ölçülür
+    const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1), IOS_ESIK = 64;
+    const serit = el('div', { sinif: 'cek-serit', 'aria-hidden': 'true' }, [el('i', {})]);
+    document.body.appendChild(serit);
+    let enCok = 0;
+    const seritCiz = function (d) {
+      if (d <= 0) { if (serit.style.height !== '0px') { serit.style.height = '0px'; serit.classList.remove('kos', 'acik'); } return; }
+      const acik = [].filter.call(document.querySelectorAll('main > section'), function (x) { return !x.hidden; })[0];
+      serit.classList.toggle('yesil', !!acik && (!!acik.querySelector(':scope > .ust-bar') || (acik.id === 'pano' && acik.classList.contains('grup-goz'))));
+      serit.classList.toggle('kos', d >= IOS_ESIK);
+      serit.style.height = Math.ceil(d) + 'px'; serit.classList.add('acik');
+      // at SABİT durur (çentiğin hemen altı); çekildikçe belirir, eşiği geçince koşar
+      if (d < IOS_ESIK) serit.firstChild.style.opacity = Math.max(0, Math.min(.6, (d - 18) / 50)); else serit.firstChild.style.opacity = '';
+      if (d > enCok) enCok = d;
+    };
+    window.__seritCiz = seritCiz;
+    window.addEventListener('scroll', function () { seritCiz(-window.scrollY); }, { passive: true });
     const koy = function (px) { kutu.style.transform = 'translate(-50%, ' + (px - 70) + 'px)'; };
     const kapat = function () { kutu.classList.add('donus'); koy(0); cekiyor = false; y0 = null; setTimeout(function () { kutu.classList.remove('donus', 'birak', 'calisiyor', 'tamam'); }, 240); };
     document.addEventListener('touchstart', function (ev) {
       y0 = null;
       if (calisiyor || DEMO_KOC || $('pano').hidden || window.scrollY > 0 || ev.touches.length !== 1) return;
       if (ev.target.closest && ev.target.closest('select, input, textarea')) return;
-      y0 = ev.touches[0].clientY; dy = 0;
+      y0 = ev.touches[0].clientY; dy = 0; enCok = 0;
     }, { passive: true });
     document.addEventListener('touchmove', function (ev) {
       if (y0 === null) return;
@@ -2122,6 +2148,7 @@
       if (dy <= 0 || window.scrollY > 0) { if (cekiyor) kapat(); else y0 = null; return; }
       if (dy < 10 && !cekiyor) return;
       cekiyor = true;
+      if (IOS) return;   // iOS'ta sayfa esner; şerit + at gösterir (seritCiz)
       if (ev.cancelable) ev.preventDefault();
       kutu.classList.remove('donus');
       const gec = dy >= ESIK;
@@ -2131,7 +2158,7 @@
     }, { passive: false });
     const bitir = async function () {
       if (!cekiyor) { y0 = null; return; }
-      if (dy < ESIK) { kapat(); return; }
+      if (IOS ? enCok < IOS_ESIK : dy < ESIK) { kapat(); return; }
       calisiyor = true; cekiyor = false; y0 = null;
       kutu.classList.add('donus', 'calisiyor'); kutu.classList.remove('birak'); yazi.textContent = 'Yenileniyor…'; koy(78); titre();
       let oldu = true;
