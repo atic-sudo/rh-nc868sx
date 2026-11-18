@@ -285,7 +285,7 @@
     .cek-soz small { display: block; margin-top: 5px; font-size: 12px; font-weight: 500; letter-spacing: .04em; opacity: .7; }
     .cek-soz.yesil { color: rgba(255, 255, 255, .58); }
     /* 18 Kas (5): atın arkasında şehir silueti (açılıştakiyle aynı şerit): at kadar alçak, soluk, kenarlarda söner, yavaş akar */
-    .cek-serit.cek-at b { position: fixed; left: 50%; bottom: calc(53px + env(safe-area-inset-bottom)); width: min(320px, 100%); height: 61px; transform: translateX(-50%); background: var(--siluet); opacity: 0; transition: opacity .16s ease-out;
+    .cek-serit.cek-at b { position: fixed; left: 50%; bottom: calc(53px + env(safe-area-inset-bottom)); width: min(320px, 100%); height: 61px; transform: translateX(-50%); background: var(--siluet); opacity: 0; transition: opacity .1s ease-out;
       -webkit-mask: url(siluet.png) 0 100% / auto 61px repeat-x, linear-gradient(90deg, transparent, #000 24%, #000 76%, transparent); mask: url(siluet.png) 0 100% / auto 61px repeat-x, linear-gradient(90deg, transparent, #000 24%, #000 76%, transparent);
       -webkit-mask-composite: source-in; mask-composite: intersect; }
     .cek-serit.cek-at.acik b { animation: sehirB 97s linear infinite; }
@@ -2179,7 +2179,7 @@
     let atKapa = 0;
     // 18 Kas: 6 şehir şeridi (siluet.png + siluet2–6.png; [dosya, 183 px yükseklikte genişlik]). Her çekişte rastgele bir şerit, rastgele bir yerinden başlar.
     const SERITLER = [['siluet.png', 4355], ['siluet2.png', 2987], ['siluet3.png', 3642], ['siluet4.png', 3153], ['siluet5.png', 3586], ['siluet6.png', 3961]].map(function (x) { return { f: x[0], w: x[1] / 3, hazir: x[0] === 'siluet.png' }; });
-    setTimeout(function () { SERITLER.forEach(function (x) { if (x.hazir) return; const im = new Image(); im.onload = function () { x.hazir = true; }; im.src = x.f; }); }, 4000);   // açılışı bekletmeden önden indir
+    setTimeout(function () { SERITLER.forEach(function (x) { if (x.hazir) return; const im = new Image(); im.onload = function () { x.hazir = true; if (!atKap.classList.contains('acik')) sehirSec(); }; im.src = x.f; }); }, 4000);   // açılışı bekletmeden önden indir
     let seritSonNo = -1;
     const sehirSec = function () {
       const b = atKap.firstChild, hazir = SERITLER.filter(function (x) { return x.hazir; });
@@ -2194,8 +2194,8 @@
       const tasma = window.scrollY + window.innerHeight - document.documentElement.scrollHeight;
       const bosluk = acik && tasma > 0 ? window.innerHeight - acik.getBoundingClientRect().bottom : 0;
       const k = Math.max(0, Math.min(1, (bosluk - 140) / 44));   // siluet 61px: at + şehir boşluğa sığınca
-      if (k > 0) { clearTimeout(atKapa); atKapa = 0; if (!atKap.classList.contains('acik')) sehirSec(); atKap.classList.add('acik'); at.style.opacity = (k * k * (3 - 2 * k)).toFixed(2); sehir.style.opacity = (k * k * (3 - 2 * k)).toFixed(2); }
-      else if (atKap.classList.contains('acik') && !atKapa) { at.style.opacity = '0'; sehir.style.opacity = '0'; atKapa = setTimeout(function () { atKap.classList.remove('acik'); atKapa = 0; }, 240); }
+      if (k > 0) { clearTimeout(atKapa); atKapa = 0; atKap.classList.add('acik'); at.style.opacity = (k * k * (3 - 2 * k)).toFixed(2); sehir.style.opacity = (k * k * (3 - 2 * k)).toFixed(2); }
+      else if (atKap.classList.contains('acik') && !atKapa) { at.style.opacity = '0'; sehir.style.opacity = '0'; atKapa = setTimeout(function () { atKap.classList.remove('acik'); atKapa = 0; sehirSec(); }, 240); }   // SONRAKİ çekişin şeridi şimdiden, görünmezken hazırlanır (çekiş anında değiştirince maske yüklenene kadar düz bir bant görünüyordu)
     };
     const seritDongu = function () { seritCiz(-window.scrollY); altCiz(); if (Date.now() < seritSon) requestAnimationFrame(seritDongu); else seritSon = 0; };
     const seritBasla = function (ms) { const calisiyordu = seritSon > 0; seritSon = Date.now() + ms; if (!calisiyordu) requestAnimationFrame(seritDongu); };
