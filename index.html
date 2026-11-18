@@ -288,7 +288,8 @@
     .cek-serit.cek-at b { position: fixed; left: 50%; bottom: calc(53px + env(safe-area-inset-bottom)); width: min(320px, 100%); height: 61px; transform: translateX(-50%); background: var(--siluet); opacity: 0; transition: opacity .16s ease-out;
       -webkit-mask: url(siluet.png) 0 100% / auto 61px repeat-x, linear-gradient(90deg, transparent, #000 24%, #000 76%, transparent); mask: url(siluet.png) 0 100% / auto 61px repeat-x, linear-gradient(90deg, transparent, #000 24%, #000 76%, transparent);
       -webkit-mask-composite: source-in; mask-composite: intersect; }
-    .cek-serit.cek-at.acik b { animation: sehir 97s linear infinite; }
+    .cek-serit.cek-at.acik b { animation: sehirB 97s linear infinite; }
+    @keyframes sehirB { to { -webkit-mask-position: calc(-1 * var(--sw, 1451.67px)) 100%, 0 0; mask-position: calc(-1 * var(--sw, 1451.67px)) 100%, 0 0; } }
     .cek-serit.cek-at i { top: auto; bottom: calc(53px + env(safe-area-inset-bottom)); background: color-mix(in srgb, var(--at-renk) 55%, var(--bg)) !important; }   /* soluk ama OPAK: arkadaki şehir atın içinden görünmesin */   /* 18 Kas (3): at ALTTA — sayfa sonunda yukarı çekince açılan boşlukta, sabit yerde */
     .cek-serit i { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 4px); z-index: 31; margin-left: -44px; width: 88px; height: 46px; background: var(--at-renk); -webkit-mask: url(at.png) 0 0 / 616px 46px no-repeat; mask: url(at.png) 0 0 / 616px 46px no-repeat; opacity: 0; transition: opacity .16s ease-out; }
     .cek-serit.acik i { animation: kosB .6s steps(7) infinite; }
@@ -2176,13 +2177,24 @@
     let seritSon = 0;
     // Alttaki at: açık ekranın içeriği ile ekranın altı arasındaki boşluk büyüdükçe belirir (at boşluğa sığınca), görünürken koşar
     let atKapa = 0;
+    // 18 Kas: 6 şehir şeridi (siluet.png + siluet2–6.png; [dosya, 183 px yükseklikte genişlik]). Her çekişte rastgele bir şerit, rastgele bir yerinden başlar.
+    const SERITLER = [['siluet.png', 4355], ['siluet2.png', 2987], ['siluet3.png', 3642], ['siluet4.png', 3153], ['siluet5.png', 3586], ['siluet6.png', 3961]].map(function (x) { return { f: x[0], w: x[1] / 3, hazir: x[0] === 'siluet.png' }; });
+    setTimeout(function () { SERITLER.forEach(function (x) { if (x.hazir) return; const im = new Image(); im.onload = function () { x.hazir = true; }; im.src = x.f; }); }, 4000);   // açılışı bekletmeden önden indir
+    let seritSonNo = -1;
+    const sehirSec = function () {
+      const b = atKap.firstChild, hazir = SERITLER.filter(function (x) { return x.hazir; });
+      let x; do { x = hazir[Math.floor(Math.random() * hazir.length)]; } while (hazir.length > 1 && SERITLER.indexOf(x) === seritSonNo);
+      seritSonNo = SERITLER.indexOf(x);
+      const m = 'url(' + x.f + '), linear-gradient(90deg, transparent, #000 24%, #000 76%, transparent)', sure = x.w / 15;
+      b.style.webkitMaskImage = m; b.style.maskImage = m; b.style.setProperty('--sw', x.w.toFixed(2) + 'px');
+      b.style.animationDuration = sure.toFixed(1) + 's'; b.style.animationDelay = '-' + (Math.random() * sure).toFixed(2) + 's';
+    };
     const altCiz = function () {
       const at = atKap.lastChild, sehir = atKap.firstChild, acik = [].filter.call(document.querySelectorAll('main > section'), function (x) { return !x.hidden; })[0];
       const tasma = window.scrollY + window.innerHeight - document.documentElement.scrollHeight;
       const bosluk = acik && tasma > 0 ? window.innerHeight - acik.getBoundingClientRect().bottom : 0;
       const k = Math.max(0, Math.min(1, (bosluk - 140) / 44));   // siluet 61px: at + şehir boşluğa sığınca
-      if (k > 0) { clearTimeout(atKapa); atKapa = 0; atKap.classList.add('acik'); at.style.opacity = (k * k * (3 - 2 * k)).toFixed(2); sehir.style.opacity = (k * k * (3 - 2 * k)).toFixed(2);
-        if (!sehir.style.animationDelay) sehir.style.animationDelay = '-' + ((Date.now() / 1000) % 97).toFixed(2) + 's'; }
+      if (k > 0) { clearTimeout(atKapa); atKapa = 0; if (!atKap.classList.contains('acik')) sehirSec(); atKap.classList.add('acik'); at.style.opacity = (k * k * (3 - 2 * k)).toFixed(2); sehir.style.opacity = (k * k * (3 - 2 * k)).toFixed(2); }
       else if (atKap.classList.contains('acik') && !atKapa) { at.style.opacity = '0'; sehir.style.opacity = '0'; atKapa = setTimeout(function () { atKap.classList.remove('acik'); atKapa = 0; }, 240); }
     };
     const seritDongu = function () { seritCiz(-window.scrollY); altCiz(); if (Date.now() < seritSon) requestAnimationFrame(seritDongu); else seritSon = 0; };
@@ -2191,7 +2203,7 @@
       const birak = function () { seritAktif = Date.now() + 900; setTimeout(function () { if (Date.now() >= seritAktif) seritCiz(-window.scrollY); }, 960); };
       document.addEventListener('touchend', birak, { passive: true }); document.addEventListener('touchcancel', birak, { passive: true }); }
     if (IOS) { document.addEventListener('touchmove', function () { seritBasla(1200); }, { passive: true }); document.addEventListener('touchend', function () { seritBasla(900); }, { passive: true }); }
-    window.__seritCiz = seritCiz;
+    window.__seritCiz = seritCiz; window.__sehirSec = sehirSec;
     window.addEventListener('scroll', function () { seritCiz(-window.scrollY); }, { passive: true });
     const koy = function (px) { kutu.style.transform = 'translate(-50%, ' + (px - 70) + 'px)'; };
     const kapat = function () { kutu.classList.add('donus'); koy(0); cekiyor = false; y0 = null; setTimeout(function () { kutu.classList.remove('donus', 'birak', 'calisiyor', 'tamam'); }, 240); };
