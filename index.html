@@ -279,6 +279,12 @@
     #pano.grup-goz .pano-ust { overflow: visible; }
     @media (prefers-color-scheme: dark) { .ust-bar::before, #pano.grup-goz .pano-ust::before { background: #2a5a4d; } }
     .cek-serit.yesil { background: #2f6657; } .cek-serit.cek-at { z-index: 31; background: none !important; height: 0 !important; }
+    /* 18 Kas (8): rehber ana sayfası — düğme kartın altında ayrı satır tutmasın: metnin sağındaki boşluğa, dikeyde ortalı */
+    #pano .rp-is.rp-bayrak { display: flex; flex-direction: row; align-items: center; gap: 12px; }
+    #pano .rp-is.rp-bayrak > span { flex: 1; min-width: 0; }
+    #pano .rp-is.rp-bayrak .rp-istek-dug { flex: none; margin: 0; padding: 0; }
+    #pano .rp-toplanti:has(> .dugmeler) { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; align-items: center; }
+    #pano .rp-toplanti > .dugmeler { grid-column: 2; grid-row: 1 / span 3; margin: 0; padding: 0; }
     /* 18 Kas (7): üstten çekince açılan alanda kısa bir söz — her çekişte başka biri; yeri sabit, çekildikçe belirir */
     .cek-soz { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 84px); z-index: 31; width: min(310px, calc(100% - 48px)); transform: translate(-50%, -50%); text-align: center; pointer-events: none;
       opacity: 0; transition: opacity .16s ease-out; color: color-mix(in srgb, var(--soluk) 75%, var(--bg)); font-size: 15.5px; line-height: 1.4; font-weight: 500; }
@@ -2199,6 +2205,10 @@
     };
     const seritDongu = function () { seritCiz(-window.scrollY); altCiz(); if (Date.now() < seritSon) requestAnimationFrame(seritDongu); else seritSon = 0; };
     const seritBasla = function (ms) { const calisiyordu = seritSon > 0; seritSon = Date.now() + ms; if (!calisiyordu) requestAnimationFrame(seritDongu); };
+    // 18 Kas (9): dokunuş bir TIKLAMAYSA (ekran değişebilir) ya da geri gidildiyse dolgu hemen kapanır — yoksa grup ekranından dönünce
+    // rehber ana sayfasının üstünde ~1 sn yeşil bir bant kalıyordu
+    const seritKapat = function () { seritAktif = 0; seritBindir = 0; serit.style.height = '0px'; };
+    document.addEventListener('click', seritKapat, true); window.addEventListener('popstate', seritKapat);
     if (IOS) { document.addEventListener('touchstart', seritHazirla, { passive: true });
       const birak = function () { seritAktif = Date.now() + 900; setTimeout(function () { if (Date.now() >= seritAktif) seritCiz(-window.scrollY); }, 960); };
       document.addEventListener('touchend', birak, { passive: true }); document.addEventListener('touchcancel', birak, { passive: true }); }
