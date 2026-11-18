@@ -279,7 +279,12 @@
     #pano.grup-goz .pano-ust { overflow: visible; }
     @media (prefers-color-scheme: dark) { .ust-bar::before, #pano.grup-goz .pano-ust::before { background: #2a5a4d; } }
     .cek-serit.yesil { background: #2f6657; } .cek-serit.cek-at { z-index: 31; background: none !important; height: 0 !important; }
-    .cek-serit.cek-at i { top: auto; bottom: calc(53px + env(safe-area-inset-bottom)); background: var(--at-renk) !important; }   /* 18 Kas (3): at ALTTA — sayfa sonunda yukarı çekince açılan boşlukta, sabit yerde */
+    /* 18 Kas (5): atın arkasında şehir silueti (açılıştakiyle aynı şerit): at kadar alçak, soluk, kenarlarda söner, yavaş akar */
+    .cek-serit.cek-at b { position: fixed; left: 50%; bottom: calc(53px + env(safe-area-inset-bottom)); width: min(320px, 100%); height: 61px; transform: translateX(-50%); background: var(--siluet); opacity: 0; transition: opacity .16s ease-out;
+      -webkit-mask: url(siluet.png) 0 100% / auto 61px repeat-x, linear-gradient(90deg, transparent, #000 24%, #000 76%, transparent); mask: url(siluet.png) 0 100% / auto 61px repeat-x, linear-gradient(90deg, transparent, #000 24%, #000 76%, transparent);
+      -webkit-mask-composite: source-in; mask-composite: intersect; }
+    .cek-serit.cek-at.acik b { animation: sehir 97s linear infinite; }
+    .cek-serit.cek-at i { top: auto; bottom: calc(53px + env(safe-area-inset-bottom)); background: color-mix(in srgb, var(--at-renk) 55%, var(--bg)) !important; }   /* soluk ama OPAK: arkadaki şehir atın içinden görünmesin */   /* 18 Kas (3): at ALTTA — sayfa sonunda yukarı çekince açılan boşlukta, sabit yerde */
     .cek-serit i { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 4px); z-index: 31; margin-left: -44px; width: 88px; height: 46px; background: var(--at-renk); -webkit-mask: url(at.png) 0 0 / 616px 46px no-repeat; mask: url(at.png) 0 0 / 616px 46px no-repeat; opacity: 0; transition: opacity .16s ease-out; }
     .cek-serit.acik i { animation: kosB .6s steps(7) infinite; }
     .cek-serit.yesil i { background: #fdeee4; }
@@ -2124,7 +2129,7 @@
     // iOS: sayfa kendiliğinden esner (scrollY eksiye iner) — engellemeye çalışmak yerine boşluğu şeritle doldur; yenileme eşiği esneme miktarıyla ölçülür
     const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1), IOS_ESIK = 64;
     // at, şeridin DIŞINDA ayrı bir katman (üst barın üstünde): bar geri dönerken atı alttan kesmesin
-    const serit = el('div', { sinif: 'cek-serit', 'aria-hidden': 'true' }), atKap = el('div', { sinif: 'cek-serit cek-at', 'aria-hidden': 'true' }, [el('i', {})]);
+    const serit = el('div', { sinif: 'cek-serit', 'aria-hidden': 'true' }), atKap = el('div', { sinif: 'cek-serit cek-at', 'aria-hidden': 'true' }, [el('b', {}), el('i', {})]);
     document.body.appendChild(serit); document.body.appendChild(atKap);
     let enCok = 0;
     // 18 Kas (2): at görünür görünmez koşar; opaklık çekme miktarıyla yumuşakça artar, bırakınca yumuşakça söner.
@@ -2152,12 +2157,13 @@
     // Alttaki at: açık ekranın içeriği ile ekranın altı arasındaki boşluk büyüdükçe belirir (at boşluğa sığınca), görünürken koşar
     let atKapa = 0;
     const altCiz = function () {
-      const at = atKap.firstChild, acik = [].filter.call(document.querySelectorAll('main > section'), function (x) { return !x.hidden; })[0];
+      const at = atKap.lastChild, sehir = atKap.firstChild, acik = [].filter.call(document.querySelectorAll('main > section'), function (x) { return !x.hidden; })[0];
       const tasma = window.scrollY + window.innerHeight - document.documentElement.scrollHeight;
       const bosluk = acik && tasma > 0 ? window.innerHeight - acik.getBoundingClientRect().bottom : 0;
-      const k = Math.max(0, Math.min(1, (bosluk - 128) / 44));
-      if (k > 0) { clearTimeout(atKapa); atKapa = 0; atKap.classList.add('acik'); at.style.opacity = (.55 * k * k * (3 - 2 * k)).toFixed(2); }
-      else if (atKap.classList.contains('acik') && !atKapa) { at.style.opacity = '0'; atKapa = setTimeout(function () { atKap.classList.remove('acik'); atKapa = 0; }, 240); }
+      const k = Math.max(0, Math.min(1, (bosluk - 140) / 44));   // siluet 61px: at + şehir boşluğa sığınca
+      if (k > 0) { clearTimeout(atKapa); atKapa = 0; atKap.classList.add('acik'); at.style.opacity = (k * k * (3 - 2 * k)).toFixed(2); sehir.style.opacity = (k * k * (3 - 2 * k)).toFixed(2);
+        if (!sehir.style.animationDelay) sehir.style.animationDelay = '-' + ((Date.now() / 1000) % 97).toFixed(2) + 's'; }
+      else if (atKap.classList.contains('acik') && !atKapa) { at.style.opacity = '0'; sehir.style.opacity = '0'; atKapa = setTimeout(function () { atKap.classList.remove('acik'); atKapa = 0; }, 240); }
     };
     const seritDongu = function () { seritCiz(-window.scrollY); altCiz(); if (Date.now() < seritSon) requestAnimationFrame(seritDongu); else seritSon = 0; };
     const seritBasla = function (ms) { const calisiyordu = seritSon > 0; seritSon = Date.now() + ms; if (!calisiyordu) requestAnimationFrame(seritDongu); };
