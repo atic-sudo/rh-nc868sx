@@ -274,11 +274,10 @@
     .cek-yenile.calisiyor i { display: block; }
     /* 18 Kas: iOS'ta sayfa aşağı çekilince üstte açılan boşluk — yeşil şeritle aynı renk dolar, içinde at; yeterince çekilince at koşar */
     .cek-serit { position: fixed; top: 0; left: 0; right: 0; height: 0; z-index: 29; pointer-events: none; }
-    .cek-serit:not(.acik) i { display: none; }
     .cek-serit.yesil { background: #2f6657; }
-    .cek-serit i { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 4px); z-index: 31; margin-left: -44px; width: 88px; height: 46px; background: var(--at-renk); -webkit-mask: url(at.png) 0 0 / 616px 46px no-repeat; mask: url(at.png) 0 0 / 616px 46px no-repeat; opacity: 0; }
+    .cek-serit i { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 4px); z-index: 31; margin-left: -44px; width: 88px; height: 46px; background: var(--at-renk); -webkit-mask: url(at.png) 0 0 / 616px 46px no-repeat; mask: url(at.png) 0 0 / 616px 46px no-repeat; opacity: 0; transition: opacity .28s ease; }
+    .cek-serit.acik i { animation: kosB .6s steps(7) infinite; }
     .cek-serit.yesil i { background: #fdeee4; }
-    .cek-serit.kos i { opacity: 1; animation: kosB .6s steps(7) infinite; }
     @keyframes kosB { to { -webkit-mask-position: -616px 0; mask-position: -616px 0; } }
     @media (prefers-color-scheme: dark) { .cek-serit.yesil { background: #2a5a4d; } }
     @keyframes kosK { to { -webkit-mask-position: -308px 0; mask-position: -308px 0; } }
@@ -2122,16 +2121,31 @@
     const serit = el('div', { sinif: 'cek-serit', 'aria-hidden': 'true' }, [el('i', {})]);
     document.body.appendChild(serit);
     let enCok = 0;
+    // 18 Kas (2): at görünür görünmez koşar; opaklık çekme miktarıyla yumuşakça artar, bırakınca yumuşakça söner.
+    // Şerit, açılan boşluktan 80px UZUN tutulur (fazlası aynı renkteki üst barın altında kalır) → hızlı çekişte araya çizgi girmez.
+    let seritKapa = 0;
     const seritCiz = function (d) {
-      if (d <= 0) { if (serit.style.height !== '0px') { serit.style.height = '0px'; serit.classList.remove('kos', 'acik'); } return; }
-      const acik = [].filter.call(document.querySelectorAll('main > section'), function (x) { return !x.hidden; })[0];
-      serit.classList.toggle('yesil', !!acik && (!!acik.querySelector(':scope > .ust-bar') || (acik.id === 'pano' && acik.classList.contains('grup-goz'))));
-      serit.classList.toggle('kos', d >= IOS_ESIK);
-      serit.style.height = Math.ceil(d) + 'px'; serit.classList.add('acik');
-      // at SABİT durur (çentiğin hemen altı); çekildikçe belirir, eşiği geçince koşar
-      if (d < IOS_ESIK) serit.firstChild.style.opacity = Math.max(0, Math.min(.6, (d - 18) / 50)); else serit.firstChild.style.opacity = '';
+      const at = serit.firstChild;
+      if (d <= 0) {
+        if (serit.style.height !== '0px') { serit.style.height = '0px'; at.style.opacity = '0'; clearTimeout(seritKapa); seritKapa = setTimeout(function () { serit.classList.remove('acik'); }, 320); }
+        return;
+      }
+      clearTimeout(seritKapa);
+      if (!serit.classList.contains('acik')) {
+        const acik = [].filter.call(document.querySelectorAll('main > section'), function (x) { return !x.hidden; })[0];
+        serit.classList.toggle('yesil', !!acik && (!!acik.querySelector(':scope > .ust-bar') || (acik.id === 'pano' && acik.classList.contains('grup-goz'))));
+        serit.classList.add('acik');
+      }
+      serit.style.height = (Math.ceil(d) + (serit.classList.contains('yesil') ? 80 : 0)) + 'px';
+      const k = Math.min(1, d / IOS_ESIK);
+      at.style.opacity = (k * k * (3 - 2 * k)).toFixed(2);
       if (d > enCok) enCok = d;
     };
+    // parmak ekrandayken ve bıraktıktan kısa süre sonra her karede ölç (scroll olayı hızlı çekişte geç kalıyor)
+    let seritSon = 0;
+    const seritDongu = function () { seritCiz(-window.scrollY); if (Date.now() < seritSon) requestAnimationFrame(seritDongu); else seritSon = 0; };
+    const seritBasla = function (ms) { const calisiyordu = seritSon > 0; seritSon = Date.now() + ms; if (!calisiyordu) requestAnimationFrame(seritDongu); };
+    if (IOS) { document.addEventListener('touchmove', function () { seritBasla(1200); }, { passive: true }); document.addEventListener('touchend', function () { seritBasla(900); }, { passive: true }); }
     window.__seritCiz = seritCiz;
     window.addEventListener('scroll', function () { seritCiz(-window.scrollY); }, { passive: true });
     const koy = function (px) { kutu.style.transform = 'translate(-50%, ' + (px - 70) + 'px)'; };
