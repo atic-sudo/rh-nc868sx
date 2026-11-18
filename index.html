@@ -2141,6 +2141,13 @@
     // Şerit, açılan boşluktan 80px UZUN tutulur (fazlası aynı renkteki üst barın altında kalır) → hızlı çekişte araya çizgi girmez.
     let seritKapa = 0, seritBindir = 0, seritAktif = 0, sozAcik = false, sozSon = -1;
     const soz = el('div', { sinif: 'cek-soz', 'aria-hidden': 'true' }); document.body.appendChild(soz);
+    let HIKMET = [];
+    try { HIKMET = JSON.parse(localStorage.getItem('hikmet') || '[]') || []; } catch (e) {}
+    if (!Array.isArray(HIKMET)) HIKMET = [];
+    setTimeout(async function () {   // açılışı bekletmesin
+      try { const r = await fetch('hikmet.json'); if (!r.ok) return; const v = await r.json();
+        if (Array.isArray(v)) { HIKMET = v.filter(function (x) { return x && x.tr; }); try { localStorage.setItem('hikmet', JSON.stringify(HIKMET)); } catch (e) {} } } catch (e) {}
+    }, 2500);
     // 18 Kas (6): dolgu, parmak ekrana DEĞDİĞİ anda barın arkasına önceden yerleşir (yükseklik = bindirme) → çekişin ilk karesinde JS'in yetişmesi gerekmez
     const seritHazirla = function () {
       const acik = [].filter.call(document.querySelectorAll('main > section'), function (x) { return !x.hidden; })[0];
@@ -2157,7 +2164,8 @@
       // söz: boşluk yazıya yetince belirir (başlığın üstüne binmesin); görünmezken yeni bir söz seçilir
       const ks = Math.max(0, Math.min(1, (d - 96) / 40));
       if (ks > 0 && !sozAcik) {
-        const kisa = (Array.isArray(SOZLER) ? SOZLER : []).filter(function (x) { return x && x.tr && x.tr.length <= 60; });
+        // 18 Kas: çekince çıkan söz ayrı havuzdan (hikmet.json: edebiyat ve hikmet sözleri); ayet / hadis (sozler.json) yalnız açılıştaki günün sözünde. Havuz yoksa eski kısa sözler.
+        const kisa = HIKMET.length ? HIKMET : (Array.isArray(SOZLER) ? SOZLER : []).filter(function (x) { return x && x.tr && x.tr.length <= 60; });
         if (kisa.length) { let n; do { n = Math.floor(Math.random() * kisa.length); } while (kisa.length > 1 && n === sozSon); sozSon = n;
           soz.textContent = ''; soz.appendChild(document.createTextNode(kisa[n].tr)); if (kisa[n].kaynak) soz.appendChild(el('small', { metin: kisa[n].kaynak })); }
         soz.classList.toggle('yesil', serit.classList.contains('yesil')); sozAcik = true;
