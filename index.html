@@ -687,14 +687,20 @@
     .rap-nokta span.var { background: var(--ana); border-color: var(--ana); }
     .rap-satir { font-size: 14px; margin-top: 6px; overflow-wrap: anywhere; }
     .rap-satir.istek b { color: var(--ana); } .rap-satir.dikkat b { color: #b4541a; }
-    .hi-kart { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 18px; padding: 14px 14px 12px; margin: 6px 0 10px; }
-    .hi-ust { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; } .hi-ust b { font-size: 16px; } .hi-ust span { font-size: 13px; color: var(--soluk); }
-    .hi-ok { border: 1px solid var(--cizgi); background: none; border-radius: 10px; width: 36px; height: 32px; font: inherit; font-size: 17px; color: var(--yazi); cursor: pointer; } .hi-ok:disabled { opacity: .3; }
-    .hi-izgara { display: grid; grid-template-columns: 58px 1fr; gap: 6px; align-items: center; }
-    .hi-izgara .gun { font-size: 14px; font-weight: 650; } .hi-izgara .gun small { display: block; font-size: 11.5px; font-weight: 500; color: var(--soluk); }
-    .hi-h { border: 1px dashed var(--cizgi); background: none; border-radius: 12px; padding: 11px 6px; font: inherit; font-size: 14px; color: var(--soluk); text-align: center; cursor: pointer; }
-    .hi-h.dolu { border-style: solid; background: var(--ikon-zemin); color: var(--yazi); font-weight: 650; } .hi-h.benim { border: 1px solid var(--ana); background: var(--ana); color: var(--kart); font-weight: 700; }
-    .hi-h.gecti { opacity: .4; } .hi-h:disabled { cursor: default; }
+    .da { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 18px; margin: 10px 0; padding: 14px; }
+    .da-ust { display: flex; align-items: center; justify-content: space-between; gap: 10px; } .da-ust b { font-size: 16px; display: block; } .da-ust small { font-size: 13px; color: var(--soluk); }
+    .da-dug { flex: none; border: 1px solid var(--cizgi); background: var(--kart); color: var(--ana); border-radius: 12px; padding: 9px 14px; font: inherit; font-size: 14px; font-weight: 650; cursor: pointer; }
+    .da-benim { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid var(--cizgi); margin-top: 12px; padding-top: 11px; font-size: 14.5px; }
+    .da-benim + .da-benim { margin-top: 10px; } .da-benim small { display: block; font-size: 12.5px; color: var(--soluk); }
+    .da-benim button { border: 0; background: none; font: inherit; font-size: 13px; color: var(--soluk); text-decoration: underline; padding: 6px 0 6px 12px; cursor: pointer; }
+    .da-serit { display: flex; gap: 6px; overflow-x: auto; margin: 14px -14px 0; padding: 0 14px 2px; scrollbar-width: none; -webkit-overflow-scrolling: touch; } .da-serit::-webkit-scrollbar { display: none; }
+    .da-g { flex: none; width: 52px; border: 1px solid var(--cizgi); border-radius: 14px; background: none; padding: 8px 0; font: inherit; text-align: center; color: var(--soluk); cursor: pointer; }
+    .da-g b { display: block; font-size: 12px; font-weight: 600; } .da-g u { display: block; text-decoration: none; font-size: 18px; font-weight: 700; color: var(--yazi); }
+    .da-g.yok { opacity: .35; } .da-g.sec { background: var(--yazi); border-color: var(--yazi); color: var(--kart); } .da-g.sec u { color: var(--kart); }
+    .da-gun { font-size: 13px; font-weight: 650; color: var(--soluk); margin: 16px 0 2px; } .da-bilgi { font-size: 14px; color: var(--soluk); margin-top: 10px; }
+    .da-z { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; } .da-z > b { font-size: 14.5px; font-weight: 650; white-space: nowrap; } .da-z > div { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+    .da-d { border: 1px solid var(--cizgi); background: var(--kart); color: var(--ana); border-radius: 12px; padding: 10px 12px; font: inherit; font-size: 14px; font-weight: 650; min-width: 92px; cursor: pointer; }
+    .da-d.dolu { background: var(--ikon-zemin); color: var(--soluk); font-weight: 500; } .da-d.benim { background: var(--ana); border-color: var(--ana); color: var(--kart); } .da-d:disabled { cursor: default; }
     .dr-satir { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
     .dr-saat { font-size: 13px; font-weight: 700; color: var(--soluk); min-width: 92px; }
     .dr-dugme { flex: 1; min-width: 110px; font: inherit; font-size: 13px; font-weight: 600; border-radius: 10px; padding: 7px 8px; border: 1px solid var(--cizgi); background: var(--kart); color: var(--ana); cursor: pointer; }
@@ -938,7 +944,7 @@
        Rol farkı: mentor = Süleymaniye, manzara sayfaya karışır ve öncelik kartı üstüne biner · rehber = Ayasofya, yuvarlak köşeli bant ===== */
     #pano .pano-ust { padding-bottom: 100px; background: linear-gradient(180deg, rgba(250, 243, 236, .92) 0%, rgba(250, 243, 236, .55) 36%, rgba(250, 243, 236, 0) 58%, rgba(247, 249, 248, 0) 78%, var(--bg) 100%), url(gunduz.jpg) 60% 27% / auto 381px no-repeat, #f3e6da; }
     #pano.rehber-ev .pano-ust { padding-bottom: 74px; margin-bottom: 20px; border-radius: 0 0 30px 30px;
-      background: linear-gradient(180deg, rgba(250, 243, 236, .92) 0%, rgba(250, 243, 236, .55) 42%, rgba(250, 243, 236, 0) 66%), url(gunduz.jpg) 24% 6% / auto 381px no-repeat, #f3e6da; }
+      background: linear-gradient(180deg, rgba(250, 243, 236, .92) 0%, rgba(250, 243, 236, .55) 42%, rgba(250, 243, 236, 0) 66%), url(gunduz.jpg) 24% 15% / auto 381px no-repeat, #f3e6da; }
     #pano.rehber-ev .pano-ust h1 { color: var(--ana); font-weight: 700; } #pano.rehber-ev .pano-ust .tarih, #pano.rehber-ev .pano-ust .grup { color: var(--soluk); }
     #pano.rehber-ev .pano-ust .grup-sec { color: var(--ana-etiket); background: var(--ana-zemin); border-color: var(--ana-cizgi); } #pano.rehber-ev .pano-ust .grup-sec select { color: inherit; }
     @media (prefers-color-scheme: dark) {
@@ -971,7 +977,17 @@
     #pano.grup-goz .pano-ust .grup-sec { background: rgba(255, 255, 255, .15); border-color: rgba(255, 255, 255, .22); color: #fff; }
     #pano.grup-goz .pano-ust .grup-sec .grup { color: #fff; } #pano.grup-goz .pano-ust .grup-sec select { color: #fff; }
     #pano.grup-goz #icerik { margin-top: 0 !important; }
-</style>
+
+    /* ===== Kabartmalı görünüm iç ekranlarda da (18 Kas 2026): ana sayfadaki kart gölgesi + tuş gibi düğmeler. :where → özgüllük 0, kendi gölgesi olan kart (öncelik kartı vb.) etkilenmez ===== */
+    :where(.kart, .slot, .gorev-kart, .da, .ogr, .gorev, .yatili-kart, .soru, .temizlik-kart, .ay-kutu, .tp-satir, .tp-ozet, .yrd, details.detay-kutu, a.satir, .konu-kart, .rp-grup, .rp-is, .rp-toplanti, .form-kutu, .veli-form, .kaydir, .ders-ozet div, .not-govde) { box-shadow: var(--k-golge); }
+    :where(.kart, .slot, .gorev-kart, .da, .ogr, .gorev, .yatili-kart, .soru, .temizlik-kart, .ay-kutu, .tp-satir, .tp-ozet, .yrd, details.detay-kutu, a.satir, .konu-kart, .rp-grup, .rp-is, .rp-toplanti, .form-kutu, .veli-form, .kaydir, .ders-ozet div, .not-govde) :where(.kart, .slot, .gorev-kart, .da, .ogr, .gorev, .yatili-kart, .soru, .temizlik-kart, .ay-kutu, .tp-satir, .tp-ozet, .yrd, details.detay-kutu, a.satir, .konu-kart, .rp-grup, .rp-is, .rp-toplanti, .form-kutu, .veli-form, .kaydir, .ders-ozet div, .not-govde) { box-shadow: none; }   /* kart içindeki kart düz kalır */
+    button.kucuk:not(.sicak), .da-dug, .da-d:not(.benim):not(.dolu), .da-g:not(.sec) { background: var(--t-zemin); border: 1px solid var(--t-kenar); box-shadow: var(--t-golge); }
+    button.kucuk.sicak { box-shadow: var(--t-golge); }
+    button.kucuk:not(:disabled):active, .da-dug:active, .da-d:not(:disabled):active, .da-g:active { box-shadow: inset 0 2px 4px rgba(20, 45, 38, .18); transform: translateY(1px); filter: none; }
+    /* Rehber karşılama bandının alt kenarı: kabartı (19 Kas) — koyu temada köşelerin kavisi zeminden ayrılsın */
+    #pano.rehber-ev .pano-ust { box-shadow: inset 0 -1px 0 rgba(255, 255, 255, .5), 0 2px 4px rgba(20, 45, 38, .10), 0 12px 26px rgba(20, 45, 38, .20); }
+    @media (prefers-color-scheme: dark) { #pano.rehber-ev .pano-ust { box-shadow: inset 0 -1px 0 rgba(255, 255, 255, .16), 0 2px 4px rgba(0, 0, 0, .4), 0 14px 28px rgba(0, 0, 0, .6); } }
+  </style>
 </head>
 <body>
 <main>
@@ -3006,8 +3022,7 @@
       el('span', { sinif: 'orta' }, [el('span', { sinif: 'baslik', metin: 'Her hafta' }), el('span', { sinif: 'alt', metin: varMetin })]),
       salt ? null : vd]));
 
-    if (s.daire && s.daire.haftaIci) ic.appendChild(haftaIciBolumu(s));
-    if (s.daire && s.daire.slotlar.length) ic.appendChild(daireBolumu(s));
+    if (s.daire && (s.daire.haftaIci || s.daire.slotlar.length)) ic.appendChild(daireKarti(s));
     ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Haftalar' }));
     s.haftalar.forEach(function (h, i) {
       const d = new Date(h.pzt + 'T12:00:00');
@@ -3064,68 +3079,66 @@
     ic.appendChild(el('p', { sinif: 'not', metin: 'Sıra gelen aileye bir gün önce sabah e-postayla hatırlatma gider (velinin e-postası ve izni rehberde kayıtlıysa; değilse hatırlatma sana gelir). Yatılı haftalarında günübirlik yok; otomatik atlanır.' }));
   }
 
-  /** Hafta içi akşam dairesi (18 Kas): tek kart = bir hafta, satır = gün; boşa dokun → ayır, kendininkine dokun → bırak */
-  let haftaIciSira = 0;
-  function haftaIciBolumu(s) {
-    const hi = s.daire.haftaIci, salt = saltOkunur(), kap = el('div', {}), GK = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
-    kap.appendChild(el('div', { sinif: 'hs-baslik', metin: hi.daire + ' · hafta içi akşam (' + hi.saat + ')' }));
-    const kart = el('div', { sinif: 'hi-kart' }); kap.appendChild(kart);
-    const gun = function (iso) { return new Date(iso + 'T12:00:00'); };
+  /** Daire ayırma (18 Kas, adım adım): kart = "+ Ayır" + ayırdıklarınız; açılınca gün şeridi → o günün saatleri → daire düğmeleri.
+   *  Hafta içi akşam ve hafta sonu günübirlik aynı akışta. Daire sayısı sunucudan gelir (kapalı daire gösterilmez; açılınca düğmesi kendiliğinden çıkar). */
+  let daireAcik = false, daireGun = '';
+  function daireKarti(s) {
+    const salt = saltOkunur(), GK = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'], bugun = new Date().toLocaleDateString('en-CA'), gunler = {}, hi = s.daire.haftaIci;
+    const ekle = function (tarih, saat, y, yatili) {
+      if (tarih < bugun) return;
+      const g = gunler[tarih] = gunler[tarih] || [];
+      let x = g.filter(function (z) { return z.saat === saat; })[0];
+      if (!x) g.push(x = { saat: saat, sec: [], yatili: false });
+      if (yatili) x.yatili = true; else if (!y.kapali) x.sec.push(y);
+    };
+    (s.daire.slotlar || []).forEach(function (x) { x.daireler.forEach(function (y) { ekle(x.tarih, x.saat, y); }); });
+    if (hi) hi.haftalar.forEach(function (h) { h.gunler.forEach(function (x) { if (!x.gecti) ekle(x.tarih, hi.saat, { daire: hi.daire, grup: x.grup, benim: x.benim, kapali: x.kapali }, x.yatili); }); });
+    const tarihler = Object.keys(gunler).sort(), gun = function (iso) { return new Date(iso + 'T12:00:00'); };
+    tarihler.forEach(function (t) { gunler[t].sort(function (a, b) { return a.saat < b.saat ? -1 : 1; }); });
+    const bosVar = function (t) { return gunler[t].some(function (x) { return !x.yatili && x.sec.some(function (y) { return !y.grup; }); }); };
+    const kisa = function (iso) { const d = gun(iso); return GK[d.getDay()] + ' ' + d.getDate() + ' ' + AYLAR_UZUN[d.getMonth()].slice(0, 3); };
+    const ekUrl = function (t, saat, daire) { return '&islem=bulusmaDaire&tarih=' + t + '&saat=' + encodeURIComponent(saat) + '&daire=' + encodeURIComponent(daire); };
+    const benim = [];
+    tarihler.forEach(function (t) { gunler[t].forEach(function (x) { if (!x.yatili) x.sec.forEach(function (y) { if (y.benim) benim.push({ tarih: t, saat: x.saat, daire: y.daire }); }); }); });
+    const kart = el('div', { sinif: 'da' });
     const ciz = function () {
-      haftaIciSira = Math.max(0, Math.min(hi.haftalar.length - 1, haftaIciSira));
-      const h = hi.haftalar[haftaIciSira], ilk = gun(h.gunler[0].tarih), son = gun(h.gunler[h.gunler.length - 1].tarih);
-      const geri = el('button', { sinif: 'hi-ok', type: 'button', metin: '‹', 'aria-label': 'Önceki hafta' }), ileri = el('button', { sinif: 'hi-ok', type: 'button', metin: '›', 'aria-label': 'Sonraki hafta' });
-      geri.disabled = haftaIciSira === 0; ileri.disabled = haftaIciSira === hi.haftalar.length - 1;
-      geri.onclick = function () { haftaIciSira--; ciz(); }; ileri.onclick = function () { haftaIciSira++; ciz(); };
-      const izgara = el('div', { sinif: 'hi-izgara' });
-      h.gunler.forEach(function (x) {
-        const d = gun(x.tarih);
-        izgara.appendChild(el('span', { sinif: 'gun' }, [document.createTextNode(GK[d.getDay()]), el('small', { metin: d.getDate() + ' ' + AYLAR_UZUN[d.getMonth()].slice(0, 3) })]));
-        const b = el('button', { type: 'button', sinif: 'hi-h' + (x.benim ? ' benim' : x.grup || x.kapali || x.yatili ? ' dolu' : '') + (x.gecti ? ' gecti' : '') });
-        b.textContent = x.yatili ? 'Yatılı var · kapalı' : x.benim ? s.grup + ' · sizde ✓' : x.grup ? x.grup : x.kapali ? 'kapalı' : x.gecti ? 'boş' : salt ? 'boş' : 'boş · ayırmak için dokunun';
-        const ek = '&islem=bulusmaDaire&tarih=' + x.tarih + '&saat=' + encodeURIComponent(hi.saat) + '&daire=' + encodeURIComponent(hi.daire);
-        const etiket = GK[d.getDay()] + ' ' + d.getDate() + ' ' + AYLAR_UZUN[d.getMonth()] + ' akşamı (' + hi.saat + ')';
-        if (x.gecti || x.kapali || x.yatili || salt) b.disabled = true;
-        else if (x.benim || (x.grup && s.daire.yonet)) b.onclick = function () { if (confirm(etiket + ' bırakılsın mı?')) bulusmaYukle(ek + '&birak=1'); };
-        else if (x.grup) b.disabled = true;
-        else b.onclick = function () { if (confirm(etiket + ' için ' + hi.daire + ' ' + s.grup + ' grubuna ayrılsın mı?')) bulusmaYukle(ek); };
-        izgara.appendChild(b);
-      });
-      kart.replaceChildren(el('div', { sinif: 'hi-ust' }, [
-        el('div', {}, [el('b', { metin: haftaIciSira === 0 ? 'Bu hafta' : haftaIciSira === 1 ? 'Gelecek hafta' : haftaIciSira + ' hafta sonra' }),
-          el('span', { metin: ' ' + ilk.getDate() + (ilk.getMonth() !== son.getMonth() ? ' ' + AYLAR_UZUN[ilk.getMonth()].slice(0, 3) : '') + '–' + son.getDate() + ' ' + AYLAR_UZUN[son.getMonth()] })]),
-        el('div', {}, [geri, document.createTextNode(' '), ileri])]), izgara);
+      const dug = salt || !tarihler.length ? null : el('button', { sinif: 'da-dug', type: 'button', metin: daireAcik ? 'Kapat' : '+ Ayır' });
+      if (dug) dug.onclick = function () { daireAcik = !daireAcik; ciz(); };
+      const cocuk = [el('div', { sinif: 'da-ust' }, [el('span', {}, [el('b', { metin: 'Daire' }),
+        el('small', { metin: salt ? (benim.length ? 'Grubun ayırdığı daireler' : 'Ayrılmış daire yok') : 'KM dairesini grubunuz için ayırın' })]), dug])];
+      if (!daireAcik || salt) {
+        benim.forEach(function (x) {
+          const b = salt ? null : el('button', { type: 'button', metin: 'Bırak' });
+          if (b) b.onclick = function () { if (confirm(kisa(x.tarih) + ' ' + x.saat + ' · ' + x.daire + ' bırakılsın mı?')) bulusmaYukle(ekUrl(x.tarih, x.saat, x.daire) + '&birak=1'); };
+          cocuk.push(el('div', { sinif: 'da-benim' }, [el('span', {}, [document.createTextNode(kisa(x.tarih) + ' · ' + x.saat), el('small', { metin: x.daire })]), b]));
+        });
+      } else {
+        if (!gunler[daireGun]) daireGun = tarihler.filter(bosVar)[0] || tarihler[0];
+        const serit = el('div', { sinif: 'da-serit' }, tarihler.map(function (t) {
+          const d = gun(t), b = el('button', { type: 'button', sinif: 'da-g' + (t === daireGun ? ' sec' : bosVar(t) || benim.some(function (x) { return x.tarih === t; }) ? '' : ' yok') }, [el('b', { metin: GK[d.getDay()] }), el('u', { metin: String(d.getDate()) })]);
+          b.onclick = function () { const sl = serit.scrollLeft; daireGun = t; ciz(); kart.querySelector('.da-serit').scrollLeft = sl; };
+          return b;
+        }));
+        const d = gun(daireGun);
+        cocuk.push(serit, el('div', { sinif: 'da-gun', metin: GUN_ADI[d.getDay()] + ' ' + d.getDate() + ' ' + AYLAR_UZUN[d.getMonth()] }));
+        gunler[daireGun].forEach(function (x) {
+          if (x.yatili) { cocuk.push(el('div', { sinif: 'da-bilgi', metin: 'Bu akşam dairede yatılı var; ayrılamaz.' })); return; }
+          if (!x.sec.length) return;
+          const et = kisa(daireGun) + ' ' + x.saat;
+          cocuk.push(el('div', { sinif: 'da-z' }, [el('b', { metin: x.saat }), el('div', {}, x.sec.map(function (y) {
+            const b = el('button', { type: 'button', sinif: 'da-d' + (y.benim ? ' benim' : y.grup ? ' dolu' : ''), metin: y.daire + (y.benim ? ' · sizde ✓' : y.grup ? ' · ' + y.grup : '') });
+            const ek = ekUrl(daireGun, x.saat, y.daire);
+            if (y.benim || (y.grup && s.daire.yonet)) b.onclick = function () { if (confirm(et + ' · ' + y.daire + ' bırakılsın mı?')) bulusmaYukle(ek + '&birak=1'); };
+            else if (y.grup) b.disabled = true;
+            else b.onclick = function () { if (confirm(et + ' için ' + y.daire + ' ' + s.grup + ' grubuna ayrılsın mı?')) { daireAcik = false; bulusmaYukle(ek); } };
+            return b;
+          }))]));
+        });
+      }
+      kart.replaceChildren.apply(kart, cocuk.filter(Boolean));
     };
     ciz();
-    kap.appendChild(el('p', { sinif: 'not', metin: salt ? 'Hafta içi akşamları ' + hi.daire + ' için mentorların ayırdığı günler.' : 'Boş güne dokunun, akşam (' + hi.saat + ') grubunuza ayrılır; onay gerekmez. Vazgeçerseniz kendi gününüze dokunup bırakın.' }));
-    return kap;
-  }
-  /** Hafta sonu KM dairesi (günübirlik): onaysız, ilk alan alır; yatılıdan ayrı */
-  function daireBolumu(s) {
-    const kap = el('div', {}), salt = saltOkunur(), gunler = {};
-    kap.appendChild(el('div', { sinif: 'hs-baslik', metin: 'KM dairesi · hafta sonu günübirlik' }));
-    s.daire.slotlar.forEach(function (x) { (gunler[x.tarih] = gunler[x.tarih] || []).push(x); });
-    Object.keys(gunler).forEach(function (t) {
-      const d = new Date(t + 'T12:00:00');
-      const kart = el('div', { sinif: 'gorev-kart dr-kart' }, [el('div', { sinif: 'gorev-metin', metin: gunler[t][0].gunAd + ' ' + d.getDate() + ' ' + AYLAR_UZUN[d.getMonth()] })]);
-      gunler[t].forEach(function (x) {
-        const dug = x.daireler.map(function (y) {
-          const b = el('button', { type: 'button', sinif: 'dr-dugme' + (y.benim ? ' benim' : y.grup ? ' dolu' : '') });
-          b.textContent = y.daire + ' · ' + (y.benim ? 'sizde ✓' : y.grup ? y.grup : y.kapali ? 'kapalı' : 'boş');
-          if (y.kapali) { b.disabled = true; b.classList.add('dolu'); return b; }
-          const ek = '&islem=bulusmaDaire&tarih=' + t + '&saat=' + encodeURIComponent(x.saat) + '&daire=' + encodeURIComponent(y.daire);
-          if (salt) b.disabled = true;
-          else if (y.benim || (y.grup && s.daire.yonet)) b.onclick = function () { if (confirm(y.daire + ' · ' + x.saat + ' bırakılsın mı?')) bulusmaYukle(ek + '&birak=1'); };
-          else if (y.grup) b.disabled = true;
-          else b.onclick = function () { if (confirm(gunler[t][0].gunAd + ' ' + x.saat + ' için ' + y.daire + ' ' + s.grup + ' grubuna ayrılsın mı?')) bulusmaYukle(ek); };
-          return b;
-        });
-        kart.appendChild(el('div', { sinif: 'dr-satir' }, [el('span', { sinif: 'dr-saat', metin: x.saat })].concat(dug)));
-      });
-      kap.appendChild(kart);
-    });
-    kap.appendChild(el('p', { sinif: 'not', metin: 'Hafta sonu yatılı seanslarının arasında KM dairesinde buluşacaksanız buradan ayırın; onay gerekmez, ilk ayıran alır. Grup başına günde bir daire.' }));
-    return kap;
+    return kart;
   }
   function DEMO_BULUSMA() {
     const hiPzt = new Date(); hiPzt.setHours(12, 0, 0, 0); hiPzt.setDate(hiPzt.getDate() - (hiPzt.getDay() + 6) % 7);
@@ -3133,10 +3146,11 @@
     const hiHafta = [0, 1, 2, 3].map(function (h) { return { gunler: [0, 1, 2, 3, 4].map(function (g) {
       const d = new Date(hiPzt); d.setDate(d.getDate() + 7 * h + g); const iso = d.toLocaleDateString('en-CA'), gr = g < 4 ? hiDolu[h * 4 + g] || '' : '';
       return { tarih: iso, grup: gr, benim: gr === 'E10', gecti: iso < hiBugun, yatili: g === 4 && h % 2 === 0 }; }) }; });
+    const hsGun = function (g) { const d = new Date(hiPzt); d.setDate(d.getDate() + g); return d.toLocaleDateString('en-CA'); };
     return { ok: true, daire: { harf: 'E', yonet: false, haftaIci: { daire: 'Daire 6', saat: '17:00–21:00', haftalar: hiHafta }, slotlar: [
-      { tarih: '2026-10-31', gunAd: 'Cumartesi', saat: '14:00–17:00', daireler: [{ daire: 'Daire 5', grup: 'E11', benim: false }, { daire: 'Daire 6', grup: '', benim: false }] },
-      { tarih: '2026-11-01', gunAd: 'Pazar', saat: '14:00–17:00', daireler: [{ daire: 'Daire 5', grup: 'E10', benim: true }, { daire: 'Daire 6', grup: '', benim: false }] },
-      { tarih: '2026-11-01', gunAd: 'Pazar', saat: '17:00–20:00', daireler: [{ daire: 'Daire 5', grup: '', benim: false }, { daire: 'Daire 6', grup: 'E12', benim: false }] }] },
+      { tarih: hsGun(5), gunAd: 'Cumartesi', saat: '14:00–17:00', daireler: [{ daire: 'Daire 5', grup: 'E11', benim: false }, { daire: 'Daire 6', grup: '', benim: false }] },
+      { tarih: hsGun(6), gunAd: 'Pazar', saat: '14:00–17:00', daireler: [{ daire: 'Daire 5', grup: 'E10', benim: true }, { daire: 'Daire 6', grup: '', benim: false }] },
+      { tarih: hsGun(6), gunAd: 'Pazar', saat: '17:00–20:00', daireler: [{ daire: 'Daire 5', grup: '', benim: false }, { daire: 'Daire 6', grup: 'E12', benim: false }] }] },
       grup: 'E10', varsayilan: { gun: 'Cumartesi', saat: '18:00', yer: 'KM' }, ogrenciler: ['Ahmet', 'Mehmet', 'Yusuf', 'Ali'], takvim: 'https://example.invalid/demo',
       haftalar: [
         { pzt: '2026-10-12', satir: 3, tarih: '2026-10-17', gun: 'Cumartesi', saat: '18:00', yer: 'KM', degisti: false, ikram: 'Ahmet', ikramEposta: true, yatili: false },
