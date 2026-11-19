@@ -687,6 +687,9 @@
     .rap-nokta span.var { background: var(--ana); border-color: var(--ana); }
     .rap-satir { font-size: 14px; margin-top: 6px; overflow-wrap: anywhere; }
     .rap-satir.istek b { color: var(--ana); } .rap-satir.dikkat b { color: #b4541a; }
+    .kim-cok { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 10px; } .kim-cok[hidden] { display: none; }
+    .kim-cok button { min-width: 52px; border: 1px solid var(--cizgi); background: var(--kart); color: var(--yazi); border-radius: 999px; padding: 8px 12px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .kim-cok button.secili { background: var(--ana); border-color: var(--ana); color: var(--kart); }
     .da { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 18px; margin: 10px 0; padding: 14px; }
     .da-ust { display: flex; align-items: center; justify-content: space-between; gap: 10px; } .da-ust b { font-size: 16px; display: block; } .da-ust small { font-size: 13px; color: var(--soluk); }
     .da-dug { flex: none; border: 1px solid var(--cizgi); background: var(--kart); color: var(--ana); border-radius: 12px; padding: 9px 14px; font: inherit; font-size: 14px; font-weight: 650; cursor: pointer; }
@@ -2806,6 +2809,15 @@
     const alan = function (etiket, girdi) { return el('label', { sinif: 'alan' }, [typeof etiket === 'string' ? el('span', { metin: etiket }) : etiket, girdi]); };
     const tur = el('select', { 'aria-label': 'Tür' }); (s.turler || []).forEach(function (t) { tur.appendChild(el('option', { value: t, metin: t })); });
     const kimler = el('select', { 'aria-label': 'Kimler' }); (s.kimler || []).forEach(function (t) { kimler.appendChild(el('option', { value: t, metin: t })); });
+    // 19 Kas: birkaç grup birden — listenin sonunda "Birkaç grup seç…" → grup kutucukları açılır
+    const gruplar = (s.kimler || []).filter(function (t) { return /^[EK]\d/.test(t); }), secili = [];
+    const cokKutu = el('div', { sinif: 'kim-cok' }, gruplar.map(function (g) {
+      const b = el('button', { type: 'button', metin: g, 'aria-pressed': 'false' });
+      b.onclick = function () { const i = secili.indexOf(g); if (i >= 0) secili.splice(i, 1); else secili.push(g); b.classList.toggle('secili', i < 0); b.setAttribute('aria-pressed', i < 0 ? 'true' : 'false'); };
+      return b;
+    }));
+    cokKutu.hidden = true;
+    if (gruplar.length > 1) { kimler.appendChild(el('option', { value: '__cok', metin: 'Birkaç grup seç…' })); kimler.addEventListener('change', function () { cokKutu.hidden = kimler.value !== '__cok'; }); }
     const yer = el('input', { type: 'text', placeholder: 'Yer (isteğe bağlı)', maxlength: '60' });
     const notG = el('input', { type: 'text', placeholder: 'Not ya da bağlantı (https://…) · isteğe bağlı', maxlength: '500', autocomplete: 'off' });   // 17 Kas
     const zorunlu = el('input', { type: 'checkbox' });
@@ -2814,14 +2826,16 @@
     kaydet.onclick = function () {
       if (!baslik.value.trim()) { baslik.focus(); return; }
       if (tekrar.value && (!bitis.value || bitis.value <= iso)) { alert('Tekrar eden etkinlik için "Ne zamana kadar" tarihini seçin.'); bitis.focus(); return; }
+      if (kimler.value === '__cok' && !secili.length) { alert('En az bir grup seçin.'); return; }
+      const kimDeger = kimler.value === '__cok' ? gruplar.filter(function (g) { return secili.indexOf(g) >= 0; }).join(', ') : kimler.value;
       kaydet.disabled = true;
       const ek = '&islem=takvimEkle&tarih=' + iso + '&saat=' + encodeURIComponent(saat.value) + '&bitis=' + encodeURIComponent(bitis.value) +
-        '&tur=' + encodeURIComponent(tur.value) + '&kimler=' + encodeURIComponent(kimler.value) + '&baslik=' + encodeURIComponent(baslik.value.trim()) +
+        '&tur=' + encodeURIComponent(tur.value) + '&kimler=' + encodeURIComponent(kimDeger) + '&baslik=' + encodeURIComponent(baslik.value.trim()) +
         '&yer=' + encodeURIComponent(yer.value.trim()) + '&not=' + encodeURIComponent(notG.value.trim()) + '&zorunlu=' + (zorunlu.checked ? '1' : '0') + '&tekrar=' + encodeURIComponent(tekrar.value);
       takvimIslemYap(ek);
     };
     [baslik, el('div', { sinif: 'iki' }, [alan('Saat', saat), alan('Tekrar', tekrar)]), alan(bitisEtiket, bitis),
-     el('div', { sinif: 'iki' }, [alan('Tür', tur), alan('Kimler', kimler)]), yer, notG,
+     el('div', { sinif: 'iki' }, [alan('Tür', tur), alan('Kimler', kimler)]), cokKutu, yer, notG,
      el('label', { sinif: 'onay' }, [zorunlu, document.createTextNode('Zorunlu')]),
      el('p', { sinif: 'not', metin: 'Saat boşsa tüm gün. Tekrar edenler her gün / hafta / ay ayrı görünür (en fazla 1 yıl); silince hepsi silinir.' }),
      el('div', { sinif: 'dugmeler' }, [vazgec, kaydet])]
@@ -2962,7 +2976,7 @@
   function DEMO_TAKVIM() {
     const o = function (tur, renk, baslik, bas, bit, tumGun, yer, zorunlu, not, satir) { return { tur: tur, renk: renk, baslik: baslik, bas: bas, bit: bit, tumGun: tumGun, yer: yer || '', zorunlu: !!zorunlu, not: not || '', satir: satir }; };
     return { ok: true, etiket: 'E Lise', abonelik: 'https://example.invalid/demo', ekleyebilir: !DEMO_MENTOR,
-      turler: ['Ortak etkinlik', 'Mentor semineri', 'Kamp', 'Okul tatili', 'Akademik', 'Diğer'], kimler: ['Herkes', 'Mentorlar', 'Rehberler', 'E Ortaokul', 'E Lise', 'K', 'E10'],
+      turler: ['Ortak etkinlik', 'Mentor semineri', 'Kamp', 'Okul tatili', 'Akademik', 'Diğer'], kimler: ['Herkes', 'Mentorlar', 'Rehberler', 'E Ortaokul', 'E Lise', 'K', 'E6', 'E7', 'E8', 'E9A', 'E9B', 'E10', 'E11', 'E12', 'K6', 'K8', 'K9', 'K12'],
       olaylar: [
       Object.assign(o('Mentor semineri', 'seminer', 'Mentor Yetiştirme Semineri 3', '2026-10-13T19:00', '2026-10-13T21:00', false, 'KM', true, '', 2), DEMO_MENTOR ? {} : { yoklama: 'yok' }),
       o('Akademik', 'akademik', 'Deneme sınavı · 9. sınıflar', '2026-10-17T10:00', '2026-10-17T12:00', false, 'KM', false, '', 4),
