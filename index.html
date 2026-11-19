@@ -1019,7 +1019,7 @@
       </button>
     </div>
     </div>
-    <div id="icerik"><div class="yukleniyor">Yükleniyor…</div></div>
+    <div id="icerik"><div class="yukleniyor"></div></div>
     <div class="alt-bilgi" id="altBilgi"></div>
     <div class="kim" id="kim"></div>
     <div class="alt-dugmeler">
@@ -1562,7 +1562,7 @@
     if (!s) {
       let c = null;
       try { c = JSON.parse(depo.al('rehberPano_' + (depo.al('rehberEkip') || 'hepsi')) || 'null'); } catch (e) {}
-      if (c) rehberCiz(v, c); else ic.innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+      if (c) rehberCiz(v, c); else ic.innerHTML = '<div class="yukleniyor"></div>';
       rehberYukle(v, false);
       return;
     }
@@ -1578,7 +1578,7 @@
       [['hepsi', 'Bütün ekipler']].concat(s.ekipler.map(function (e) { return [e, e]; })).forEach(function (x) {
         const o = el('option', { value: x[0], metin: x[1] }); if (x[0] === s.secili) o.selected = true; sec.appendChild(o);
       });
-      sec.addEventListener('change', function () { depo.yaz('rehberEkip', sec.value); ic.innerHTML = '<div class="yukleniyor">Yükleniyor…</div>'; rehberYukle(v, false); });
+      sec.addEventListener('change', function () { depo.yaz('rehberEkip', sec.value); ic.innerHTML = '<div class="yukleniyor"></div>'; rehberYukle(v, false); });
       alan.appendChild(el('label', { sinif: 'grup-sec' }, [etiket, ikon('asagi'), sec]));
     }
     ic.textContent = '';
@@ -1741,7 +1741,7 @@
     $('okumaTakipBaslik').textContent = 'Okuma takibi';
     const eski = !DEMO && onbellekAl('okuma_' + (depo.al('rehberEkip') || 'hepsi'));   // 16 Kas HIZ: önce kayıtlı kopya
     if (eski) { okumaTakipCiz(eski); eskiNotu($('okumaTakipIcerik'), 'Son kayıtlı bilgi · güncelleniyor…'); }
-    else $('okumaTakipIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    else $('okumaTakipIcerik').innerHTML = '<div class="yukleniyor"></div>';
     okumaTakipYukle(false);
   }
   async function okumaTakipYukle(yenileMi) {
@@ -1785,7 +1785,7 @@
     };
     ic.appendChild(secimGrubu(['Okumayanlar', 'Hepsi', 'Şampiyonlar'], false, function () { return okumaFiltre; }, function (x) {
       okumaFiltre = x || 'Okumayanlar';
-      if (okumaFiltre === 'Şampiyonlar') { liste.innerHTML = '<div class="yukleniyor">Yükleniyor…</div>'; sampiyonYukle(liste, false); } else ciz();
+      if (okumaFiltre === 'Şampiyonlar') { liste.innerHTML = '<div class="yukleniyor"></div>'; sampiyonYukle(liste, false); } else ciz();
     }));
     ic.appendChild(liste);
     if (okumaFiltre === 'Şampiyonlar') sampiyonYukle(liste, false); else ciz();
@@ -1798,7 +1798,7 @@
     history.pushState({ alt: 'okumaTakip' }, ''); goster('okumaTakip');
     $('okumaTakipBaslik').textContent = 'Okuma şampiyonları';
     const ic = $('okumaTakipIcerik');
-    ic.innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    ic.innerHTML = '<div class="yukleniyor"></div>';
     sampiyonYukle(ic, false);
   }
   async function sampiyonYukle(kap, yenileMi) {
@@ -1903,7 +1903,7 @@
     history.pushState({ alt: 'okumaTakip' }, ''); goster('okumaTakip');
     $('okumaTakipBaslik').textContent = 'Haftalık raporlar';
     raporHafta = null;   // her açılışta "Son gelenler"
-    $('okumaTakipIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    $('okumaTakipIcerik').innerHTML = '<div class="yukleniyor"></div>';
     raporlarYukle();
   }
   async function raporlarYukle() {
@@ -1999,7 +1999,7 @@
     if (!mentorGozu) history.pushState({ alt: 'mentorGozu' }, '');
     mentorGozu = true;
     depo.yaz('grup', grup);
-    $('icerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    $('icerik').innerHTML = '<div class="yukleniyor"></div>';
     window.scrollTo(0, 0);
     if (DEMO) { const d = DEMO_VERI(); d.grup = grup; ciz(d); return; }
     yenile();
@@ -2026,7 +2026,7 @@
     else {
       const sec = el('select', { 'aria-label': 'Grup seç' });
       gruplar.forEach(function (g) { const o = el('option', { value: g, metin: g }); if (g === v.grup) o.selected = true; sec.appendChild(o); });
-      sec.addEventListener('change', function () { depo.yaz('grup', sec.value); $('icerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>'; yenile(); });
+      sec.addEventListener('change', function () { depo.yaz('grup', sec.value); $('icerik').innerHTML = '<div class="yukleniyor"></div>'; yenile(); });
       alan.appendChild(el('label', { sinif: 'grup-sec' }, [etiket, ikon('asagi'), sec]));
     }
     $('kim').textContent = kisi && kisi.ad ? kisi.ad + (kisi.rol === 'rehber' ? ' · rehber' : kisi.rol === 'org' ? ' · org sorumlusu' : kisi.rol === 'musahit' ? ' · müşahit' : kisi.rol === 'akademik' ? ' · akademik' : '') : '';
@@ -2269,7 +2269,8 @@
       if (!cekiyor) { y0 = null; return; }
       if (IOS ? enCok < IOS_ESIK : dy < ESIK) { kapat(); return; }
       calisiyor = true; cekiyor = false; y0 = null;
-      kutu.classList.add('donus', 'calisiyor'); kutu.classList.remove('birak'); yazi.textContent = 'Yenileniyor…'; koy(78); titre();
+      kutu.classList.add('donus', 'calisiyor'); kutu.classList.remove('birak'); yazi.textContent = '';   // 19 Kas: yazı yok, koşan at yeter
+      koy(78); titre();
       let oldu = true;
       try { takvimZamani = 0; onceYukleZaman = 0; await yenile(); oldu = !/Bağlantı/.test($('altBilgi').textContent + $('icerik').textContent.slice(0, 60)); } catch (e) { oldu = false; }
       // 16 Kas (2): bittiği belli olsun — kısa bir "Güncellendi ✓ 15:42" (ya da bağlantı yoksa uyarı), sonra kapanır
@@ -2407,7 +2408,7 @@
     if (DEMO) { $('okumaIcerik').innerHTML = '<h3>Bölüm 1: Doğruluk nedir?</h3><p>Örnek metin. Gerçek uygulamada haftanın metni burada, telefona uygun biçimde görünür; Google Docs açmaya gerek kalmaz.</p><p>Üstteki TR / EN düğmeleriyle dil değiştirilir. Metnin altında slayt ve video bağlantıları da bulunur.</p><h3>Bölüm 2: Tartışma soruları</h3><p>1. Örnek soru bir?<br>2. Örnek soru iki?</p>'; return; }
     const anahtar = 'metin_' + grup + '_' + dil + '_' + docsUrl;
     const kayitli = depo.al(anahtar);
-    $('okumaIcerik').innerHTML = kayitli || '<p class="yukleniyor">Yükleniyor…</p>';
+    $('okumaIcerik').innerHTML = kayitli || '<p class="yukleniyor"></p>';
     try {
       const s = await veriCek(grup, kod, '&islem=metin&dil=' + dil);
       if (!s.ok || !s.html) {
@@ -2561,11 +2562,11 @@
     $('yatiliSekme').querySelectorAll('button').forEach(function (b) { b.classList.toggle('secili', b.dataset.sekme === sekme); });
     const mis = sekme === 'misafir';
     $('yatiliIcerik').hidden = mis; $('yatiliDis').hidden = mis; $('misafirIcerik').hidden = !mis;
-    if (mis) { $('misafirIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>'; misafirYukle('&islem=misafirListe'); }
+    if (mis) { $('misafirIcerik').innerHTML = '<div class="yukleniyor"></div>'; misafirYukle('&islem=misafirListe'); }
     else {
       const eski = !DEMO && onbellekAl('yatili_' + (depo.al('grup') || ''));   // 16 Kas HIZ: önce kayıtlı kopya
       if (eski) { yatiliCiz(eski); eskiNotu($('yatiliIcerik'), 'Son kayıtlı liste · güncelleniyor…'); }
-      else $('yatiliIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+      else $('yatiliIcerik').innerHTML = '<div class="yukleniyor"></div>';
       yatiliYukle('&islem=yatili');
     }
   }
@@ -2713,7 +2714,7 @@
     const taze = takvimVeri && Date.now() - takvimZamani < 120000;
     const eski = takvimVeri || (!DEMO && onbellekAl('takvim'));
     if (eski) { takvimCiz(eski); if (!taze) eskiNotu($('takvimIcerik'), 'Son kayıtlı takvim · güncelleniyor…'); }
-    else $('takvimIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    else $('takvimIcerik').innerHTML = '<div class="yukleniyor"></div>';
     takvimGetir().then(function (s) { if (!(eski && (!s || !s.ok))) takvimCiz(s); })
       .catch(function () { if (eski) eskiNotu($('takvimIcerik'), 'Bağlantı yok · son kayıtlı takvim'); else $('takvimIcerik').textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; });
   }
@@ -2832,7 +2833,7 @@
   // Seminer yoklaması: mentorlar Geldi / Gelmedi / Mazeretli (rehber/org kaydeder, müşahit görür)
   async function yoklamaAc(o, s, alan) {
     if (alan.firstChild) { alan.textContent = ''; return; }   // ikinci dokunuş kapatır
-    alan.innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    alan.innerHTML = '<div class="yukleniyor"></div>';
     let y;
     try { y = DEMO ? { ok: true, mentorlar: ['Ahmet Yılmaz', 'Mehmet Kaya', 'Yusuf Demir', 'Ali Şahin', 'Ömer Çelik'], durum: { 'Ahmet Yılmaz': 'Geldi' } }
                    : await islem('&islem=yoklamaGetir&satir=' + o.satir + '&tarih=' + (o.tarih || o.bas.slice(0, 10))); }
@@ -2982,7 +2983,7 @@
   // ---------- Haftalık buluşma ----------
   function bulusmaAc() {
     history.pushState({ alt: 'bulusma' }, ''); goster('bulusma');
-    $('bulusmaIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    $('bulusmaIcerik').innerHTML = '<div class="yukleniyor"></div>';
     bulusmaYukle('&islem=bulusma');
   }
 
@@ -3164,7 +3165,7 @@
     history.pushState({ alt: 'grubum' }, ''); goster('grubum');
     const eski = !DEMO && onbellekAl('grubum_' + (depo.al('grup') || ''));   // 16 Kas HIZ: önce kayıtlı kopya
     if (eski) { grubumCiz(eski); eskiNotu($('grubumIcerik'), 'Son kayıtlı liste · güncelleniyor…'); }
-    else $('grubumIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    else $('grubumIcerik').innerHTML = '<div class="yukleniyor"></div>';
     grubumYukle('&islem=grubum');
   }
 
@@ -3577,13 +3578,13 @@
     history.pushState({ alt: 'gorevler' }, ''); goster('gorevler');
     $('gorevlerBaslik').textContent = toplantiModu ? 'Toplantı' : grupGozuModu ? grupGozuModu + ' · görevler' : 'Görevler';
     if (grupGozuModu) {
-      $('gorevlerIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+      $('gorevlerIcerik').innerHTML = '<div class="yukleniyor"></div>';
       gorevlerYukle(DEMO ? '' : '&islem=gorevGrup&gozGrup=' + encodeURIComponent(grupGozuModu));
       return;
     }
     const eski = !DEMO && !toplantiModu && onbellekAl(gorevAnahtar());
     if (eski) { gorevlerCiz(eski); eskiNotu($('gorevlerIcerik'), 'Son kayıtlı liste · güncelleniyor…'); }
-    else $('gorevlerIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    else $('gorevlerIcerik').innerHTML = '<div class="yukleniyor"></div>';
     gorevlerYukle('&islem=gorevlerim', null, eski);
     if (!toplantiModu) gorevEkYukle();
   }
@@ -3766,10 +3767,10 @@
           yardim('Toplantı notunda "cc @kişi" ile takip eden yapılırsınız: görürsünüz, durum yazarsınız, sorumlu bitirince onaylarsınız. Başka bir görevi izlemek için aşağıdaki listede ya da Toplantılar\'da bir toplantıya dokunup "Takip et" deyin: buraya düşer, bitince e-posta gelir (onay sizde değil). Toplu görevlerde her mentor kendi görevini kapatır.');
         }
       } else if (secili === 'top') {
-        if (!s.toplantilar && !DEMO) alan.appendChild(el('div', { sinif: 'yukleniyor', metin: 'Yükleniyor…' }));   // 16 Kas: parca=ek bekleniyor
+        if (!s.toplantilar && !DEMO) alan.appendChild(el('div', { sinif: 'yukleniyor' }));   // 16 Kas: parca=ek bekleniyor
         else toplantilarCiz(alan, s);
       } else if (secili === 'not') {
-        if (!s.defter2 && !DEMO) alan.appendChild(el('div', { sinif: 'yukleniyor', metin: 'Yükleniyor…' }));
+        if (!s.defter2 && !DEMO) alan.appendChild(el('div', { sinif: 'yukleniyor' }));
         else notDefteriCiz(alan, s);
       }
     };
@@ -3819,7 +3820,7 @@
   }
   /** Bütün kararlar (yeniden eskiye, aranabilir); karara dokununca alındığı toplantı açılır */
   async function kararlarCiz(alan, s) {
-    alan.appendChild(el('div', { sinif: 'yukleniyor', metin: 'Yükleniyor…' }));
+    alan.appendChild(el('div', { sinif: 'yukleniyor' }));
     let d;
     try { d = DEMO ? { ok: true, kararlar: [{ tarih: '2026-10-21', tarihMetni: '21 Eki 2026', karar: 'Veli toplantısı 15 Kasım\'da yapılacak', konu: 'Veli', toplanti: 'Rehberlik toplantısı', anahtar: '' },
                                              { tarih: '2026-10-07', tarihMetni: '7 Eki 2026', karar: 'Burs (400) grup abileriyle konuşuldu, olumlu karşılandı', konu: 'Burs', toplanti: 'Rehberlik toplantısı', anahtar: '' }] }
@@ -3850,7 +3851,7 @@
     ciz();
   }
   async function toplantiDetayCiz(alan, s, anahtar) {
-    alan.appendChild(el('div', { sinif: 'yukleniyor', metin: 'Yükleniyor…' }));
+    alan.appendChild(el('div', { sinif: 'yukleniyor' }));
     let d;
     try { d = DEMO ? DEMO_TOPLANTI_DETAY(anahtar) : await islem('&islem=gorevToplanti&anahtar=' + encodeURIComponent(anahtar)); }
     catch (e) { alan.replaceChildren(el('p', { sinif: 'bos', metin: 'Bağlantı kurulamadı. Tekrar deneyin.' })); return; }
@@ -3881,7 +3882,7 @@
     $('okumaBaslik').textContent = ad;
     $('dilSec').querySelectorAll('button').forEach(function (b) { b.hidden = true; });
     $('okumaDocs').hidden = true;
-    $('okumaIcerik').innerHTML = '<p class="yukleniyor">Yükleniyor…</p>';
+    $('okumaIcerik').innerHTML = '<p class="yukleniyor"></p>';
     history.pushState({ okuma: true }, ''); goster('okuma');
     try {
       const n = DEMO ? { ok: true, html: '<h2>Rehberlik Toplantısı</h2><p>Örnek toplantı notu. Gerçekte Google Docs belgesi burada, telefona uygun biçimde görünür.</p>', url: '#', duzenle: true }
@@ -4093,7 +4094,7 @@
     let yedek = null;
     try { yedek = JSON.parse(localStorage.getItem('notYedek_' + anahtar) || 'null'); } catch (e) {}
     if (yedek || notSayfaOnbellek[anahtar]) { maddeler = yedek || notSayfaOnbellek[anahtar]; satirCiz(); if (yedek) kaydet(); }
-    else maddeKap.appendChild(el('div', { sinif: 'yukleniyor', metin: 'Yükleniyor…' }));
+    else maddeKap.appendChild(el('div', { sinif: 'yukleniyor' }));
     if (yedek) return;
     (async function () {
       try {
@@ -4644,7 +4645,7 @@
   /** Günübirlik programı (yatılı olmayan haftanın ~3 saatlik akışı): aynı zaman çizelgesi ekranı. */
   async function gunubirlikProgramAc(pzt, yenileme) {
     $('programBaslik').textContent = 'Günübirlik programı';
-    if (!yenileme) { history.pushState({ alt: 'program' }, ''); goster('program'); $('programIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>'; }
+    if (!yenileme) { history.pushState({ alt: 'program' }, ''); goster('program'); $('programIcerik').innerHTML = '<div class="yukleniyor"></div>'; }
     try {
       const s = DEMO ? DEMO_GUNUBIRLIK() : await islem('&islem=gunubirlikProgram' + (pzt ? '&pzt=' + pzt : ''));
       if (!s.ok) { $('programIcerik').textContent = ''; $('programIcerik').appendChild(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s.hata] || 'Bir sorun oluştu.' })); return; }
@@ -4666,7 +4667,7 @@
 
   async function programAc(satir, yenileme) {
     $('programBaslik').textContent = 'Yatılı programı';
-    if (!yenileme) { history.pushState({ alt: 'program' }, ''); goster('program'); $('programIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>'; }
+    if (!yenileme) { history.pushState({ alt: 'program' }, ''); goster('program'); $('programIcerik').innerHTML = '<div class="yukleniyor"></div>'; }
     try {
       const s = DEMO ? DEMO_PROGRAM() : await islem('&islem=yatiliProgram&satir=' + satir);
       if (!s.ok) { $('programIcerik').textContent = ''; $('programIcerik').appendChild(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s.hata] || 'Bir sorun oluştu.' })); return; }
@@ -4903,7 +4904,7 @@
         return;
       }
       if (!kisaDersBelge) {
-        panel.innerHTML = '<p class="yukleniyor">Yükleniyor…</p>';
+        panel.innerHTML = '<p class="yukleniyor"></p>';
         try {
           const s = await veriCek(depo.al('grup') || '', depo.al('kod'), '&islem=kisaDers');
           kisaDersBelge = s.ok && s.html ? s.html : '';
@@ -4960,7 +4961,7 @@
     $('okumaDocs').hidden = true;
     okumaDonus = 'program';
     history.pushState({ okuma: true }, ''); goster('okuma');
-    $('okumaIcerik').innerHTML = '<p class="yukleniyor">Yükleniyor…</p>';
+    $('okumaIcerik').innerHTML = '<p class="yukleniyor"></p>';
     temizlikYukle(s.satir, '');
   }
   async function temizlikYukle(satir, ek) {
@@ -5131,7 +5132,7 @@
   async function misafirModu() {
     goster('program');
     $('programGeri').hidden = true;
-    $('programIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    $('programIcerik').innerHTML = '<div class="yukleniyor"></div>';
     const rol = (location.search.match(/[?&]r=([she])/) || [])[1];
     try {
       const r = await fetch(VERI_URL + '?format=json&islem=misafirProgram&p=' + MISAFIR[1] + '&s=' + MISAFIR[2] + '&t=' + MISAFIR[3], { cache: 'no-store' });
@@ -5205,7 +5206,7 @@
     const g = (sonVeri && sonVeri.grup) || depo.al('grup') || '';
     $('raporGrup').textContent = g + (sonVeri && sonVeri.ekip ? ' · ' + sonVeri.ekip : '');
     $('raporRozet').textContent = ''; $('raporRozet').appendChild(ikon('pano')); $('raporRozet').appendChild(el('span', { metin: g }));
-    $('raporIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    $('raporIcerik').innerHTML = '<div class="yukleniyor"></div>';
     try {
       const s = DEMO ? DEMO_RAPOR() : await islem('&islem=raporForm');
       if (!s.ok) { $('raporIcerik').textContent = ''; $('raporIcerik').appendChild(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s.hata] || 'Bir sorun oluştu.' })); return; }
@@ -5485,7 +5486,7 @@
 
   function toplantiAc() {
     history.pushState({ alt: 'toplanti' }, ''); goster('toplanti');
-    $('toplantiIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    $('toplantiIcerik').innerHTML = '<div class="yukleniyor"></div>';
     toplantiYukle('&islem=toplanti');
   }
 
@@ -5657,14 +5658,14 @@
     history.pushState({ alt: 'dersler' }, ''); goster('dersler');
     $('derslerGeri').hidden = false; $('derslerCikis').hidden = true;
     $('derslerBaslik').textContent = 'Ders desteği';
-    $('derslerIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    $('derslerIcerik').innerHTML = '<div class="yukleniyor"></div>';
     dersYukle();
   }
   function kocModu() {
     goster('dersler');
     $('derslerGeri').hidden = true; $('derslerCikis').hidden = false;
     $('derslerBaslik').textContent = 'Derslerim';
-    $('derslerIcerik').innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    $('derslerIcerik').innerHTML = '<div class="yukleniyor"></div>';
     dersYukle();
   }
   async function dersYukle() {
@@ -6125,7 +6126,7 @@
     $('derslerGeri').hidden = true; $('derslerCikis').hidden = true;
     $('derslerBaslik').textContent = 'Ders desteği';
     const ic = $('derslerIcerik');
-    ic.innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    ic.innerHTML = '<div class="yukleniyor"></div>';
     const on = (location.search.match(/[?&]s=(\d|baska)\b/) || [])[1];
     try {
       const s = DEMO ? DEMO_SECIM() : await (await fetch(VERI_URL + '?format=json&islem=dersSecimGetir&id=' + encodeURIComponent(DERS_LINK[1]) +
@@ -6220,7 +6221,7 @@
     $('derslerGeri').hidden = true; $('derslerCikis').hidden = true;
     $('derslerBaslik').textContent = 'İletişim bilgileri';
     const ic = $('derslerIcerik');
-    ic.innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    ic.innerHTML = '<div class="yukleniyor"></div>';
     try {
       const s = DEMO ? (aileVeri || { ok: true, grup: 'E7', ortaokul: true, liste: [{ id: 'a1', ad: 'Ahmet Y.', dolu: true }, { id: 'a2', ad: 'Mehmet K.', dolu: false }, { id: 'a3', ad: 'Yusuf A.', dolu: false }] })
         : await (await fetch(VERI_URL + '?format=json&islem=aileGetir&g=' + encodeURIComponent(AILE_LINK[1]) + '&t=' + encodeURIComponent(AILE_LINK[2]), { cache: 'no-store' })).json();
