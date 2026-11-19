@@ -120,6 +120,10 @@
     .not-govde ul.alt-madde { margin: 4px 0 2px; padding-left: 22px; list-style: circle; } .not-govde ul.alt-madde li { margin: 2px 0; }
     .kisa { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--sat, 3); line-clamp: var(--sat, 3); overflow: hidden; }
     /* Yardım: "Nasıl yaparım?" soru kartları */
+    .etiket-oner { margin-top: 6px; border: 1px solid var(--cizgi); border-radius: 12px; overflow: hidden; background: var(--kart); }
+    .etiket-oner button { display: flex; width: 100%; align-items: baseline; justify-content: space-between; gap: 10px; padding: 11px 12px; border: 0; border-bottom: 1px solid var(--cizgi); background: none; font: inherit; font-size: 15px; text-align: left; color: var(--yazi); cursor: pointer; }
+    .etiket-oner button:last-child { border-bottom: 0; } .etiket-oner button span { font-size: 12.5px; color: var(--soluk); text-align: right; }
+    .etiket-ad { color: var(--ana); font-weight: 650; }
     .yrd-ara { margin: 0 0 6px; } input.gorev-not-girdi { text-transform: none; letter-spacing: normal; }   /* arama kutuları büyük harfe dönmesin (genel input kuralı kod girişi içindi) */
     .yrd { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 14px; margin-bottom: 8px; }
     .yrd summary { list-style: none; cursor: pointer; padding: 13px 14px; font-weight: 600; font-size: 15.5px; line-height: 1.35; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
@@ -3547,6 +3551,7 @@
     }
     const ic = $('gorevlerIcerik');
     if (!s.ok) { ic.prepend(el('div', { sinif: 'bilgi uyari', metin: HATA_METNI[s.hata] || 'Bir sorun oluştu.' })); window.scrollTo(0, 0); return false; }
+    if (Array.isArray(s.etiketAday)) etiketAday = s.etiketAday;
     if (s.parca === 'is') {   // 16 Kas HIZ: hızlı parça → önceki Toplantılar / Notlarım verisi korunur, ek arka planda yenilenir
       const once = gorevSon || (eski && typeof eski === 'object' ? eski : null) || onbellekAl(gorevAnahtar()) || {};
       s = Object.assign({}, once, s, { parca: '' });
@@ -3663,6 +3668,9 @@
         if (!s.gorevler.length) bos('Açık göreviniz yok.');
         s.gorevler.forEach(function (g) { alan.appendChild(gKart(g, true)); });
         if ((s.bitenler || []).length) { baslik('Son bitenler'); s.bitenler.forEach(function (g) { alan.appendChild(gKart(g, true, true)); }); }
+        if (mentor && (s.takip || []).length) {   // 18 Kas: bir görev notunda "@" ile etiketlendiği görevler (okur, not yazar, Takibi bırak)
+          baslik('Etiketlendiğiniz görevler'); s.takip.forEach(function (g) { alan.appendChild(gKart(g, false)); });
+        }
         if (mentor && (s.istekler || []).length) {
           baslik('Rehberden istekleriniz');
           s.istekler.forEach(function (x) {
@@ -4095,7 +4103,7 @@
     const yorumlar = (g.gecmis || []).filter(function (x) { return x.tur === 'yorum' && x.m; });
     if (!yorumlar.length) return null;
     const tek = function (x, kisa) {
-      const m = linkliMetin(x.m);
+      const m = etiketVurgula(linkliMetin(x.m), x.et);
       return el('div', {}, [el('div', { sinif: 'gk-durum-ust', metin: 'Not · ' + x.kim + ' · ' + gorevTarihKisa(x.z) }), kisa ? kisalt(m, x.m.length, 3, 170) : m]);
     };
     const son = yorumlar[yorumlar.length - 1], onceki = yorumlar.slice(0, -1), kutu = el('div', { sinif: 'gk-durum' }, [tek(son, true)]);
@@ -4257,20 +4265,60 @@
     });
     return d;
   }
+  /** Nottaki "@Ad" etiketlerini vurgular (adlar sunucudan: x.et) */
+  function etiketVurgula(dugum, adlar) {
+    if (!adlar || !adlar.length) return dugum;
+    const kacis = function (t) { return t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); };
+    const re = new RegExp('(@(?:' + adlar.slice().sort(function (a, b) { return b.length - a.length; }).map(kacis).join('|') + '))');
+    Array.from(dugum.childNodes).forEach(function (n) {
+      if (n.nodeType !== 3 || !re.test(n.nodeValue)) return;
+      const f = document.createDocumentFragment();
+      n.nodeValue.split(re).forEach(function (p, i) { if (p) f.appendChild(i % 2 ? el('span', { sinif: 'etiket-ad', metin: p }) : document.createTextNode(p)); });
+      n.replaceWith(f);
+    });
+    return dugum;
+  }
+  let etiketAday = [];   // [{ ad, alt }] — sunucudan (Görevler yanıtı); notta "@" ile etiketlenebilecek kişiler
+  const DEMO_ETIKET = [{ ad: 'Örnek Rehber', alt: 'E Lise rehberi' }, { ad: 'Örnek Kadın Rehber', alt: 'K rehberi' }, { ad: 'Örnek Org', alt: 'Org sorumlusu' }, { ad: 'Örnek Koç Rehberi', alt: 'Ders Koçu Rehberi (E)' }, { ad: 'Örnek Mentor', alt: 'Mentor · E10' }];
   /** Not ekle (takip eden / izleyen): durum değişmez; toplu görevde bütün sorumlulara düşer */
   function yorumEditoru(g, kart, dug) {
     const eski = Array.from(dug.childNodes);
-    const not = el('textarea', { sinif: 'gorev-not-girdi', rows: '5', placeholder: 'Sorumlulara not: ör. derslerin yanına seviyesini de yazın (Math 20-1 gibi). Bağlantı da yapıştırabilirsiniz.', maxlength: '800' });
+    const aday = DEMO ? DEMO_ETIKET : etiketAday, oner = el('div', { sinif: 'etiket-oner' }); oner.hidden = true;
+    const kucuk = function (t) { return t.toLocaleLowerCase('tr'); };
+    const onerCiz = function () {   // imleçten önce "@har…" varsa eşleşen kişiler
+      const pos = not.selectionStart, bas = not.value.slice(0, pos), m = bas.match(/(?:^|\s)@([^\s@]{0,20})$/);
+      if (!m || !aday.length) { oner.hidden = true; return; }
+      const q = kucuk(m[1]);
+      const uy = aday.filter(function (x) { return kucuk(x.ad).split(/\s+/).concat(kucuk(x.alt).split(/[\s·()]+/)).some(function (w) { return w.indexOf(q) === 0; }); }).slice(0, 8);
+      oner.replaceChildren.apply(oner, uy.map(function (x) {
+        const b = el('button', { type: 'button' }, [el('b', { metin: x.ad }), el('span', { metin: x.alt })]);
+        b.onclick = function () {
+          const on = bas.slice(0, bas.length - m[1].length) + x.ad + ' ';
+          not.value = on + not.value.slice(pos).replace(/^ /, ''); oner.hidden = true;
+          not.focus(); not.setSelectionRange(on.length, on.length);
+        };
+        return b;
+      }));
+      oner.hidden = !uy.length;
+    };
+    const etDug = aday.length ? el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: '@ Kişi etiketle' }) : null;
+    if (etDug) etDug.onclick = function () {
+      const pos = not.selectionStart, on = not.value.slice(0, pos), ek = (on && !/\s$/.test(on) ? ' ' : '') + '@';
+      not.value = on + ek + not.value.slice(pos); not.focus(); not.setSelectionRange(pos + ek.length, pos + ek.length); onerCiz();
+    };
+    const not = el('textarea', { sinif: 'gorev-not-girdi', rows: '5', placeholder: 'Sorumlulara not: ör. derslerin yanına seviyesini de yazın (Math 20-1 gibi). Bağlantı da yapıştırabilirsiniz. Birine seslenmek için @ yazın.', maxlength: '800' });
     const kaydet = el('button', { sinif: 'kucuk', type: 'button', metin: 'Notu gönder' });
     const vazgec = el('button', { sinif: 'baglanti-kucuk', type: 'button', metin: 'Vazgeç' });
-    vazgec.onclick = function () { not.remove(); dug.replaceChildren.apply(dug, eski); };
+    not.addEventListener('input', onerCiz); not.addEventListener('click', onerCiz);
+    vazgec.onclick = function () { not.remove(); oner.remove(); dug.replaceChildren.apply(dug, eski); };
     kaydet.onclick = function () {
       if (!not.value.trim()) { not.focus(); return; }
       kaydet.disabled = true;
-      if (DEMO) { g.gecmis = (g.gecmis || []).concat([{ m: not.value.trim(), kim: 'Siz', z: new Date().toISOString().slice(0, 10), tur: 'yorum' }]); gorevlerYukle(''); return; }
-      gorevlerYukle('&islem=gorevYorum&no=' + encodeURIComponent(g.no) + '&not=' + encodeURIComponent(not.value.trim()));   // sunucu kime gittiğini yazar
+      const et = aday.filter(function (x) { return not.value.indexOf('@' + x.ad) >= 0; }).map(function (x) { return x.ad; });
+      if (DEMO) { g.gecmis = (g.gecmis || []).concat([{ m: not.value.trim(), kim: 'Siz', z: new Date().toISOString().slice(0, 10), tur: 'yorum', et: et }]); gorevlerYukle(''); return; }
+      gorevlerYukle('&islem=gorevYorum&no=' + encodeURIComponent(g.no) + '&not=' + encodeURIComponent(not.value.trim()) + (et.length ? '&etiket=' + encodeURIComponent(et.join('|')) : ''));   // sunucu kime gittiğini yazar
     };
-    dug.before(not); dug.replaceChildren(vazgec, kaydet); not.focus();
+    dug.before(not); not.after(oner); dug.replaceChildren.apply(dug, (etDug ? [etDug] : []).concat([vazgec, kaydet])); not.focus();
   }
   /** Son durum yaz / düzenle: görev açık kalır */
   function durumEditoru(g, kart, dug, onceki, duzenle) {
