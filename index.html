@@ -21,7 +21,7 @@
       --ikon-zemin: #f0f4f2; --ikon: #5f6d69;
       --siluet: #cdd8d4; --at-renk: #e2956b;
       --r-e-gun: #4f8fd0; --r-e-yat: #1f4e9c; --r-k-gun: #e27aae; --r-k-yat: #b0306e; --r-ortak: #ee8434;
-      --r-rehberlik: #1e6b3e; --r-mentor-top: #5fb468; --r-seminer: #8a5cc7; --r-kamp: #d9a521; --r-diger: #9aa3a0; --r-dogum: #1fa5a0;
+      --r-rehberlik: #1e6b3e; --r-mentor-top: #5fb468; --r-seminer: #8a5cc7; --r-kamp: #d9a521; --r-diger: #9aa3a0; --r-dogum: #1fa5a0; --r-akademik: #7d2233;
       --r-zorunlu: #d23b2f; --r-secili: #2b3331;
       --ana: #2c5a51; --ana-etiket: #3e6c62; --ana-zemin: #eef6f3; --ana-cizgi: #d7e7e1; --rozet: #e3f1ec; --rozet-yazi: #2f6d60;
       --rapor-zemin: #fcefe6; --rapor-cizgi: #f6dccb; --rapor-baslik: #8a4a2c; --rapor-alt: #8c5537;
@@ -41,7 +41,7 @@
         --nd-zemin: #232a28; --nd-kenar: #343d3a; --nd-cizgi: rgba(220,230,225,.07); --nd-yazi: #e6ece9;
         --siluet: #3a4744; --at-renk: #fdeee4;
         --r-e-gun: #7fb6ea; --r-e-yat: #6e97e0; --r-k-gun: #f29ac4; --r-k-yat: #e06aa3; --r-ortak: #f5a05e;
-        --r-rehberlik: #4fae74; --r-mentor-top: #8fd694; --r-seminer: #b08de8; --r-kamp: #f0c75a; --r-diger: #8c9692; --r-dogum: #5fd0c8;
+        --r-rehberlik: #4fae74; --r-mentor-top: #8fd694; --r-seminer: #b08de8; --r-kamp: #f0c75a; --r-diger: #8c9692; --r-dogum: #5fd0c8; --r-akademik: #c2566a;
         --r-zorunlu: #ff6b5e; --r-secili: #e7eeeb;
         --bg: #1c2321; --kart: #252d2b; --cizgi: #34403c; --yazi: #e7eeeb; --soluk: #a3b0ac; --ok: #7f8c88;
         --ikon-zemin: #313b38; --ikon: #b9c6c2;
@@ -490,7 +490,7 @@
     .r-e-gun { background: var(--r-e-gun); } .r-e-yat { background: var(--r-e-yat); } .r-k-gun { background: var(--r-k-gun); }
     .r-k-yat { background: var(--r-k-yat); } .r-ortak { background: var(--r-ortak); } .r-rehberlik { background: var(--r-rehberlik); }
     .r-mentor-top { background: var(--r-mentor-top); } .r-seminer { background: var(--r-seminer); } .r-kamp { background: var(--r-kamp); }
-    .r-diger, .r-tatil { background: var(--r-diger); } .r-dogum { background: var(--r-dogum); }
+    .r-diger, .r-tatil { background: var(--r-diger); } .r-dogum { background: var(--r-dogum); } .r-akademik { background: var(--r-akademik); }
     .zorunlu-halka { box-shadow: 0 0 0 1.5px var(--kart), 0 0 0 3px var(--r-zorunlu); }
     .ay-gunliste { border-top: 1px solid var(--cizgi); margin-top: 8px; padding: 10px 4px 6px; }
     .ay-gunbas { font-size: 13px; font-weight: 700; color: var(--soluk); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
@@ -2933,9 +2933,11 @@
   function DEMO_TAKVIM() {
     const o = function (tur, renk, baslik, bas, bit, tumGun, yer, zorunlu, not, satir) { return { tur: tur, renk: renk, baslik: baslik, bas: bas, bit: bit, tumGun: tumGun, yer: yer || '', zorunlu: !!zorunlu, not: not || '', satir: satir }; };
     return { ok: true, etiket: 'E Lise', abonelik: 'https://example.invalid/demo', ekleyebilir: !DEMO_MENTOR,
-      turler: ['Ortak etkinlik', 'Mentor semineri', 'Kamp', 'Okul tatili', 'Diğer'], kimler: ['Herkes', 'Mentorlar', 'Rehberler', 'E Ortaokul', 'E Lise', 'K', 'E10'],
+      turler: ['Ortak etkinlik', 'Mentor semineri', 'Kamp', 'Okul tatili', 'Akademik', 'Diğer'], kimler: ['Herkes', 'Mentorlar', 'Rehberler', 'E Ortaokul', 'E Lise', 'K', 'E10'],
       olaylar: [
       Object.assign(o('Mentor semineri', 'seminer', 'Mentor Yetiştirme Semineri 3', '2026-10-13T19:00', '2026-10-13T21:00', false, 'KM', true, '', 2), DEMO_MENTOR ? {} : { yoklama: 'yok' }),
+      o('Akademik', 'akademik', 'Deneme sınavı · 9. sınıflar', '2026-10-17T10:00', '2026-10-17T12:00', false, 'KM', false, '', 4),
+      o('Akademik', 'akademik', 'Etüt', '2026-10-14T17:00', '2026-10-14T18:30', false, 'KM', false, '', 5),
       o('Toplantı', 'rehberlik', 'Rehberlik toplantısı', '2026-10-14T19:00', '2026-10-14T20:30', false),
       o('Toplantı', 'mentor-top', 'E Ortaokul mentor toplantısı', '2026-10-16T19:00', '2026-10-16T20:30', false),
       o('Günübirlik', 'e-gun', 'Günübirlik · E10', '2026-10-17T18:00', '2026-10-17T21:00', false, 'KM', false, 'İkram: Ahmet ailesi'),
