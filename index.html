@@ -555,7 +555,17 @@
     .gorev-kart.yakin { border-left-color: var(--rapor-cizgi); } .gorev-kart.gecikti { border-left-color: var(--r-zorunlu); }
     .gorev-metin { font-size: 16px; font-weight: 600; }
     .durum.kapali { color: var(--soluk); background: var(--sec-zemin); }
-    .ders-yeni { margin: 4px 0 10px; } .ders-yeni > button { width: 100%; min-height: 44px; }
+    .ders-yeni { margin: 4px 0 10px; display: flex; gap: 8px; } .ders-yeni > button { flex: 1; min-height: 44px; } .ders-yeni > .ders-form { flex: 1; }
+    .dg { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 12px; margin: 6px 0; }
+    .dg > summary { display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; list-style: none; } .dg > summary::-webkit-details-marker { display: none; }
+    .dg > summary b { min-width: 44px; font-size: 16px; } .dg > summary span { flex: 1; font-size: 13px; color: var(--soluk); }
+    .dg > summary::after { content: '›'; color: var(--soluk); font-size: 18px; transition: transform .15s; } .dg[open] > summary::after { transform: rotate(90deg); }
+    .dg.bos > summary::after { content: ''; } .dg.bos > summary { cursor: default; } .dg.bos > summary b { color: var(--soluk); font-weight: 600; }
+    .dg-ic { padding: 0 14px 10px; } .dg-bas { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--soluk); margin: 8px 0 2px; }
+    .dg-sat { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 0; border-top: 1px solid var(--cizgi); font-size: 14px; }
+    .dg-sat .gorev-alt { display: block; margin-top: 1px; } .dg-sat .dugmeler { margin: 0; flex: none; display: flex; gap: 8px; } .dg-sat .dugmeler button { margin: 0; }
+    .dg-rozet { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 1px 8px; margin-left: 6px; background: var(--rapor-zemin); color: var(--rapor-baslik); vertical-align: 1px; }
+    .dg-rozet.tamam { background: var(--rozet); color: var(--rozet-yazi); }
     .ders-ust { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
     .ders-bekleyen { font-size: 13px; font-weight: 650; color: var(--rapor-baslik); margin-top: 4px; }
     .ders-saat { font-size: 14px; font-weight: 650; color: var(--ana); margin-top: 6px; }
@@ -982,8 +992,8 @@
     #pano.grup-goz #icerik { margin-top: 0 !important; }
 
     /* ===== Kabartmalı görünüm iç ekranlarda da (18 Kas 2026): ana sayfadaki kart gölgesi + tuş gibi düğmeler. :where → özgüllük 0, kendi gölgesi olan kart (öncelik kartı vb.) etkilenmez ===== */
-    :where(.kart, .slot, .gorev-kart, .da, .ogr, .gorev, .yatili-kart, .soru, .temizlik-kart, .ay-kutu, .tp-satir, .tp-ozet, .yrd, details.detay-kutu, a.satir, .konu-kart, .rp-grup, .rp-is, .rp-toplanti, .form-kutu, .veli-form, .kaydir, .ders-ozet div, .not-govde) { box-shadow: var(--k-golge); }
-    :where(.kart, .slot, .gorev-kart, .da, .ogr, .gorev, .yatili-kart, .soru, .temizlik-kart, .ay-kutu, .tp-satir, .tp-ozet, .yrd, details.detay-kutu, a.satir, .konu-kart, .rp-grup, .rp-is, .rp-toplanti, .form-kutu, .veli-form, .kaydir, .ders-ozet div, .not-govde) :where(.kart, .slot, .gorev-kart, .da, .ogr, .gorev, .yatili-kart, .soru, .temizlik-kart, .ay-kutu, .tp-satir, .tp-ozet, .yrd, details.detay-kutu, a.satir, .konu-kart, .rp-grup, .rp-is, .rp-toplanti, .form-kutu, .veli-form, .kaydir, .ders-ozet div, .not-govde) { box-shadow: none; }   /* kart içindeki kart düz kalır */
+    :where(.kart, .slot, .gorev-kart, .da, .dg, .ogr, .gorev, .yatili-kart, .soru, .temizlik-kart, .ay-kutu, .tp-satir, .tp-ozet, .yrd, details.detay-kutu, a.satir, .konu-kart, .rp-grup, .rp-is, .rp-toplanti, .form-kutu, .veli-form, .kaydir, .ders-ozet div, .not-govde) { box-shadow: var(--k-golge); }
+    :where(.kart, .slot, .gorev-kart, .da, .dg, .ogr, .gorev, .yatili-kart, .soru, .temizlik-kart, .ay-kutu, .tp-satir, .tp-ozet, .yrd, details.detay-kutu, a.satir, .konu-kart, .rp-grup, .rp-is, .rp-toplanti, .form-kutu, .veli-form, .kaydir, .ders-ozet div, .not-govde) :where(.kart, .slot, .gorev-kart, .da, .dg, .ogr, .gorev, .yatili-kart, .soru, .temizlik-kart, .ay-kutu, .tp-satir, .tp-ozet, .yrd, details.detay-kutu, a.satir, .konu-kart, .rp-grup, .rp-is, .rp-toplanti, .form-kutu, .veli-form, .kaydir, .ders-ozet div, .not-govde) { box-shadow: none; }   /* kart içindeki kart düz kalır */
     button.kucuk:not(.sicak), .da-dug, .da-d:not(.benim):not(.dolu), .da-g:not(.sec) { background: var(--t-zemin); border: 1px solid var(--t-kenar); box-shadow: var(--t-golge); }
     button.kucuk.sicak { box-shadow: var(--t-golge); }
     button.kucuk:not(:disabled):active, .da-dug:active, .da-d:not(:disabled):active, .da-g:active { box-shadow: inset 0 2px 4px rgba(20, 45, 38, .18); transform: translateY(1px); filter: none; }
@@ -2763,7 +2773,7 @@
 
   // Ay görünümü (Google Takvim'in telefondaki ay görünümü gibi): günlerde renkli noktalar (zorunluya kırmızı halka);
   // dokunulan günün etkinlikleri altta — Liste ya da Saatler; rehber/org "+ Ekle" ile etkinlik ekler
-  let takvimAy = null, takvimSecili = null, gunGorunumu = 'liste', ekleAcik = false;
+  let takvimAy = null, takvimSecili = null, gunGorunumu = 'liste', ekleAcik = false, duzenUid = '';
   function isoGun(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function gunOlaylari(s, iso) {
     return s.olaylar.filter(function (o) { const b = o.bas.slice(0, 10), e = (o.tumGun ? o.bit : o.bas).slice(0, 10); return b <= iso && e >= iso; });
@@ -2797,8 +2807,9 @@
     return kap;
   }
 
-  function ekleFormu(s, iso, iptal) {
+  function ekleFormu(s, iso, iptal, o) {   // o verilirse o etkinlik düzeltilir (19 Kas)
     const f = el('div', { sinif: 'ekle-form' });
+    const tarihG = el('input', { type: 'date', 'aria-label': 'Tarih', value: iso });
     const baslik = el('input', { type: 'text', placeholder: 'Başlık (ör. Mentor Yetiştirme Semineri 4)', maxlength: '80' });
     const saat = el('input', { type: 'time', 'aria-label': 'Saat (boş = tüm gün)' });
     const bitis = el('input', { type: 'date', 'aria-label': 'Bitiş günü (birden çok gün sürüyorsa)', min: iso });
@@ -2825,21 +2836,40 @@
     vazgec.onclick = iptal;
     kaydet.onclick = function () {
       if (!baslik.value.trim()) { baslik.focus(); return; }
+      if (o) { if (!tarihG.value) { tarihG.focus(); return; } iso = tarihG.value; }
+      if (bitis.value && bitis.value < iso) { alert('Bitiş günü başlangıçtan önce olamaz.'); bitis.focus(); return; }
       if (tekrar.value && (!bitis.value || bitis.value <= iso)) { alert('Tekrar eden etkinlik için "Ne zamana kadar" tarihini seçin.'); bitis.focus(); return; }
       if (kimler.value === '__cok' && !secili.length) { alert('En az bir grup seçin.'); return; }
       const kimDeger = kimler.value === '__cok' ? gruplar.filter(function (g) { return secili.indexOf(g) >= 0; }).join(', ') : kimler.value;
       kaydet.disabled = true;
       const ek = '&islem=takvimEkle&tarih=' + iso + '&saat=' + encodeURIComponent(saat.value) + '&bitis=' + encodeURIComponent(bitis.value) +
         '&tur=' + encodeURIComponent(tur.value) + '&kimler=' + encodeURIComponent(kimDeger) + '&baslik=' + encodeURIComponent(baslik.value.trim()) +
-        '&yer=' + encodeURIComponent(yer.value.trim()) + '&not=' + encodeURIComponent(notG.value.trim()) + '&zorunlu=' + (zorunlu.checked ? '1' : '0') + '&tekrar=' + encodeURIComponent(tekrar.value);
+        '&yer=' + encodeURIComponent(yer.value.trim()) + '&not=' + encodeURIComponent(notG.value.trim()) + '&zorunlu=' + (zorunlu.checked ? '1' : '0') + '&tekrar=' + encodeURIComponent(tekrar.value) +
+        (o ? '&satir=' + o.satir + '&eski=' + encodeURIComponent(o.baslik) : '');
       takvimIslemYap(ek);
     };
-    [baslik, el('div', { sinif: 'iki' }, [alan('Saat', saat), alan('Tekrar', tekrar)]), alan(bitisEtiket, bitis),
+    if (o) {   // mevcut değerlerle doldur
+      baslik.value = o.baslik; saat.value = o.saat || (o.tumGun ? '' : String(o.bas || '').slice(11, 16)); tekrar.value = o.tekrar || ''; tekrar.onchange();
+      bitis.removeAttribute('min'); if (o.son && o.son !== iso) bitis.value = o.son;
+      if ([].slice.call(tur.options).some(function (x) { return x.value === o.tur; })) tur.value = o.tur;
+      const km = String(o.kimler || '');
+      if (km.indexOf(',') >= 0 && gruplar.length > 1) {
+        kimler.value = '__cok'; cokKutu.hidden = false;
+        km.split(',').forEach(function (g) { g = g.trim(); const b = [].slice.call(cokKutu.children).filter(function (x) { return x.textContent === g; })[0]; if (b) b.click(); });
+      } else if (km) {
+        if (![].slice.call(kimler.options).some(function (x) { return x.value === km; })) kimler.insertBefore(el('option', { value: km, metin: km }), kimler.firstChild);
+        kimler.value = km;
+      }
+      yer.value = o.yer || ''; notG.value = /^Uygulamadan:/.test(o.not || '') ? '' : (o.not || ''); zorunlu.checked = !!o.zorunlu;
+      kaydet.textContent = 'Değişikliği kaydet';
+    }
+    [o ? el('div', { sinif: 'veli-baslik' }, [el('span', { metin: 'Etkinliği düzenle' })]) : null, baslik, o ? alan(o.tekrar ? 'İlk gün' : 'Tarih', tarihG) : null,
+     el('div', { sinif: 'iki' }, [alan('Saat', saat), alan('Tekrar', tekrar)]), alan(bitisEtiket, bitis),
      el('div', { sinif: 'iki' }, [alan('Tür', tur), alan('Kimler', kimler)]), cokKutu, yer, notG,
      el('label', { sinif: 'onay' }, [zorunlu, document.createTextNode('Zorunlu')]),
-     el('p', { sinif: 'not', metin: 'Saat boşsa tüm gün. Tekrar edenler her gün / hafta / ay ayrı görünür (en fazla 1 yıl); silince hepsi silinir.' }),
+     el('p', { sinif: 'not', metin: o && o.tekrar ? 'Bu etkinlik tekrar ediyor: değişiklik bütün günlerine uygulanır.' : 'Saat boşsa tüm gün. Tekrar edenler her gün / hafta / ay ayrı görünür (en fazla 1 yıl); silince hepsi silinir.' }),
      el('div', { sinif: 'dugmeler' }, [vazgec, kaydet])]
-      .forEach(function (x) { f.appendChild(x); });
+      .forEach(function (x) { if (x) f.appendChild(x); });
     setTimeout(function () { baslik.focus(); }, 50);
     return f;
   }
@@ -2894,11 +2924,11 @@
   }
 
   async function takvimIslemYap(ek) {
-    if (DEMO) { alert('Demo: kaydedilmedi.'); ekleAcik = false; takvimCiz(takvimVeri); return; }
+    if (DEMO) { alert('Demo: kaydedilmedi.'); ekleAcik = false; duzenUid = ''; takvimCiz(takvimVeri); return; }
     try {
       const s = await islem(ek);
       if (!s.ok) { alert(HATA_METNI[s.hata] || 'Bir sorun oluştu.'); return; }
-      takvimVeri = s; takvimZamani = Date.now(); ekleAcik = false; takvimCiz(s);
+      takvimVeri = s; takvimZamani = Date.now(); ekleAcik = false; duzenUid = ''; takvimCiz(s);
     } catch (e) { alert('Bağlantı kurulamadı. Tekrar deneyin.'); }
   }
 
@@ -2932,7 +2962,7 @@
         const h = el('button', { type: 'button', sinif: 'ay-gun' + (iso === bugun ? ' bugun' : '') + (iso === takvimSecili ? ' secili' : '') + (tatil ? ' tatil' : ''),
                                  'aria-label': g + ' ' + AYLAR_UZUN[takvimAy.getMonth()] + (ol.length ? ', ' + ol.length + ' etkinlik' : '') },
                          [el('span', { metin: String(g) }), noktalar]);
-        h.onclick = function () { takvimSecili = iso; ekleAcik = false; ciz(); };
+        h.onclick = function () { takvimSecili = iso; ekleAcik = false; duzenUid = ''; ciz(); };
         izgara.appendChild(h);
       }
       kap.appendChild(izgara);
@@ -2946,7 +2976,7 @@
       const sag = el('span', { style: 'display:flex;gap:6px;align-items:center' }, [secim]);
       if (s.ekleyebilir && !ekleAcik) {
         const ek = el('button', { sinif: 'kucuk sicak', type: 'button', metin: '+ Ekle' });
-        ek.onclick = function () { ekleAcik = true; ciz(); };
+        ek.onclick = function () { ekleAcik = true; duzenUid = ''; ciz(); };
         sag.appendChild(ek);
       }
       const gunListe = el('div', { sinif: 'ay-gunliste' }, [el('div', { sinif: 'ay-gunbas-satir' }, [
@@ -2957,6 +2987,9 @@
       else gol.forEach(function (o) {
         const sil = s.ekleyebilir && o.satir ? el('button', { sinif: 'kucuk', type: 'button', metin: 'Sil' }) : null;
         if (sil) sil.onclick = function () { if (confirm('"' + o.baslik + '" takvimden silinsin mi?' + (o.tekrar ? ' (' + o.tekrar.toLocaleLowerCase('tr') + ' tekrar eden etkinliğin TÜM günleri silinir)' : ''))) takvimIslemYap('&islem=takvimSil&satir=' + o.satir + '&baslik=' + encodeURIComponent(o.baslik)); };
+        if (duzenUid === o.uid && sil) { gunListe.appendChild(ekleFormu(s, o.ilk || o.tarih || o.bas.slice(0, 10), function () { duzenUid = ''; ciz(); }, o)); return; }
+        const duz = sil ? el('button', { sinif: 'kucuk', type: 'button', metin: 'Düzenle' }) : null;
+        if (duz) duz.onclick = function () { duzenUid = o.uid; ekleAcik = false; ciz(); };
         const yk = o.yoklama !== undefined && o.satir ? el('button', { sinif: 'kucuk' + (o.yoklama === 'yok' ? ' sicak' : ''), type: 'button',
           metin: o.yoklama === 'yok' ? 'Yoklama' : 'Yoklama ' + o.yoklama }) : null;
         const ykAlan = el('div');
@@ -2964,7 +2997,7 @@
         gunListe.appendChild(el('div', { sinif: 'ay-olay' }, [el('i', { sinif: renkSinifi(o) + (o.zorunlu ? ' zorunlu-halka' : '') }),
           el('span', {}, [el('b', { metin: o.baslik }), el('small', { metin: (o.tumGun ? 'Tüm gün' : o.bas.slice(11) + '–' + o.bit.slice(11)) + (o.yer ? ' · ' + o.yer : '') }),
             o.not && !/^Uygulamadan:/.test(o.not) ? linkliMetin(o.not) : null].filter(Boolean)),
-          yk || sil, yk ? sil : null]));
+          yk, duz, sil].filter(Boolean)));
         gunListe.appendChild(ykAlan);
       });
       kap.appendChild(gunListe);
@@ -5642,6 +5675,7 @@
   const DERS_HATA = {
     dersKurulum: 'Ders Desteği tablosu henüz kurulmadı (sistem sorumlusu: dersDestegiKur).', dersYok: 'Talep bulunamadı; liste yenilendi.',
     dersDurum: 'Talebin durumu değişmiş; liste yenilendi.', dersEksik: 'Ders ve konuyu seçin.', dersAyni: 'Bu öğrenci için bu konuda açık bir talep zaten var.',
+    dersAdayDers: 'En az bir ders seçin.', dersAdayEposta: 'E-posta adresi geçerli değil.', dersAdayVar: 'Bu kişi bu grupta zaten aday ya da koç.',
     dersKoc: 'Koç bulunamadı ya da aktif değil (Koçlar sekmesi).', dersKocEposta: 'Koçun e-postası Koçlar sekmesinde eksik.',
     dersSecenek: 'Üç saat seçeneğinin hepsini eksiksiz girin (tarih, saat, süre, yer).', dersAyniSaat: 'Üç seçenek birbirinden farklı olmalı.', dersTarih: 'Saat en az 2 saat sonrası ve en geç 60 gün içinde olmalı.',
     ders22: 'Görüşme en geç 22:00\'de bitmeli.', dersCakisma: 'Bu saatte koçun başka bir görüşmesi var', dersDolu: 'Bu saat az önce doldu; başka bir saat seçin.',
@@ -5728,8 +5762,10 @@
     const biten = s.talepler.filter(function (t) { return DERS_AKTIF.indexOf(t.durum) < 0; });
     if (s.yetki.ac && s.ogrenciler && s.ogrenciler.length && !saltOkunurDers(s)) {
       const ac = el('button', { sinif: 'kucuk sicak', type: 'button', metin: '+ Yeni talep' });
-      const kap = el('div', { sinif: 'ders-yeni' }, [ac]);
+      const adayD = el('button', { sinif: 'kucuk', type: 'button', metin: '+ Koç adayı' });
+      const kap = el('div', { sinif: 'ders-yeni' }, [ac, adayD]);
       ac.onclick = function () { kap.replaceChildren(talepFormu(s, function () { dersCiz(); })); };
+      adayD.onclick = function () { kap.replaceChildren(adayFormu(s, function () { dersCiz(); })); };
       ic.appendChild(kap);
     }
     if (s.yetki.yonet) {
@@ -5738,6 +5774,7 @@
       const kutu = function (n, m) { return el('div', {}, [el('b', { metin: String(n) }), el('span', { metin: m })]); };
       ic.appendChild(el('div', { sinif: 'ders-ozet' }, [kutu(bekleyen.length, 'sizi bekliyor'), kutu(diger.length, 'süreçte'),
         kutu(biten.filter(function (t) { return t.durum === 'Tamamlandı'; }).length, 'tamamlandı')]));
+      grupOzeti(s, ic);
       ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Sizi bekliyor' }));
       if (!bekleyen.length) ic.appendChild(el('p', { sinif: 'not ders-bos', metin: 'Şu an onayınızı ya da atamanızı bekleyen talep yok.' }));
       bekleyen.forEach(function (t) { ic.appendChild(talepKarti(t, s)); });
@@ -5750,12 +5787,21 @@
       const kutu = function (n, m) { return el('div', {}, [el('b', { metin: String(n) }), el('span', { metin: m })]); };
       ic.appendChild(el('div', { sinif: 'ders-ozet' }, [kutu(aktif.length, 'açık talep'), kutu(takilan.length, '48 saati geçen'),
         kutu(biten.filter(function (t) { return t.durum === 'Tamamlandı' && t.saat <= aySaat; }).length, 'bu ay biten')]));
+      grupOzeti(s, ic);
       if (takilan.length) { ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Takılanlar · 48 saat+' })); takilan.forEach(function (t) { ic.appendChild(talepKarti(t, s)); }); }
       const diger = aktif.filter(function (t) { return takilan.indexOf(t) < 0; });
       ic.appendChild(el('div', { sinif: 'hs-baslik', metin: takilan.length ? 'Diğer açık talepler' : 'Açık talepler' }));
       if (!diger.length) ic.appendChild(el('p', { sinif: 'not ders-bos', metin: takilan.length ? 'Başka açık talep yok.' : 'Şu an açık talep yok.' }));
       diger.forEach(function (t) { ic.appendChild(talepKarti(t, s)); });
     } else {
+      if (s.adaylar && s.adaylar.length) {
+        ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Grubunuzdan ders koçları' }));
+        const k = el('div', { sinif: 'dg' }), i2 = el('div', { sinif: 'dg-ic' });
+        s.adaylar.forEach(function (c) { i2.appendChild(el('div', { sinif: 'dg-sat' }, [el('div', {}, [el('b', { metin: c.ad }), el('span', { sinif: 'dg-rozet' + (c.aday ? '' : ' tamam'), metin: c.aday ? 'onay bekliyor' : 'aktif koç' }),
+          el('span', { sinif: 'gorev-alt', metin: dersAdlari(c.dersler) + (c.ekleyen ? ' · ekleyen: ' + c.ekleyen : '') })])])); });
+        i2.firstChild.style.borderTop = '0';
+        k.appendChild(i2); ic.appendChild(k);
+      }
       ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Açık talepler' }));
       if (!aktif.length) ic.appendChild(el('p', { sinif: 'not ders-bos', metin: 'Açık talep yok. Bir öğrenci bir derste zorlanıyorsa onunla birlikte talep açın.' }));
       aktif.forEach(function (t) { ic.appendChild(talepKarti(t, s)); });
@@ -5772,6 +5818,72 @@
       : 'Saati öğrenci seçer (e-postayla; e-postası yoksa link size gelir). Bu yıl bu koçla ilk görüşmeyse ardından veliye onay e-postası gider. 2 gün cevap gelmezse size haber verilir; linkleri WhatsApp\'tan da iletebilirsiniz.' }));
   }
   function saltOkunurDers(s) { return s.rol === 'musahit'; }
+  function dersAdlari(a) { return (a || []).map(function (x) { return DERS_TR[x] || x; }).join(', '); }
+
+  /** Akademik mesul + Ders Koçu Rehberi: gruplara göre kim talep etti, kim ders koçu olmak istiyor (talebi/adayı olmayan grup da görünür). */
+  function grupOzeti(s, ic) {
+    const koclar = (s.koclar || []).filter(function (c) { return c.grup && (c.aday || c.aktif); });
+    const gruplar = (s.gruplar || []).slice();
+    s.talepler.forEach(function (t) { if (gruplar.indexOf(t.grup) < 0) gruplar.push(t.grup); });
+    koclar.forEach(function (c) { if (gruplar.indexOf(c.grup) < 0) gruplar.push(c.grup); });
+    if (!gruplar.length) return;
+    const bekleyenAday = koclar.filter(function (c) { return c.aday; }).length;
+    ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Gruplara göre' + (bekleyenAday ? ' · ' + bekleyenAday + ' aday onay bekliyor' : '') }));
+    gruplar.forEach(function (g) {
+      const tl = s.talepler.filter(function (t) { return t.grup === g; }), kl = koclar.filter(function (c) { return c.grup === g; });
+      const ozet = !tl.length && !kl.length ? 'talep yok · koç adayı yok' : (tl.length ? tl.length + ' talep' : 'talep yok') + ' · ' + (kl.length ? [kl.filter(function (c) { return !c.aday; }).length ? kl.filter(function (c) { return !c.aday; }).length + ' koç' : '', kl.filter(function (c) { return c.aday; }).length ? kl.filter(function (c) { return c.aday; }).length + ' aday' : ''].filter(String).join(' · ') : 'koç adayı yok');
+      const d = el('details', { sinif: 'dg' + (tl.length || kl.length ? '' : ' bos') }, [el('summary', {}, [el('b', { metin: g }), el('span', { metin: ozet })])]);
+      if (!tl.length && !kl.length) { d.addEventListener('click', function (e) { e.preventDefault(); }); ic.appendChild(d); return; }
+      if (kl.some(function (c) { return c.aday && c.onay; })) d.open = true;
+      const i2 = el('div', { sinif: 'dg-ic' });
+      if (tl.length) i2.appendChild(el('div', { sinif: 'dg-bas', metin: 'Ders talebi' }));
+      tl.forEach(function (t) {
+        i2.appendChild(el('div', { sinif: 'dg-sat' }, [el('div', {}, [el('b', { metin: t.ogr }), document.createTextNode(' — ' + dersAdi(t)),
+          el('span', { sinif: 'gorev-alt', metin: [t.durum, t.acan ? 'açan: ' + t.acan : ''].filter(String).join(' · ') })])]));
+      });
+      if (kl.length) i2.appendChild(el('div', { sinif: 'dg-bas', metin: 'Ders koçu olmak isteyen' }));
+      kl.forEach(function (c) {
+        const sat = el('div', { sinif: 'dg-sat' }, [el('div', {}, [el('b', { metin: c.ad }), el('span', { sinif: 'dg-rozet' + (c.aday ? '' : ' tamam'), metin: c.aday ? 'aday' : 'aktif koç' }),
+          el('span', { sinif: 'gorev-alt', metin: [dersAdlari(c.dersler), c.ekleyen ? 'ekleyen: ' + c.ekleyen : ''].filter(String).join(' · ') })])]);
+        if (c.aday && c.onay) {
+          const ev = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Onayla' }), ha = el('button', { sinif: 'kucuk', type: 'button', metin: 'Çıkar' });
+          ev.onclick = function () { dersGonder({ islem: 'dersKocOnay', no: c.no, karar: 'evet' }, ev); };
+          ha.onclick = function () { if (confirm(c.ad + ' aday listesinden çıkarılsın mı?')) dersGonder({ islem: 'dersKocOnay', no: c.no, karar: 'hayir' }, ha); };
+          sat.appendChild(el('div', { sinif: 'dugmeler' }, [ha, ev]));
+        }
+        i2.appendChild(sat);
+      });
+      d.appendChild(i2); ic.appendChild(d);
+    });
+  }
+
+  /** Mentor: kendi grubundan bir öğrenciyi (ya da kendini) ders koçu adayı olarak ekler → Koçlar sekmesine "Aday" düşer, Ders Koçu Rehberi onaylar. */
+  function adayFormu(s, vazgecFn) {
+    const f = el('div', { sinif: 'ekle-form kart ders-form' });
+    const v = { dersler: [] };
+    const kim = el('select', { 'aria-label': 'Kim' });
+    s.ogrenciler.forEach(function (o) { kim.appendChild(el('option', { value: o, metin: o })); });
+    kim.appendChild(el('option', { value: '__ben', metin: 'Ben (kendim)' }));
+    const eposta = el('input', { type: 'email', placeholder: 'ad@ornek.com (varsa)', maxlength: '80', autocomplete: 'off' });
+    const epostaAlan = alanEl('E-postası', eposta);
+    kim.onchange = function () { epostaAlan.hidden = kim.value === '__ben'; };
+    const dersler = Object.keys(DERS_KATALOG);
+    const secim = secimGrubu(dersler.map(function (d) { return DERS_TR[d] || d; }), true, function () { return v.dersler; }, function (a) { v.dersler = a; });
+    const not = el('textarea', { placeholder: 'İsteğe bağlı: hangi sınıf düzeyine kadar, hangi günler uygun?', maxlength: '300' });
+    const gonder = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Aday olarak ekle' });
+    const vazgec = el('button', { sinif: 'kucuk', type: 'button', metin: 'Vazgeç' });
+    vazgec.onclick = vazgecFn;
+    gonder.onclick = function () {
+      if (!v.dersler.length) { alert(DERS_HATA.dersAdayDers); return; }
+      const anahtar = dersler.filter(function (d) { return v.dersler.indexOf(DERS_TR[d] || d) >= 0; });
+      dersGonder({ islem: 'dersKocAday', grup: s.grup, kim: kim.value, dersler: anahtar.join('|'), eposta: eposta.value.trim(), not: not.value.trim() }, gonder);
+    };
+    [el('div', { sinif: 'veli-baslik' }, [el('span', { metin: 'Ders koçu adayı · ' + s.grup })]),
+     alanEl('Kim ders koçu olmak istiyor?', kim), el('span', { sinif: 'ders-etiket', metin: 'Hangi derslerde yardımcı olabilir?' }), secim, epostaAlan, alanEl('Not', not),
+     el('p', { sinif: 'not', metin: 'Aday, Ders Koçu Rehberine ve akademik mesule bildirilir; onaylanınca koç listesine girer.' }),
+     el('div', { sinif: 'dugmeler' }, [vazgec, gonder])].forEach(function (x) { f.appendChild(x); });
+    return f;
+  }
   function dersRehberiMi() { try { return !!(JSON.parse(depo.al('kisi') || 'null') || {}).dkr; } catch (e) { return false; } }
 
   /** Talebin akışı: 7 adım; tamamlananlar ✓ (ne zaman, kim), şu anki adım vurgulu ("Bekleyen: Veli · 2 gündür"), sonrakiler soluk */
@@ -6004,7 +6116,7 @@
     if (!s.koclar.length) d.appendChild(el('p', { sinif: 'not', metin: 'Henüz koç yok. Ders Desteği tablosunun Koçlar sekmesine ekleyin (No, Ad, Tür, Dersler, Kapasite, E-posta, Aktif).' }));
     s.koclar.forEach(function (c) {
       const sat = el('div', { sinif: 'ders-koc' + (c.aktif ? '' : ' pasif') }, [
-        el('div', {}, [el('b', { metin: c.ad }), el('span', { sinif: 'gorev-alt', metin: [c.tur, c.dersler.join(', '), c.yuk + '/' + c.kapasite + ' aktif', c.aktif ? '' : 'pasif', c.eposta ? '' : 'e-posta yok'].filter(String).join(' · ') })])]);
+        el('div', {}, [el('b', { metin: c.ad }), el('span', { sinif: 'gorev-alt', metin: [c.grup || '', c.tur, dersAdlari(c.dersler), c.yuk + '/' + c.kapasite + ' aktif', c.aday ? 'aday · onay bekliyor' : c.aktif ? '' : 'pasif', c.eposta ? '' : 'e-posta yok'].filter(String).join(' · ') })])]);
       if (s.yetki.yonet && c.aktif && c.eposta) {
         const b = el('button', { sinif: 'kucuk', type: 'button', metin: 'Davet gönder' });
         b.onclick = function () { if (confirm(c.ad + ' için kişisel link e-postayla gönderilsin mi?')) dersGonder({ islem: 'dersDavet', no: c.no }, b); };
@@ -6313,6 +6425,8 @@
 
   // ----- Demo (?demo&ekran=dersler, &rol=koc / &rol=mentor; ?demo&d=D-0001.v.x → seçim sayfası) -----
   let demoDers = null;
+  let demoAday = [{ no: '4', ad: 'Ali', tur: 'Liseli', dersler: ['Chemistry', 'Mathematics'], kapasite: 3, aktif: false, aday: true, yuk: 0, eposta: false, grup: 'E10', ekleyen: 'Örnek Mentor' },
+    { no: '5', ad: 'Kerem', tur: 'Liseli', dersler: ['Physics'], kapasite: 3, aktif: false, aday: true, yuk: 0, eposta: true, grup: 'E11', ekleyen: 'Örnek Mentor 2' }];
   function DEMO_DERS() {
     if (!demoDers) demoDers = [
       { id: 'D-0003', grup: 'E11', ogr: 'Elif', sinif: '11', ders: 'Biology', kurs: 'Biology 20', konu: 'Ecosystems', seviye: 'Kısmen', zaman: 'Bu hafta', not: 'Sınav 30 Ekim.', acan: 'Örnek Mentor', mentor: 'Örnek Mentor', durum: 'Koç ataması', kocNo: '', koc: '', secenekler: [], secilen: null, meet: '', izin: false, bekleyen: 'Ders Koçu Rehberi', saat: 5, acildi: '18 Eki', on: null, son: null, rapor: '' },
@@ -6332,14 +6446,18 @@
       eposta: { Ahmet: { veli: true, ogrenci: true, izin: true }, Mehmet: { veli: false, ogrenci: false, izin: false }, Yusuf: { veli: true, ogrenci: false, izin: true }, Ali: { veli: true, ogrenci: true, izin: true } },
       koclar: koc || mentor ? undefined : [{ no: '1', ad: 'Yusuf', tur: 'Üniversiteli', dersler: ['Matematik', 'Fizik'], kapasite: 3, aktif: true, yuk: 3, eposta: true },
         { no: '2', ad: 'Meryem', tur: 'Üniversiteli', dersler: ['Biyoloji', 'Kimya', 'İngilizce'], kapasite: 3, aktif: true, yuk: 1, eposta: true },
-        { no: '3', ad: 'Hasan', tur: 'Liseli', dersler: ['Matematik'], kapasite: 2, aktif: true, yuk: 0, eposta: true }],
+        { no: '3', ad: 'Hasan', tur: 'Liseli', dersler: ['Matematik'], kapasite: 2, aktif: true, yuk: 0, eposta: true, grup: 'E12', ekleyen: 'Örnek Mentor' }].concat(demoAday.map(function (c) { return Object.assign({ onay: yon }, c); })),
+      gruplar: koc || mentor ? undefined : ['E9', 'E10', 'E11', 'E12'],
+      adaylar: mentor ? demoAday.filter(function (c) { return c.grup === 'E10'; }) : undefined,
       tablo: koc || mentor ? undefined : '#', ben: koc ? { ad: 'Yusuf', dersler: ['Matematik', 'Fizik'], kapasite: 3, yuk: 3 } : undefined };
   }
   function DEMO_DERS_ISLEM(g) {
+    if (g.islem === 'dersKocAday') demoAday.push({ no: String(6 + demoAday.length), ad: g.kim === '__ben' ? 'Örnek Mentor' : g.kim, tur: 'Liseli', dersler: g.dersler.split('|'), kapasite: 3, aktif: false, aday: true, yuk: 0, eposta: !!g.eposta, grup: g.grup, ekleyen: 'Örnek Mentor' });
+    if (g.islem === 'dersKocOnay') demoAday.forEach(function (c) { if (c.no === g.no) { c.aday = false; c.aktif = g.karar === 'evet'; } });
     const t = (demoDers || []).filter(function (x) { return x.id === g.id; })[0], s = DEMO_DERS();
     const bilgi = { dersTalep: 'Talep açıldı; Ders Koçu Rehberine bildirildi.', dersAta: 'Koç atandı; e-postayla haber verildi.', dersOnay: 'Onaylandı. Takvim daveti 6 kişiye gitti.',
                     dersSaat: 'Saatler gönderildi: öğrenciye e-posta.', dersRapor: 'Rapor kaydedildi ve herkese gönderildi.', dersIptal: 'Talep iptal edildi.',
-                    dersDavet: 'Kişisel link e-postayla gönderildi.', dersMentorSecim: 'Seçildi. Ders Koçu Rehberi onaylayınca takvim daveti gelecek.',
+                    dersDavet: 'Kişisel link e-postayla gönderildi.', dersKocAday: 'Ders koçu adayı eklendi; Ders Koçu Rehberine bildirildi.', dersKocOnay: g.karar === 'evet' ? 'Artık aktif ders koçu.' : 'Aday listesinden çıkarıldı.', dersMentorSecim: 'Seçildi. Ders Koçu Rehberi onaylayınca takvim daveti gelecek.',
                     dersGeriSaat: 'Ders koçundan yeni saat istendi.', dersLink: 'Link kaydedildi; davet güncellendi.' }[g.islem];
     const yeni = { dersAta: 'Saat önerisi', dersOnay: 'Planlandı', dersSaat: 'Saat seçimi', dersRapor: 'Tamamlandı', dersIptal: 'İptal', dersMentorSecim: 'Son onay', dersGeriSaat: 'Saat önerisi' }[g.islem];
     if (t && yeni) { t.durum = yeni; t.saat = 0; t.bekleyen = ''; if (g.islem === 'dersRapor') t.rapor = g.not; }
