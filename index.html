@@ -564,6 +564,10 @@
     .dg-ic { padding: 0 14px 10px; } .dg-bas { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--soluk); margin: 8px 0 2px; }
     .dg-sat { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 0; border-top: 1px solid var(--cizgi); font-size: 14px; }
     .dg-sat .gorev-alt { display: block; margin-top: 1px; } .dg-sat .dugmeler { margin: 0; flex: none; display: flex; gap: 8px; } .dg-sat .dugmeler button { margin: 0; }
+    .dg-ogr { border-top: 1px solid var(--cizgi); } .dg-ogr > summary { padding: 7px 0; cursor: pointer; list-style: none; font-size: 14px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+    .dg-ogr > summary::-webkit-details-marker { display: none; } .dg-ogr > summary::before { content: '+'; color: var(--soluk); width: 10px; } .dg-ogr[open] > summary::before { content: '–'; }
+    .dg-ders { margin: 0 0 6px 18px; font-size: 13px; white-space: pre-line; overflow-wrap: anywhere; } .dg-ders b { font-weight: 600; color: var(--soluk); }
+    .dg-eksik { margin: 8px 0 2px; padding-top: 8px; border-top: 1px solid var(--cizgi); font-size: 13px; color: var(--rapor-baslik); } .dg-eksik b { font-weight: 650; }
     .dg-rozet { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 1px 8px; margin-left: 6px; background: var(--rapor-zemin); color: var(--rapor-baslik); vertical-align: 1px; }
     .dg-rozet.tamam { background: var(--rozet); color: var(--rozet-yazi); }
     .ders-ust { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
@@ -5802,6 +5806,11 @@
         i2.firstChild.style.borderTop = '0';
         k.appendChild(i2); ic.appendChild(k);
       }
+      const mo = s.okul && s.grup && s.okul[s.grup];
+      if (mo && (mo.dolduran.length || mo.eksik.length)) {
+        const md = el('details', { sinif: 'dg' }, [el('summary', {}, [el('b', { metin: 'Okul dersleri' }), el('span', { metin: mo.toplam ? (mo.toplam - mo.eksik.length) + '/' + mo.toplam + ' öğrenci formu doldurdu' : mo.dolduran.length + ' öğrenci doldurdu' })])]);
+        const mi = el('div', { sinif: 'dg-ic' }); okulBlogu(mo, mi); mi.firstChild.remove(); md.appendChild(mi); ic.appendChild(md);
+      }
       ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Açık talepler' }));
       if (!aktif.length) ic.appendChild(el('p', { sinif: 'not ders-bos', metin: 'Açık talep yok. Bir öğrenci bir derste zorlanıyorsa onunla birlikte talep açın.' }));
       aktif.forEach(function (t) { ic.appendChild(talepKarti(t, s)); });
@@ -5820,21 +5829,35 @@
   function saltOkunurDers(s) { return s.rol === 'musahit'; }
   function dersAdlari(a) { return (a || []).map(function (x) { return DERS_TR[x] || x; }).join(', '); }
 
+  /** Okul dersleri formu (öğrenci ders bilgi formu): dolduranlar + dersleri, doldurmayanlar. o = { dolduran, eksik, toplam } */
+  function okulBlogu(o, i2) {
+    i2.appendChild(el('div', { sinif: 'dg-bas', metin: 'Okul dersleri formu' + (o.toplam ? ' · ' + (o.toplam - o.eksik.length) + '/' + o.toplam + ' doldurdu' : '') }));
+    o.dolduran.forEach(function (x) {
+      const d = el('details', { sinif: 'dg-ogr' }, [el('summary', {}, [el('b', { metin: x.ad }), el('span', { sinif: 'gorev-alt', metin: [x.sinif ? x.sinif + '. sınıf' : '', x.okul].filter(String).join(' · ') })])]);
+      [['1. dönem', x.d1], ['2. dönem', x.d2], ['Not', x.not]].forEach(function (y) { if (y[1]) d.appendChild(el('p', { sinif: 'dg-ders' }, [el('b', { metin: y[0] + ': ' }), document.createTextNode(y[1])])); });
+      i2.appendChild(d);
+    });
+    if (o.eksik.length) i2.appendChild(el('p', { sinif: 'dg-eksik' }, [el('b', { metin: 'Doldurmayan (' + o.eksik.length + '): ' }), document.createTextNode(o.eksik.join(', '))]));
+  }
+
   /** Akademik mesul + Ders Koçu Rehberi: gruplara göre kim talep etti, kim ders koçu olmak istiyor (talebi/adayı olmayan grup da görünür). */
   function grupOzeti(s, ic) {
     const koclar = (s.koclar || []).filter(function (c) { return (c.grup || c.form) && (c.aday || c.aktif); });   // grupsuz = formu doldurup sistemdeki bir grupla eşleşmeyen (ör. üniversiteli)
     const gruplar = (s.gruplar || []).slice();
     s.talepler.forEach(function (t) { if (gruplar.indexOf(t.grup) < 0) gruplar.push(t.grup); });
     koclar.forEach(function (c) { if (c.grup && gruplar.indexOf(c.grup) < 0) gruplar.push(c.grup); });
-    if (koclar.some(function (c) { return !c.grup; })) gruplar.push('');
+    const okul = s.okul || {};
+    if (koclar.some(function (c) { return !c.grup; }) || okul['']) gruplar.push('');
     if (!gruplar.length) return;
     const bekleyenAday = koclar.filter(function (c) { return c.aday; }).length;
     ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Gruplara göre' + (bekleyenAday ? ' · ' + bekleyenAday + ' aday onay bekliyor' : '') }));
     gruplar.forEach(function (g) {
       const tl = g ? s.talepler.filter(function (t) { return t.grup === g; }) : [], kl = koclar.filter(function (c) { return (c.grup || '') === g; });
-      const ozet = !tl.length && !kl.length ? 'talep yok · koç adayı yok' : (g ? (tl.length ? tl.length + ' talep' : 'talep yok') + ' · ' : 'formu dolduranlar · ') + (kl.length ? [kl.filter(function (c) { return !c.aday; }).length ? kl.filter(function (c) { return !c.aday; }).length + ' koç' : '', kl.filter(function (c) { return c.aday; }).length ? kl.filter(function (c) { return c.aday; }).length + ' aday' : ''].filter(String).join(' · ') : 'koç adayı yok');
-      const d = el('details', { sinif: 'dg' + (tl.length || kl.length ? '' : ' bos') }, [el('summary', {}, [el('b', { metin: g || 'Grup dışı' }), el('span', { metin: ozet })])]);
-      if (!tl.length && !kl.length) { d.addEventListener('click', function (e) { e.preventDefault(); }); ic.appendChild(d); return; }
+      const ok = okul[g], okVar = ok && (ok.dolduran.length || ok.eksik.length);
+      const formOzet = ok && g && ok.toplam ? ' · form ' + (ok.toplam - ok.eksik.length) + '/' + ok.toplam : ok && !g ? ' · ' + ok.dolduran.length + ' öğrenci formu' : '';
+      const ozet = (!tl.length && !kl.length ? (g ? 'talep yok · koç adayı yok' : 'grubu bulunamayanlar') : (g ? (tl.length ? tl.length + ' talep' : 'talep yok') + ' · ' : 'formu dolduranlar · ') + (kl.length ? [kl.filter(function (c) { return !c.aday; }).length ? kl.filter(function (c) { return !c.aday; }).length + ' koç' : '', kl.filter(function (c) { return c.aday; }).length ? kl.filter(function (c) { return c.aday; }).length + ' aday' : ''].filter(String).join(' · ') : 'koç adayı yok')) + formOzet;
+      const d = el('details', { sinif: 'dg' + (tl.length || kl.length || okVar ? '' : ' bos') }, [el('summary', {}, [el('b', { metin: g || 'Grup dışı' }), el('span', { metin: ozet })])]);
+      if (!tl.length && !kl.length && !okVar) { d.addEventListener('click', function (e) { e.preventDefault(); }); ic.appendChild(d); return; }
       if (kl.some(function (c) { return c.aday && c.onay; })) d.open = true;
       const i2 = el('div', { sinif: 'dg-ic' });
       if (tl.length) i2.appendChild(el('div', { sinif: 'dg-bas', metin: 'Ders talebi' }));
@@ -5855,6 +5878,7 @@
         }
         i2.appendChild(sat);
       });
+      if (okVar) okulBlogu(ok, i2);
       d.appendChild(i2); ic.appendChild(d);
     });
   }
@@ -6452,6 +6476,14 @@
         { no: '2', ad: 'Meryem', tur: 'Üniversiteli', dersler: ['Biyoloji', 'Kimya', 'İngilizce'], kapasite: 3, aktif: true, yuk: 1, eposta: true },
         { no: '3', ad: 'Hasan', tur: 'Liseli', dersler: ['Matematik'], kapasite: 2, aktif: true, yuk: 0, eposta: true, grup: 'E12', ekleyen: 'Örnek Mentor' }].concat(demoAday.map(function (c) { return Object.assign({ onay: yon }, c); })),
       gruplar: koc || mentor ? undefined : ['E9', 'E10', 'E11', 'E12'],
+      okul: koc ? undefined : (function () { const o = { E10: { toplam: 6, eksik: ['Mehmet', 'Yusuf'], dolduran: [
+          { ad: 'Ahmet', sinif: '10', okul: 'Örnek High School', d1: 'Math 10C\nScience 10\nELA 10-1\nSocial 10-1', d2: 'Physics 20\nCALM\nPE 10', not: '' },
+          { ad: 'Ali', sinif: '10', okul: 'Örnek High School', d1: 'Math 10C, Science 10, ELA 10-1', d2: '', not: 'Matematikte destek istiyor.' },
+          { ad: 'Ömer', sinif: '10', okul: 'Başka High School', d1: 'Math 10-3, Science 14', d2: 'ELA 10-2', not: '' },
+          { ad: 'Hasan', sinif: '10', okul: 'Örnek High School', d1: 'Math 10C, Science 10', d2: '', not: '' }] },
+        E11: { toplam: 5, eksik: ['Kaan', 'Halil', 'Sinan', 'Kerem'], dolduran: [{ ad: 'Elif', sinif: '11', okul: 'Örnek High School', d1: 'Biology 20, Math 20-1', d2: 'Chemistry 20', not: '' }] },
+        E9: { toplam: 4, eksik: ['Burak', 'Enes', 'Furkan', 'Yasin'], dolduran: [] }, E12: { toplam: 0, eksik: [], dolduran: [] } };
+        return mentor ? { E10: o.E10 } : o; })(),
       adaylar: mentor ? demoAday.filter(function (c) { return c.grup === 'E10'; }) : undefined,
       tablo: koc || mentor ? undefined : '#', ben: koc ? { ad: 'Yusuf', dersler: ['Matematik', 'Fizik'], kapasite: 3, yuk: 3 } : undefined };
   }
