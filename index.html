@@ -2323,6 +2323,7 @@
   let yenileNo = 0;
   async function yenile() {
     if (DERS_LINK) { dersSecimModu(); return; }   // veli/öğrenci ders saati seçimi (kod yok)
+    if (OKUL_LINK) { okulModu(); return; }   // okul dersleri linki: öğrenci / veli derslerini girer (kod yok)
     if (AILE_LINK) { aileModu(); return; }   // aile kayıt linki: veli bilgisi + öğrenci e-postası (kod yok)
     if (MISAFIR) { misafirModu(); return; }
     if (DEMO) {
@@ -5679,6 +5680,7 @@
   const DERS_HATA = {
     dersKurulum: 'Ders Desteği tablosu henüz kurulmadı (sistem sorumlusu: dersDestegiKur).', dersYok: 'Talep bulunamadı; liste yenilendi.',
     dersDurum: 'Talebin durumu değişmiş; liste yenilendi.', dersEksik: 'Ders ve konuyu seçin.', dersAyni: 'Bu öğrenci için bu konuda açık bir talep zaten var.',
+    okulEksik: 'Sınıfı seçin ve en az bir ders işaretleyin.', link: 'Bu link geçerli değil. Mentorunuzdan yeni link isteyin.',
     dersAdayDers: 'En az bir ders seçin.', dersAdayEposta: 'E-posta adresi geçerli değil.', dersAdayVar: 'Bu kişi bu grupta zaten aday ya da koç.',
     dersKoc: 'Koç bulunamadı ya da aktif değil (Koçlar sekmesi).', dersKocEposta: 'Koçun e-postası Koçlar sekmesinde eksik.',
     dersSecenek: 'Üç saat seçeneğinin hepsini eksiksiz girin (tarih, saat, süre, yer).', dersAyniSaat: 'Üç seçenek birbirinden farklı olmalı.', dersTarih: 'Saat en az 2 saat sonrası ve en geç 60 gün içinde olmalı.',
@@ -5690,6 +5692,7 @@
     eposta: 'E-posta adresi geçerli görünmüyor.',
   };
   const DERS_LINK = location.search.match(/[?&]d=(D-\d+)\.([vo])\.([\w-]+)/);
+  const OKUL_LINK = location.search.match(/[?&]okul=([A-Z0-9]+)\.([a-f0-9]{12})/i);
   const AILE_LINK = location.search.match(/[?&]aile=([A-Z0-9]+)\.([a-f0-9]{12})/i);
   const DEMO_KOC = DEMO && /rol=koc/.test(location.search);
   let dersVeri = null, dersSayac = 0;
@@ -5809,7 +5812,19 @@
       const mo = s.okul && s.grup && s.okul[s.grup];
       if (mo && (mo.dolduran.length || mo.eksik.length)) {
         const md = el('details', { sinif: 'dg' }, [el('summary', {}, [el('b', { metin: 'Okul dersleri' }), el('span', { metin: mo.toplam ? (mo.toplam - mo.eksik.length) + '/' + mo.toplam + ' öğrenci formu doldurdu' : mo.dolduran.length + ' öğrenci doldurdu' })])]);
-        const mi = el('div', { sinif: 'dg-ic' }); okulBlogu(mo, mi); mi.firstChild.remove(); md.appendChild(mi); ic.appendChild(md);
+        const mi = el('div', { sinif: 'dg-ic' }); okulBlogu(mo, mi); mi.firstChild.remove();
+        if (!saltOkunurDers(s) && s.ogrenciler && s.ogrenciler.length) {
+          const lp = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Formu gruba gönder' }), gir = el('button', { sinif: 'kucuk', type: 'button', metin: 'Öğrenci adına gir' });
+          const dk = el('div', { sinif: 'dugmeler', style: 'margin:10px 0 0;display:flex;gap:8px;flex-wrap:wrap' }, [gir, lp]);
+          lp.onclick = function () { paylas(['Selamlar,', '', 'Okulda bu yıl aldığınız dersleri aşağıdaki linkten işaretler misiniz? Adınıza dokunup dersleri seçmeniz yeterli, 1 dakika sürüyor. Ders desteğinde doğru ders koçunu bulmamıza yardımcı olacak.', '', s.okulLink || '', '', 'Teşekkürler 🙏'].join('\n')); };
+          gir.onclick = function () {
+            const sira = mo.eksik.concat(s.ogrenciler.filter(function (o) { return mo.eksik.indexOf(o) < 0; }));   // doldurmayanlar üstte
+            dk.replaceWith(okulFormu('Okul dersleri · öğrenci adına', sira, function (veri, dugme) { dersGonder(Object.assign({ islem: 'okulMentor', grup: s.grup }, veri), dugme); }, function () { dersCiz(); }));
+          };
+          if (!s.okulLink && !DEMO) lp.hidden = true;
+          mi.appendChild(dk);
+        }
+        md.appendChild(mi); ic.appendChild(md);
       }
       ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Açık talepler' }));
       if (!aktif.length) ic.appendChild(el('p', { sinif: 'not ders-bos', metin: 'Açık talep yok. Bir öğrenci bir derste zorlanıyorsa onunla birlikte talep açın.' }));
@@ -6450,6 +6465,97 @@
   const AILE_HATA = { link: 'Bu link artık geçerli değil. Mentorunuzdan yeni link isteyin.', kayitli: 'Bu öğrencinin bilgileri zaten kayıtlı. Değişiklik için mentorunuza yazın.',
                       eksik: 'Veli e-postası zorunlu. Lütfen geçerli bir e-posta adresi yazın.', satir: 'Öğrenci listede bulunamadı. Sayfayı yenileyin.' };
   let aileVeri = null;
+  // ----- Okul dersleri formu: grup linkinden (öğrenci / veli) ve mentor ekranından aynı form -----
+  const OKUL_ORTA = ['Mathematics', 'Science', 'English Language Arts', 'Social Studies', 'French', 'Physical Education', 'Health', 'Art', 'Music', 'Computer / Technology'];
+  const OKUL_LISE = { 10: ['Math 10C', 'Math 10-3', 'Science 10', 'Science 14', 'ELA 10-1', 'ELA 10-2', 'Social 10-1', 'Social 10-2', 'Physical Education 10', 'CALM 20'],
+    20: ['Math 20-1', 'Math 20-2', 'Math 20-3', 'Physics 20', 'Chemistry 20', 'Biology 20', 'Science 20', 'Science 24', 'ELA 20-1', 'ELA 20-2', 'Social 20-1', 'Social 20-2'],
+    30: ['Math 30-1', 'Math 30-2', 'Math 30-3', 'Math 31', 'Physics 30', 'Chemistry 30', 'Biology 30', 'Science 30', 'ELA 30-1', 'ELA 30-2', 'Social 30-1', 'Social 30-2'] };
+  function okulDersListesi(sinif) {
+    const n = +sinif;
+    if (n <= 9) return OKUL_ORTA.map(function (d) { return d + ' ' + n; });
+    return (n === 10 ? [10, 20] : n === 11 ? [10, 20, 30] : [20, 30]).reduce(function (a, k) { return a.concat(OKUL_LISE[k]); }, []);
+  }
+  /** baslik: form başlığı; kimSec: [adlar] verilirse öğrenci seçimi (mentor); gonder(veri, dugme); vazgec() */
+  function okulFormu(baslik, kimSec, gonder, vazgecFn) {
+    const f = el('div', { sinif: 'ekle-form kart ders-form' });
+    const v = { d1: [], d2: [] };
+    const kim = kimSec ? el('select', { 'aria-label': 'Öğrenci' }) : null;
+    if (kim) kimSec.forEach(function (o) { kim.appendChild(el('option', { value: o, metin: o })); });
+    const okul = el('input', { type: 'text', placeholder: 'Okulun adı', maxlength: '80', autocomplete: 'off' });
+    const sinif = el('select', { 'aria-label': 'Sınıf' });
+    [''].concat(['6', '7', '8', '9', '10', '11', '12']).forEach(function (x) { sinif.appendChild(el('option', { value: x, metin: x ? x + '. sınıf' : 'Seçin' })); });
+    const dersAlan = el('div');
+    const ek1 = el('input', { type: 'text', placeholder: 'Listede olmayan dersler (virgülle)', maxlength: '160', autocomplete: 'off' });
+    const ek2 = el('input', { type: 'text', placeholder: 'Listede olmayan dersler (virgülle)', maxlength: '160', autocomplete: 'off' });
+    const not = el('textarea', { placeholder: 'İsteğe bağlı: zorlandığı ders, eklemek istediğiniz bir şey', maxlength: '600' });
+    const ciz = function () {
+      dersAlan.textContent = ''; v.d1 = []; v.d2 = [];
+      if (!sinif.value) { dersAlan.appendChild(el('p', { sinif: 'not', metin: 'Önce sınıfı seçin; o sınıfın dersleri burada çıkar.' })); return; }
+      const liste = okulDersListesi(sinif.value), lise = +sinif.value >= 10;
+      dersAlan.appendChild(el('span', { sinif: 'ders-etiket', metin: lise ? '1. dönem dersleri (Eylül–Ocak)' : 'Bu yılki dersler' }));
+      dersAlan.appendChild(secimGrubu(liste, true, function () { return v.d1; }, function (a) { v.d1 = a; }));
+      dersAlan.appendChild(ek1);
+      if (lise) {
+        dersAlan.appendChild(el('span', { sinif: 'ders-etiket', metin: '2. dönem dersleri (Şubat–Haziran)' }));
+        dersAlan.appendChild(secimGrubu(liste, true, function () { return v.d2; }, function (a) { v.d2 = a; }));
+        dersAlan.appendChild(ek2);
+      }
+    };
+    sinif.onchange = ciz; ciz();
+    const kaydet = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Gönder' }), vazgec = el('button', { sinif: 'kucuk', type: 'button', metin: 'Vazgeç' });
+    vazgec.onclick = vazgecFn;
+    kaydet.onclick = function () {
+      const ekle = function (a, g) { return a.concat(String(g.value || '').split(/[,;\n]/).map(function (x) { return x.trim(); }).filter(String)); };
+      const d1 = ekle(v.d1, ek1), d2 = +sinif.value >= 10 ? ekle(v.d2, ek2) : [];
+      if (!sinif.value || (!d1.length && !d2.length)) { alert(DERS_HATA.okulEksik); return; }
+      gonder({ ogrenci: kim ? kim.value : '', okul: okul.value.trim(), sinif: sinif.value, d1: d1, d2: d2, not: not.value.trim() }, kaydet);
+    };
+    [el('div', { sinif: 'veli-baslik' }, [el('span', { metin: baslik })]), kim ? alanEl('Öğrenci', kim) : null,
+     el('div', { sinif: 'iki' }, [alanEl('Okul', okul), alanEl('Sınıf', sinif)]), dersAlan, alanEl('Not', not),
+     el('div', { sinif: 'dugmeler' }, [vazgec, kaydet])].forEach(function (x) { if (x) f.appendChild(x); });
+    return f;
+  }
+  let okulVeri = null;
+  async function okulModu() {
+    goster('dersler');
+    $('derslerGeri').hidden = true; $('derslerCikis').hidden = true;
+    $('derslerBaslik').textContent = 'Okul dersleri';
+    const ic = $('derslerIcerik');
+    ic.innerHTML = '<div class="yukleniyor"></div>';
+    try {
+      const s = DEMO ? (okulVeri || { ok: true, grup: 'E10', liste: [{ id: 'a1', ad: 'Ahmet Y.', dolu: true }, { id: 'a2', ad: 'Mehmet K.', dolu: false }, { id: 'a3', ad: 'Yusuf A.', dolu: false }, { id: 'a4', ad: 'Ali Ş.', dolu: true }] })
+        : await (await fetch(VERI_URL + '?format=json&islem=okulGetir&g=' + encodeURIComponent(OKUL_LINK[1]) + '&t=' + encodeURIComponent(OKUL_LINK[2]), { cache: 'no-store' })).json();
+      if (!s.ok) { ic.textContent = ''; ic.appendChild(el('div', { sinif: 'bilgi uyari', metin: DERS_HATA[s.hata] || 'Bir sorun oluştu. Tekrar deneyin.' })); return; }
+      okulVeri = s;
+      okulListe(s);
+    } catch (e) { ic.textContent = 'Bağlantı kurulamadı. Tekrar deneyin.'; }
+  }
+  function okulListe(s, bilgi) {
+    const ic = $('derslerIcerik');
+    ic.textContent = '';
+    $('derslerBaslik').textContent = s.grup + ' · okul dersleri';
+    if (bilgi) ic.appendChild(el('div', { sinif: 'bilgi', metin: bilgi }));
+    ic.appendChild(el('p', { sinif: 'not', metin: 'Merhaba. Adınıza (ya da çocuğunuzun adına) dokunun ve bu yıl okulda aldığı dersleri işaretleyin. Bu bilgi ders desteğinde doğru ders koçunu bulmak için kullanılır. Dersler değişirse formu yeniden doldurabilirsiniz.' }));
+    const liste = el('div', { sinif: 'ders-sec-liste' });
+    s.liste.forEach(function (o) {
+      const b = el('button', { type: 'button', metin: o.ad + (o.dolu ? '  ✓ dolduruldu' : '') });
+      b.onclick = function () {
+        ic.textContent = '';
+        ic.appendChild(okulFormu(o.ad + ' · okul dersleri', null, async function (veri, dugme) {
+          dugme.disabled = true;
+          try {
+            const r = DEMO ? { ok: true } : await (await fetch(VERI_URL, { method: 'POST', body: JSON.stringify(Object.assign({ islem: 'okulGonder', g: OKUL_LINK[1], t: OKUL_LINK[2], id: o.id }, veri)) })).json();
+            if (!r.ok) { alert(DERS_HATA[r.hata] || 'Bir sorun oluştu. Tekrar deneyin.'); dugme.disabled = false; return; }
+            o.dolu = true; okulListe(s, o.ad + ' için dersler kaydedildi. Teşekkürler.');
+          } catch (e) { alert('Bağlantı kurulamadı. Tekrar deneyin.'); dugme.disabled = false; }
+        }, function () { okulListe(s); }));
+        window.scrollTo(0, 0);
+      };
+      liste.appendChild(b);
+    });
+    ic.appendChild(liste);
+  }
+
   async function aileModu() {
     goster('dersler');
     $('derslerGeri').hidden = true; $('derslerCikis').hidden = true;
@@ -6571,6 +6677,7 @@
   }
   function DEMO_DERS_ISLEM(g) {
     if (g.islem === 'dersKocAday') demoAday.push({ no: String(6 + demoAday.length), ad: g.kim === '__ben' ? 'Örnek Mentor' : g.kim, tur: 'Liseli', dersler: g.dersler.split('|'), kapasite: 3, aktif: false, aday: true, yuk: 0, eposta: !!g.eposta, grup: g.grup, ekleyen: 'Örnek Mentor' });
+    if (g.islem === 'okulMentor') { alert('Demo: kaydedilmedi.'); }
     if (g.islem === 'dersKocOnay') demoAday.forEach(function (c) { if (c.no === g.no) { c.aday = false; c.aktif = g.karar === 'evet'; } });
     const t = (demoDers || []).filter(function (x) { return x.id === g.id; })[0], s = DEMO_DERS();
     const bilgi = { dersTalep: 'Talep açıldı; Ders Koçu Rehberine bildirildi.', dersAta: 'Koç atandı; e-postayla haber verildi.', dersOnay: 'Onaylandı. Takvim daveti 6 kişiye gitti.',
