@@ -1364,7 +1364,13 @@
         return b;
       };
       const kutular = [];
-      if (DERS_BILGI_FORMU) kutular.push(formKutu('Form · paylaş ↗', 'Student Course Information', 'Öğrencilere gönderin',
+      // 25 Kas: grubun uygulama içi okul dersleri linki varsa o paylaşılır (ad eşleştirme gerekmez, dersler listeden seçilir); yoksa eski Google Formu
+      if (v.okulLink) kutular.push(formKutu('Form · paylaş ↗', 'Okul dersleri formu', v.grup + ' grubuna gönderin',
+        ['📚 Selamlar,', '',
+          'Akademik destek ve ders koçluğunu planlayabilmemiz için bu yıl okulda aldığınız dersleri öğrenmek istiyoruz. ' +
+          'Aşağıdaki linki açın, adınıza dokunun ve derslerinizi işaretleyin (1–2 dakika). 2. dönem dersleriniz henüz belli değilse o kısmı boş bırakabilirsiniz.', '',
+          v.okulLink, '', 'Teşekkürler 🙏'].join('\n')));
+      else if (DERS_BILGI_FORMU) kutular.push(formKutu('Form · paylaş ↗', 'Student Course Information', 'Öğrencilere gönderin',
         ['📚 Sevgili öğrenciler,', '',
           'Akademik destek ve ders koçluğunu planlayabilmemiz için bu yıl aldığınız dersleri öğrenmek istiyoruz. ' +
           'Lütfen okul ders programınıza bakarak aşağıdaki formu doldurun (2–3 dakika). 2. dönem dersleriniz henüz belli değilse o kısmı boş bırakabilirsiniz.', '',
