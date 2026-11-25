@@ -558,7 +558,7 @@
     .ders-yeni { margin: 4px 0 10px; display: flex; gap: 8px; } .ders-yeni > button { flex: 1; min-height: 44px; } .ders-yeni > .ders-form { flex: 1; }
     .dg { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 12px; margin: 6px 0; }
     .dg > summary { display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; list-style: none; } .dg > summary::-webkit-details-marker { display: none; }
-    .dg > summary b { min-width: 44px; font-size: 16px; } .dg > summary span { flex: 1; font-size: 13px; color: var(--soluk); }
+    .dg > summary b { min-width: 44px; font-size: 16px; white-space: nowrap; } .dg > summary span { flex: 1; font-size: 13px; color: var(--soluk); }
     .dg > summary::after { content: '›'; color: var(--soluk); font-size: 18px; transition: transform .15s; } .dg[open] > summary::after { transform: rotate(90deg); }
     .dg.bos > summary::after { content: ''; } .dg.bos > summary { cursor: default; } .dg.bos > summary b { color: var(--soluk); font-weight: 600; }
     .dg-ic { padding: 0 14px 10px; } .dg-bas { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--soluk); margin: 8px 0 2px; }
@@ -5822,17 +5822,18 @@
 
   /** Akademik mesul + Ders Koçu Rehberi: gruplara göre kim talep etti, kim ders koçu olmak istiyor (talebi/adayı olmayan grup da görünür). */
   function grupOzeti(s, ic) {
-    const koclar = (s.koclar || []).filter(function (c) { return c.grup && (c.aday || c.aktif); });
+    const koclar = (s.koclar || []).filter(function (c) { return (c.grup || c.form) && (c.aday || c.aktif); });   // grupsuz = formu doldurup sistemdeki bir grupla eşleşmeyen (ör. üniversiteli)
     const gruplar = (s.gruplar || []).slice();
     s.talepler.forEach(function (t) { if (gruplar.indexOf(t.grup) < 0) gruplar.push(t.grup); });
-    koclar.forEach(function (c) { if (gruplar.indexOf(c.grup) < 0) gruplar.push(c.grup); });
+    koclar.forEach(function (c) { if (c.grup && gruplar.indexOf(c.grup) < 0) gruplar.push(c.grup); });
+    if (koclar.some(function (c) { return !c.grup; })) gruplar.push('');
     if (!gruplar.length) return;
     const bekleyenAday = koclar.filter(function (c) { return c.aday; }).length;
     ic.appendChild(el('div', { sinif: 'hs-baslik', metin: 'Gruplara göre' + (bekleyenAday ? ' · ' + bekleyenAday + ' aday onay bekliyor' : '') }));
     gruplar.forEach(function (g) {
-      const tl = s.talepler.filter(function (t) { return t.grup === g; }), kl = koclar.filter(function (c) { return c.grup === g; });
-      const ozet = !tl.length && !kl.length ? 'talep yok · koç adayı yok' : (tl.length ? tl.length + ' talep' : 'talep yok') + ' · ' + (kl.length ? [kl.filter(function (c) { return !c.aday; }).length ? kl.filter(function (c) { return !c.aday; }).length + ' koç' : '', kl.filter(function (c) { return c.aday; }).length ? kl.filter(function (c) { return c.aday; }).length + ' aday' : ''].filter(String).join(' · ') : 'koç adayı yok');
-      const d = el('details', { sinif: 'dg' + (tl.length || kl.length ? '' : ' bos') }, [el('summary', {}, [el('b', { metin: g }), el('span', { metin: ozet })])]);
+      const tl = g ? s.talepler.filter(function (t) { return t.grup === g; }) : [], kl = koclar.filter(function (c) { return (c.grup || '') === g; });
+      const ozet = !tl.length && !kl.length ? 'talep yok · koç adayı yok' : (g ? (tl.length ? tl.length + ' talep' : 'talep yok') + ' · ' : 'formu dolduranlar · ') + (kl.length ? [kl.filter(function (c) { return !c.aday; }).length ? kl.filter(function (c) { return !c.aday; }).length + ' koç' : '', kl.filter(function (c) { return c.aday; }).length ? kl.filter(function (c) { return c.aday; }).length + ' aday' : ''].filter(String).join(' · ') : 'koç adayı yok');
+      const d = el('details', { sinif: 'dg' + (tl.length || kl.length ? '' : ' bos') }, [el('summary', {}, [el('b', { metin: g || 'Grup dışı' }), el('span', { metin: ozet })])]);
       if (!tl.length && !kl.length) { d.addEventListener('click', function (e) { e.preventDefault(); }); ic.appendChild(d); return; }
       if (kl.some(function (c) { return c.aday && c.onay; })) d.open = true;
       const i2 = el('div', { sinif: 'dg-ic' });
@@ -5844,7 +5845,8 @@
       if (kl.length) i2.appendChild(el('div', { sinif: 'dg-bas', metin: 'Ders koçu olmak isteyen' }));
       kl.forEach(function (c) {
         const sat = el('div', { sinif: 'dg-sat' }, [el('div', {}, [el('b', { metin: c.ad }), el('span', { sinif: 'dg-rozet' + (c.aday ? '' : ' tamam'), metin: c.aday ? 'aday' : 'aktif koç' }),
-          el('span', { sinif: 'gorev-alt', metin: [dersAdlari(c.dersler), c.ekleyen ? 'ekleyen: ' + c.ekleyen : ''].filter(String).join(' · ') })])]);
+          el('span', { sinif: 'gorev-alt', metin: [dersAdlari(c.dersler), c.form ? 'formdan' : c.ekleyen ? 'ekleyen: ' + c.ekleyen : ''].filter(String).join(' · ') }),
+          c.bilgi ? el('span', { sinif: 'gorev-alt', metin: c.bilgi }) : null].filter(Boolean))]);
         if (c.aday && c.onay) {
           const ev = el('button', { sinif: 'kucuk sicak', type: 'button', metin: 'Onayla' }), ha = el('button', { sinif: 'kucuk', type: 'button', metin: 'Çıkar' });
           ev.onclick = function () { dersGonder({ islem: 'dersKocOnay', no: c.no, karar: 'evet' }, ev); };
@@ -6427,6 +6429,8 @@
   let demoDers = null;
   let demoAday = [{ no: '4', ad: 'Ali', tur: 'Liseli', dersler: ['Chemistry', 'Mathematics'], kapasite: 3, aktif: false, aday: true, yuk: 0, eposta: false, grup: 'E10', ekleyen: 'Örnek Mentor' },
     { no: '5', ad: 'Kerem', tur: 'Liseli', dersler: ['Physics'], kapasite: 3, aktif: false, aday: true, yuk: 0, eposta: true, grup: 'E11', ekleyen: 'Örnek Mentor 2' }];
+  if (DEMO) demoAday.push({ no: '20', ad: 'Zeynep Arslan', tur: '', dersler: ['Mathematics', 'Science', 'English Language Arts'], kapasite: 4, aktif: false, aday: true, yuk: 0, eposta: true, grup: '', ekleyen: 'Form', form: true, bilgi: 'Sınıflar: 5, 6, 7 · Online · Yeni öğrenci: Yes' },
+    { no: '21', ad: 'Ahmet', tur: 'Liseli', dersler: ['Mathematics', 'Physics'], kapasite: 2, aktif: false, aday: true, yuk: 0, eposta: true, grup: 'E10', ekleyen: 'Form', form: true, bilgi: 'Sınıflar: 7, 8, 9 · Both · Yeni öğrenci: Yes' });
   function DEMO_DERS() {
     if (!demoDers) demoDers = [
       { id: 'D-0003', grup: 'E11', ogr: 'Elif', sinif: '11', ders: 'Biology', kurs: 'Biology 20', konu: 'Ecosystems', seviye: 'Kısmen', zaman: 'Bu hafta', not: 'Sınav 30 Ekim.', acan: 'Örnek Mentor', mentor: 'Örnek Mentor', durum: 'Koç ataması', kocNo: '', koc: '', secenekler: [], secilen: null, meet: '', izin: false, bekleyen: 'Ders Koçu Rehberi', saat: 5, acildi: '18 Eki', on: null, son: null, rapor: '' },
