@@ -1481,7 +1481,7 @@
   function selamYaz(v) {
     let ad = '';
     try { ad = String((JSON.parse(depo.al('kisi') || 'null') || {}).ad || '').split(/\s+/)[0]; } catch (e) {}
-    if (DEMO) ad = DEMO_MENTOR ? 'Ahmet' : 'Tuğrul';
+    if (DEMO) ad = DEMO_MENTOR ? 'Ahmet' : 'Örnek Rehber';
     $('selam').textContent = mentorGozu ? v.grup + ' · ' + v.ekip : ad ? 'Merhaba ' + ad : 'Merhaba';
     $('tarih').textContent = (mentorGozu ? 'Mentor ekranı · ' : 'Bu hafta · ') + v.hafta.replace(/\s*–\s*/, '–');
   }
@@ -6508,6 +6508,9 @@
              secenekler: [{ metin: 'Perşembe 23 Ekim · 19:30 · 60 dk · KM Daire 5' }, { metin: 'Cumartesi 25 Ekim · 11:00 · 60 dk · Online' }], secilen: 'Cumartesi 25 Ekim · 11:00 · 60 dk · Online' };
   }
 
+  // Deneme alanı (demo.html) üzerinden gelindiyse: geri dönüş düğmesi. Kılavuz görüntülerinde (?demo, tur'suz) görünmez.
+  if (DEMO && /[?&]tur=1/.test(location.search)) document.body.appendChild(el('a', { href: 'demo.html', metin: 'Deneme · rol değiştir',
+    style: 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom));z-index:9999;background:#8a4a2c;color:#fff;font:600 13px/1 -apple-system,system-ui,sans-serif;padding:10px 16px;border-radius:999px;text-decoration:none;box-shadow:0 6px 18px rgba(0,0,0,.28)' }));
   if (!DEMO && 'serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});
   yenile();
 </script>

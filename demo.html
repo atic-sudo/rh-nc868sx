@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Rehberlik · Deneme alanı</title>
+  <link rel="icon" href="ikon-192.png?v=2">
+  <style>
+    :root { --bg: #f7f9f8; --kart: #ffffff; --cizgi: #e4ebe8; --yazi: #1f2a28; --soluk: #5d6966; --ana: #2c5a51; --ana-zemin: #eef6f3; --sicak-zemin: #fcefe6; --sicak: #8a4a2c;
+            --golge: 0 1px 0 rgba(255,255,255,.9) inset, 0 1px 2px rgba(20,45,38,.06), 0 6px 16px rgba(20,45,38,.08); }
+    @media (prefers-color-scheme: dark) { :root { --bg: #141a18; --kart: #1d2523; --cizgi: #2c3734; --yazi: #e7eeeb; --soluk: #9aa8a3; --ana: #b9e3d4; --ana-zemin: #2a3934; --sicak-zemin: #3a2a20; --sicak: #f0b993;
+            --golge: 0 1px 0 rgba(255,255,255,.05) inset, 0 6px 16px rgba(0,0,0,.35); } }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--yazi); font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", Arial, sans-serif; -webkit-text-size-adjust: 100%; }
+    header { background: linear-gradient(160deg, #2f6b5f, #1f4239); color: #fff; padding: calc(22px + env(safe-area-inset-top)) 20px 26px; border-radius: 0 0 24px 24px; }
+    header h1 { margin: 0 0 6px; font-size: 24px; letter-spacing: -.01em; } header p { margin: 0; opacity: .86; font-size: 15px; max-width: 34em; }
+    main { max-width: 560px; margin: 0 auto; padding: 16px 16px calc(40px + env(safe-area-inset-bottom)); }
+    .uyari { background: var(--sicak-zemin); color: var(--sicak); border-radius: 14px; padding: 12px 14px; font-size: 14px; margin: 0 0 6px; }
+    h2 { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--soluk); margin: 22px 4px 8px; font-weight: 700; }
+    a.k { display: flex; align-items: center; gap: 12px; background: var(--kart); border: 1px solid var(--cizgi); border-radius: 16px; padding: 14px; margin: 8px 0; text-decoration: none; color: inherit; box-shadow: var(--golge); }
+    a.k:active { transform: translateY(1px) scale(.995); }
+    a.k b { display: block; font-size: 16px; } a.k span { display: block; font-size: 13px; color: var(--soluk); margin-top: 1px; }
+    a.k i { flex: none; width: 34px; height: 34px; border-radius: 11px; background: var(--ana-zemin); color: var(--ana); display: grid; place-items: center; font-style: normal; font-weight: 700; font-size: 15px; }
+    a.k em { margin-left: auto; font-style: normal; color: var(--soluk); font-size: 20px; }
+    .not { font-size: 13px; color: var(--soluk); margin: 14px 4px 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Deneme alanı</h1>
+    <p>Rehberlik uygulamasını örnek kişiler ve örnek verilerle gezin. Her rolün ne gördüğünü ve ne yapabildiğini buradan inceleyebilirsiniz.</p>
+  </header>
+  <main>
+    <p class="uyari">Buradaki bütün adlar ve kayıtlar kurgusaldır. Yaptığınız hiçbir işlem kaydedilmez, kimseye e-posta gitmez; sayfayı yenileyince her şey başa döner.</p>
+
+    <h2>Bir rolle gezin</h2>
+    <a class="k" href="index.html?demo&tur=1&rol=mentor"><i>M</i><div><b>Mentor</b><span>Kendi grubu: rapor, görevler, takvim, ders talebi</span></div><em>›</em></a>
+    <a class="k" href="index.html?demo&tur=1"><i>R</i><div><b>Rehber</b><span>Ekibin panosu, haftalık raporlar, görev takibi</span></div><em>›</em></a>
+    <a class="k" href="index.html?demo&tur=1&rol=mesul"><i>A</i><div><b>Akademik mesul</b><span>Bütün grupların ders talepleri ve takvim</span></div><em>›</em></a>
+    <a class="k" href="index.html?demo&tur=1&rol=org"><i>O</i><div><b>Org sorumlusu</b><span>Bütün ekiplerin özeti</span></div><em>›</em></a>
+
+    <h2>Ders desteği · adım adım</h2>
+    <a class="k" href="index.html?demo&tur=1&rol=mentor&ekran=dersform"><i>1</i><div><b>Mentor talep açar</b><span>Öğrenci, ders, konu, ne zamana</span></div><em>›</em></a>
+    <a class="k" href="index.html?demo&tur=1&ekran=dersler"><i>2</i><div><b>Ders Koçu Rehberi koç atar</b><span>Koçun dersleri ve yükü; koç adaylarını onaylar</span></div><em>›</em></a>
+    <a class="k" href="index.html?demo&tur=1&rol=koc&ekran=dersler"><i>3</i><div><b>Ders koçu saat önerir</b><span>Koçun kişisel ekranı: üç saat, sonra rapor</span></div><em>›</em></a>
+    <a class="k" href="index.html?demo&tur=1&d=D-0004.o.x"><i>4</i><div><b>Öğrenci saat seçer</b><span>E-postadaki linkle açılan sayfa (girişsiz)</span></div><em>›</em></a>
+    <a class="k" href="index.html?demo&tur=1&d=D-0004.v.x"><i>5</i><div><b>Veli onaylar</b><span>Veliye giden onay sayfası (girişsiz)</span></div><em>›</em></a>
+    <a class="k" href="index.html?demo&tur=1&ekran=dersler"><i>6</i><div><b>Son onay ve görüşme</b><span>Ders Koçu Rehberi onaylar; takvim daveti oluşur</span></div><em>›</em></a>
+    <a class="k" href="index.html?demo&tur=1&rol=mesul&ekran=dersler"><i>7</i><div><b>Akademik mesul izler</b><span>Gruplara göre talepler, koçlar, okul dersleri formu</span></div><em>›</em></a>
+
+    <h2>Diğer ekranlar</h2>
+    <a class="k" href="index.html?demo&tur=1&rol=mesul&ekran=takvim"><i>T</i><div><b>Takvim</b><span>Etkinlik ekleme, düzenleme, birkaç grup seçme</span></div><em>›</em></a>
+    <a class="k" href="index.html?demo&tur=1&rol=mesul&ekran=gorevler"><i>G</i><div><b>Görevler</b><span>Görev notları ve @etiket</span></div><em>›</em></a>
+
+    <p class="not">Uygulamanın içindeyken alttaki "Deneme · rol değiştir" düğmesiyle bu sayfaya dönebilirsiniz.</p>
+  </main>
+</body>
+</html>
